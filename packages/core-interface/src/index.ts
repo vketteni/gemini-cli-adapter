@@ -6,6 +6,14 @@ export * from './types/adapter.js';
 export * from './types/chat.js';
 export * from './types/tools.js';
 export * from './types/config.js';
+export * from './types/services.js';
+export * from './types/errors.js';
+
+// Re-export specific types for convenience
+export { Icon } from './types/tools.js';
+export { AuthType, EditorType, ApprovalMode, IDEConnectionStatus, UserTierId } from './types/config.js';
+export { ToolConfirmationOutcome } from './types/tools.js';
+export { getErrorMessage, isNodeError, UnauthorizedError } from './types/errors.js';
 
 /**
  * Shared types across all packages
