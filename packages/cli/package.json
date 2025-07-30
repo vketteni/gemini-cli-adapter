@@ -1,5 +1,5 @@
 {
-  "name": "@gemini-cli-adapter/cli-frontend",
+  "name": "@gemini-cli-adapter/cli",
   "version": "0.1.0",
   "description": "A modular frontend for AI command-line tools, extracted from Google's Gemini CLI.",
   "repository": {
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@gemini-cli-adapter/core-interface": "*",
-    "@google/gemini-cli-core": "file:../google-shim",
+    "@google/gemini-cli-core": "file:../gemini-cli-core-shim",
     
     "@google/genai": "1.9.0",
     "@iarna/toml": "^2.2.5",

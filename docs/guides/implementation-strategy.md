@@ -22,7 +22,7 @@ CLI-Frontend ↔ CoreAdapter Interface ↔ AnthropicAdapter ↔ Anthropic-Core-M
 ## **Hybrid Approach: Package Aliasing + Clean Interface**
 
 ### **Package Aliasing Strategy**
-- `@google/gemini-cli-core` → `google-shim` via npm package aliasing
+- `@google/gemini-cli-core` → `gemini-cli-core-shim` via npm package aliasing
 - Zero import statement changes needed in CLI frontend
 - Backward compatibility maintained while enabling clean internal architecture
 

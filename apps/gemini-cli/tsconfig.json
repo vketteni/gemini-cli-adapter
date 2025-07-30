@@ -9,7 +9,6 @@
   "exclude": ["dist", "node_modules"],
   "references": [
     { "path": "../../packages/core-interface" },
-    { "path": "../../packages/cli-frontend" },
-    { "path": "../../packages/google-adapter" }
+    { "path": "../../packages/cli" },
   ]
 }

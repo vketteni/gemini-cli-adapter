@@ -1,7 +1,7 @@
 {
-  "name": "@gemini-cli-adapter/google-shim",
+  "name": "@gemini-cli-adapter/gemini-cli-core-shim",
   "version": "0.1.0",
-  "description": "Google Gemini CLI Core compatibility shim for cli-frontend",
+  "description": "Compatibility shim for @google/gemini-cli-core package",
   "type": "module",
   "main": "dist/minimal.js",
   "types": "dist/minimal.d.ts",
@@ -22,7 +22,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/vketteni/gemini-cli-adapter.git",
-    "directory": "packages/google-shim"
+    "directory": "packages/gemini-cli-core-shim"
   },
   "keywords": [
     "gemini",

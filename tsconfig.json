@@ -15,8 +15,7 @@
     "baseUrl": ".",
     "paths": {
       "@gemini-cli-adapter/core-interface": ["./packages/core-interface/src"],
-      "@gemini-cli-adapter/cli-frontend": ["./packages/cli-frontend/src"],
-      "@gemini-cli-adapter/google-adapter": ["./packages/google-adapter/src"],
+      "@gemini-cli-adapter/cli": ["./packages/cli/src"],
       "@gemini-cli-adapter/shared-types": ["./packages/shared-types/src"]
     }
   },
@@ -25,8 +24,7 @@
   "references": [
     { "path": "./packages/core-interface" },
     { "path": "./packages/shared-types" },
-    { "path": "./packages/google-adapter" },
-    { "path": "./packages/cli-frontend" },
+    { "path": "./packages/cli" },
     { "path": "./apps/cli" }
   ]
 }

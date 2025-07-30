@@ -4,7 +4,7 @@
  * This package provides a compatibility layer that exports the exact same API
  * as @google/gemini-cli-core, but internally uses our clean CoreAdapter interface.
  * 
- * This allows cli-frontend to use package aliasing while maintaining a clean
+ * This allows cli to use package aliasing while maintaining a clean
  * internal architecture for adapter developers.
  */
 
