@@ -12,7 +12,20 @@
  * we gradually migrate to the new adapter pattern.
  */
 
-import { CoreAdapter, ChatEvent, ToolEvent, AdapterConfig, ChatConfig, ToolMetadata, ToolRequest, ValidationResult } from '@gemini-cli-adapter/core-interface';
+import { 
+  CoreAdapter, 
+  ChatEvent, 
+  ToolEvent, 
+  AdapterConfig, 
+  ChatConfig, 
+  ToolMetadata, 
+  ToolRequest, 
+  ValidationResult,
+  Logger,
+  AdapterError,
+  SessionError,
+  getErrorMessage
+} from '@gemini-cli-adapter/core-interface';
 
 // Re-export types that the CLI expects from the original core
 export interface Config extends AdapterConfig {}
@@ -29,8 +42,10 @@ export enum GeminiEventType {
   COMPRESSED = 'compressed'
 }
 
-export interface ServerGeminiStreamEvent extends ChatEvent {
+export interface ServerGeminiStreamEvent {
   type: GeminiEventType;
+  data: unknown;
+  timestamp: Date;
 }
 
 export interface ServerGeminiContentEvent extends ServerGeminiStreamEvent {
@@ -90,13 +105,8 @@ export class UnauthorizedError extends Error {
   }
 }
 
-// Utility functions
-export function getErrorMessage(error: any): string {
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return String(error);
-}
+// Utility functions - re-export from core-interface
+export { getErrorMessage } from '@gemini-cli-adapter/core-interface';
 
 export function isNodeError(error: any): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error;
@@ -122,21 +132,132 @@ export class GitService {
 // Bridge class that connects existing CLI to new adapter system
 export class AdapterBridge {
   private adapter: CoreAdapter;
+  private sessions: Map<string, { config: ChatConfig; created: Date }> = new Map();
+  private currentConfig: Config | null = null;
+  private logger: Logger;
   
-  constructor(adapter: CoreAdapter) {
+  constructor(adapter: CoreAdapter, logger?: Logger) {
     this.adapter = adapter;
+    this.logger = logger || this.createDefaultLogger();
+    this.logger.info(`AdapterBridge initialized with adapter: ${adapter.name} v${adapter.version}`);
+  }
+  
+  private createDefaultLogger(): Logger {
+    return {
+      debug: (message: string, ...args: unknown[]) => console.debug(`[AdapterBridge] ${message}`, ...args),
+      info: (message: string, ...args: unknown[]) => console.info(`[AdapterBridge] ${message}`, ...args),
+      warn: (message: string, ...args: unknown[]) => console.warn(`[AdapterBridge] ${message}`, ...args),
+      error: (message: string, ...args: unknown[]) => console.error(`[AdapterBridge] ${message}`, ...args)
+    };
   }
   
   createGeminiClient(): GeminiClient {
+    const self = this;
     return {
-      sendMessage: (sessionId: string, message: string) => this.adapter.sendMessage(sessionId, message),
-      createSession: (config: ChatConfig) => this.adapter.createSession(config)
+      sendMessage: async function* (sessionId: string, message: string) {
+        try {
+          self.logger.debug(`Sending message to session ${sessionId}: ${message.substring(0, 100)}...`);
+          
+          // Validate session exists
+          if (!self.sessions.has(sessionId)) {
+            const error = new SessionError(`Session ${sessionId} not found`, sessionId);
+            self.logger.error(`Session validation failed: ${error.message}`);
+            throw error;
+          }
+          
+          // Delegate to adapter with error wrapping
+          const messageStream = self.adapter.sendMessage(sessionId, message);
+          
+          for await (const event of messageStream) {
+            self.logger.debug(`Received event from adapter: ${event.type}`);
+            yield event;
+          }
+          
+          self.logger.debug(`Message stream completed for session ${sessionId}`);
+          
+        } catch (error) {
+          const errorMessage = getErrorMessage(error);
+          self.logger.error(`Error in sendMessage for session ${sessionId}: ${errorMessage}`);
+          
+          if (error instanceof AdapterError) {
+            throw error;
+          } else {
+            throw new SessionError(`Failed to send message: ${errorMessage}`, sessionId);
+          }
+        }
+      },
+      
+      createSession: async (config: ChatConfig) => {
+        try {
+          self.logger.debug(`Creating new session with config: ${JSON.stringify(config)}`);
+          
+          const sessionId = await self.adapter.createSession(config);
+          
+          // Track session for management
+          self.sessions.set(sessionId, {
+            config,
+            created: new Date()
+          });
+          
+          self.logger.info(`Created session ${sessionId} successfully`);
+          return sessionId;
+          
+        } catch (error) {
+          const errorMessage = getErrorMessage(error);
+          self.logger.error(`Failed to create session: ${errorMessage}`);
+          
+          if (error instanceof AdapterError) {
+            throw error;
+          } else {
+            throw new SessionError(`Failed to create session: ${errorMessage}`);
+          }
+        }
+      }
     };
   }
   
   async getConfig(): Promise<Config> {
-    // TODO: Return appropriate config for the adapter
-    return {} as Config;
+    if (!this.currentConfig) {
+      // Build config from adapter capabilities
+      this.currentConfig = {
+        apiKey: process.env.GEMINI_API_KEY,
+        baseUrl: 'https://generativelanguage.googleapis.com',
+        timeout: 30000,
+        retries: 3,
+        authType: 'api_key' as any,
+        userTier: 'free' as any,
+        approvalMode: 'always_ask' as any
+      };
+    }
+    return this.currentConfig;
+  }
+  
+  // Session management methods
+  async cleanupExpiredSessions(maxAgeMs: number = 3600000): Promise<void> {
+    const now = new Date();
+    const expiredSessions: string[] = [];
+    
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (now.getTime() - session.created.getTime() > maxAgeMs) {
+        expiredSessions.push(sessionId);
+      }
+    }
+    
+    for (const sessionId of expiredSessions) {
+      this.sessions.delete(sessionId);
+      // Could notify adapter to cleanup if needed
+    }
+  }
+  
+  getSessionInfo(sessionId: string) {
+    return this.sessions.get(sessionId);
+  }
+  
+  getAllSessions() {
+    return Array.from(this.sessions.entries()).map(([id, session]) => ({
+      id,
+      ...session
+    }));
   }
 }
 
