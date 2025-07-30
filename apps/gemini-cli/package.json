@@ -16,7 +16,6 @@
   "dependencies": {
     "@gemini-cli-adapter/core-interface": "*",
     "@gemini-cli-adapter/cli-frontend": "*",
-    "@gemini-cli-adapter/google-adapter": "*",
     "commander": "^11.1.0"
   },
   "devDependencies": {

@@ -5,7 +5,6 @@
  */
 
 import { Command } from 'commander';
-import { GoogleAdapter } from '@gemini-cli-adapter/google-adapter';
 
 const program = new Command();
 
@@ -21,10 +20,7 @@ program
   .action(async (options) => {
     console.log(`Starting chat with ${options.adapter} adapter...`);
     
-    // TODO: Initialize adapter and start chat
-    const adapter = new GoogleAdapter();
-    await adapter.initialize();
-    
+    // TODO: Implement proper adapter initialization after architecture is finalized
     console.log('Chat functionality coming soon!');
   });
 

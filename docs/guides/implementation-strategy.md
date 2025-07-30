@@ -1,89 +1,116 @@
-# Implementation Strategy
+# Implementation Strategy - Corrected Architecture
 
-Based on analysis of your project structure, here's a comprehensive **phased strategy** to move your gemini-cli-adapter from its current rough layout to a fully functional, decoupled system:
+Based on architectural realignment discussions, here's the **corrected strategy** for creating a modular, adapter-based CLI system that properly decouples the Google Gemini CLI core module.
 
-## **Phase 1: Foundation Stabilization** (1-2 weeks)
+## **Core Architectural Understanding**
 
-### **1.1 Complete Core Interface**
-- **Add missing Icon type** to `packages/core-interface/src/types/tools.ts`
-- **Audit and abstract** all Google-specific types currently imported in cli-frontend
-- **Define generic error types** for adapter communication
-- **Add missing tool execution types** (progress, status, cancellation)
+### **What We're Building**
+An **adapter FOR the CLI module** that:
+- Translates the heavily coupled import relationship between CLI and Google core module
+- Provides a clean, generalized interface for builders to plug in alternative core modules
+- Maintains backward compatibility through package aliasing
 
-### **1.2 Fix Direct Dependencies** 
-- **Replace 45 @google/gemini-cli-core imports** in cli-frontend with core-interface types
-- **Priority files**: `acp/acp.ts`, `config/*.ts`, `ui/commands/*.ts`
-- **Create type mapping document** for migration reference
+### **Correct Architecture Pattern**
+```
+CLI-Frontend ↔ CoreAdapter Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
+CLI-Frontend ↔ CoreAdapter Interface ↔ OpenAIAdapter ↔ OpenAI-Core-Module  
+CLI-Frontend ↔ CoreAdapter Interface ↔ AnthropicAdapter ↔ Anthropic-Core-Module
+```
 
-## **Phase 2: Adapter Bridge Implementation** (2-3 weeks)
+**Key Insight**: Adapters are **translation layers**, not implementations. They bridge between our clean interface and existing full-featured core modules.
 
-### **2.1 Implement AdapterBridge**
-- **Complete the TODO methods** in `AdapterBridge.ts:138-140`
-- **Add session management** and state tracking
-- **Implement configuration bridging** between old and new interfaces
-- **Add comprehensive error handling** and logging
+## **Hybrid Approach: Package Aliasing + Clean Interface**
 
-### **2.2 CLI Frontend Refactoring**
-- **Systematically replace** direct core imports with AdapterBridge calls
-- **Update service layers** (GitService, auth, config) to use bridge
-- **Refactor React hooks** to work with new adapter pattern
-- **Update command implementations** to use generic adapter interface
+### **Package Aliasing Strategy**
+- `@google/gemini-cli-core` → `google-shim` via npm package aliasing
+- Zero import statement changes needed in CLI frontend
+- Backward compatibility maintained while enabling clean internal architecture
 
-## **Phase 3: Google Adapter Implementation** (2-3 weeks)
+### **Translation Layer Pattern**
+- GoogleAdapter translates between CoreAdapter interface and actual `@google/gemini-cli-core`
+- Alternative backends need their own complete core modules + adapters
+- Adapters handle impedance matching between interface styles
 
-### **3.1 Core Functionality**
-- **Implement all GoogleAdapter methods** (currently all throw "Not implemented")
-- **Add @google/genai SDK integration**
-- **Implement streaming chat** with proper event mapping
-- **Add tool discovery and execution**
+## **Implementation Phases**
 
-### **3.2 Configuration & Auth**
-- **Implement config validation** with Google-specific rules
-- **Add authentication flow** integration
-- **Handle API key management** and validation
+### **Phase 1: End-to-End Analysis** (NEXT)
+**Objective**: Understand the complete surface area between CLI and Google core
 
-## **Phase 4: Demo Application Wiring** (1 week)
+#### **1.1 Interface Analysis**
+- Map all imports from CLI-frontend to `@google/gemini-cli-core`
+- Document interaction patterns, method signatures, data flows
+- Identify which functionality is core vs Google-specific
+- Create comprehensive interface surface area documentation
 
-### **4.1 Complete Integration**
-- **Wire up GoogleAdapter** in `apps/gemini-cli/src/index.ts`
-- **Initialize AdapterBridge** properly
-- **Connect to actual CLI frontend** (not just placeholder commands)
-- **Add proper error handling** and graceful degradation
+#### **1.2 Core-Interface Design**
+- Design interface types that can handle translation complexity
+- Ensure interface is truly module-agnostic
+- Account for agentic system complexity (not just API calls)
+- Design for translation layer patterns
 
-### **4.2 Command Implementation**
-- **Replace placeholder chat command** with full functionality
-- **Add configuration management** commands
-- **Implement adapter switching** mechanism
+### **Phase 2: Google-Shim Expansion**
+**Objective**: Make CLI-frontend compile and work with shim
 
-## **Phase 5: Testing & Validation** (1-2 weeks)
+#### **2.1 Incremental Shim Building**
+- Expand google-shim exports to match required interface
+- Use package aliasing to redirect imports internally
+- Implement stub functions that delegate to future adapter
+- Handle ~300+ compilation errors systematically
 
-### **5.1 Functionality Testing**
-- **End-to-end chat sessions** work correctly
-- **Tool execution** functions properly
-- **Configuration management** is seamless
-- **Error handling** is robust
+#### **2.2 Alias Mechanism Validation**
+- Verify package aliasing works across all import scenarios
+- Test that CLI-frontend remains untouched
+- Ensure backward compatibility is maintained
 
-### **5.2 Decoupling Validation**
-- **Verify zero direct dependencies** on @google/gemini-cli-core in cli-frontend
-- **Test adapter swapping** capability
-- **Validate interface completeness** for third-party adapters
+### **Phase 3: GoogleAdapter as Translation Layer**
+**Objective**: Create proper adapter that bridges to real Google core
 
-## **Critical Dependencies & Priorities**
+#### **3.1 Translation Layer Implementation**
+- Import and use actual `@google/gemini-cli-core` module
+- Implement CoreAdapter interface by delegating to Google core
+- Handle data format translation between interfaces
+- Manage session/state mapping between systems
 
-### **Immediate Blockers (Start Here)**
-1. **Icon type definition** in core-interface (`acp.ts` import failure)
-2. **Complete type audit** of cli-frontend dependencies
-3. **AdapterBridge.getConfig()** implementation
+#### **3.2 Integration & Testing**
+- Wire GoogleAdapter through google-shim
+- Test end-to-end functionality matches original
+- Validate that CLI-frontend works unchanged
 
-### **High-Risk Areas**
-- **45 files** with @google/gemini-cli-core imports need careful migration
-- **React hooks** may have complex state dependencies
-- **Authentication flows** might be tightly coupled
+### **Phase 4: Alternative Adapter Validation**
+**Objective**: Prove architecture supports other backends
+
+#### **4.1 Mock Alternative Adapter**
+- Create skeleton OpenAI or Anthropic adapter
+- Demonstrate interface can support different core modules
+- Validate decoupling is complete
+
+## **Critical Success Factors**
+
+### **Architectural Principles**
+1. **Adapters translate, don't implement** - They bridge between interface and existing core modules
+2. **CLI-frontend untouched** - All changes happen in shim/adapter layers  
+3. **Interface covers full complexity** - Must handle complete agentic system needs
+4. **Translation layer focus** - Adapters handle impedance matching, not feature implementation
+
+### **Risk Mitigation**
+- **Interface too narrow**: Conduct thorough end-to-end analysis first
+- **Translation complexity**: Design adapters as pure delegation layers
+- **Breaking CLI-frontend**: Maintain strict package aliasing approach
 
 ### **Success Metrics**
-- ✅ Zero imports of @google/gemini-cli-core in cli-frontend
-- ✅ GoogleAdapter passes all interface method calls
-- ✅ Demo CLI provides equivalent functionality to original
-- ✅ Third-party adapter can be plugged in without CLI changes
+- ✅ CLI-frontend compiles and works with zero code changes
+- ✅ GoogleAdapter successfully translates to `@google/gemini-cli-core`
+- ✅ Interface proven to support alternative core modules
+- ✅ Full feature parity with original Gemini CLI maintained
 
-**Recommended starting point**: Phase 1.1 - Add the Icon type and begin the dependency audit. This will immediately unblock development and provide visibility into the full scope of refactoring needed.
+## **Current Status & Next Steps**
+
+### **Completed Cleanup**
+- ✅ Removed misaligned GoogleAdapter implementation
+- ✅ Removed AdapterBridge (conflicts with alias-shim approach)
+- ✅ Cleaned up all code references to removed artifacts
+
+### **Ready for Phase 1**
+The codebase is now clean and ready for **Phase 1: End-to-End Analysis**. This analysis is crucial to design the CoreAdapter interface correctly before any implementation begins.
+
+**Next Action**: Begin comprehensive analysis of CLI ↔ `@google/gemini-cli-core` interaction patterns to inform proper interface design.
