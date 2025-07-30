@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to AI CLI Adapter! This guide will help you get up and running quickly.
+Welcome to GEMINI CLI Adapter! This guide will help you get up and running quickly.
 
 ## Installation
 

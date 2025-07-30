@@ -1,5 +1,5 @@
 /**
- * Core interface definitions for AI CLI adapters
+ * Core interface definitions for GEMINI CLI adapters
  */
 
 export * from './types/adapter.js';

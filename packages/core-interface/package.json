@@ -1,7 +1,7 @@
 {
   "name": "@gemini-cli-adapter/core-interface",
   "version": "0.1.0",
-  "description": "Core interface definitions for AI CLI adapters",
+  "description": "Core interface definitions for GEMINI CLI adapters",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

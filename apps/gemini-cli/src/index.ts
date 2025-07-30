@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * AI CLI - Universal CLI for AI language models
+ * DEMO CLI - Demo implementation for google gemini cli
  */
 
 import { Command } from 'commander';
@@ -10,8 +10,8 @@ import { GoogleAdapter } from '@gemini-cli-adapter/google-adapter';
 const program = new Command();
 
 program
-  .name('ai-cli')
-  .description('Universal CLI for AI language models with pluggable adapters')
+  .name('demo-cli')
+  .description('Demo implementation for google gemini cli')
   .version('0.1.0');
 
 program
