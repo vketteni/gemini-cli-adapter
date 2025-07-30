@@ -1,0 +1,38 @@
+name: Adapter Request
+description: Request support for a new AI provider
+title: "[Adapter]: "
+labels: ["adapter", "enhancement"]
+
+body:
+  - type: input
+    id: provider
+    attributes:
+      label: AI Provider
+      description: Which AI provider would you like to see supported?
+      placeholder: e.g. OpenAI, Anthropic, Cohere
+    validations:
+      required: true
+
+  - type: input
+    id: api-docs
+    attributes:
+      label: API Documentation
+      description: Link to the provider's API documentation
+      placeholder: https://...
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: Why would this adapter be useful?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to help implement this adapter
+        - label: I can provide API keys for testing
+        - label: I can help with documentation

@@ -1,0 +1,25 @@
+{
+  "name": "@ai-cli-adapter/cli-frontend",
+  "version": "0.1.0",
+  "description": "Universal CLI frontend for AI language models",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-cli-adapter/core-interface": "*",
+    "@ai-cli-adapter/shared-types": "*",
+    "ink": "^6.0.1",
+    "react": "^19.1.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/yargs": "^17.0.32",
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.1"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@ai-cli-adapter/shared-types",
+  "version": "0.1.0",
+  "description": "Shared TypeScript types for AI CLI adapter",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
