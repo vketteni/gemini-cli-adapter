@@ -1,1 +1,1 @@
-export * from './App.js';
+export * from './App.jsx';

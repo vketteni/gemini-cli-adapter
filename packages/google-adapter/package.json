@@ -2,6 +2,7 @@
   "name": "@ai-cli-adapter/google-adapter",
   "version": "0.1.0",
   "description": "Google Gemini adapter for AI CLI",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

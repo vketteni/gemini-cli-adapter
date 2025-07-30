@@ -2,6 +2,7 @@
   "name": "@ai-cli-adapter/cli-frontend",
   "version": "0.1.0",
   "description": "Universal CLI frontend for AI language models",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

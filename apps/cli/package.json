@@ -2,6 +2,7 @@
   "name": "ai-cli",
   "version": "0.1.0",
   "description": "Universal AI CLI with pluggable adapters",
+  "type": "module",
   "bin": {
     "ai-cli": "./dist/index.js"
   },
