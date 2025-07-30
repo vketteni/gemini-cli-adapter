@@ -5,7 +5,7 @@
  */
 
 import { Command } from 'commander';
-import { GoogleAdapter } from '@ai-cli-adapter/google-adapter';
+import { GoogleAdapter } from '@gemini-cli-adapter/google-adapter';
 
 const program = new Command();
 
