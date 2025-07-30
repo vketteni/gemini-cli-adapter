@@ -14,10 +14,10 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@ai-cli-adapter/core-interface": ["./packages/core-interface/src"],
-      "@ai-cli-adapter/cli-frontend": ["./packages/cli-frontend/src"],
-      "@ai-cli-adapter/google-adapter": ["./packages/google-adapter/src"],
-      "@ai-cli-adapter/shared-types": ["./packages/shared-types/src"]
+      "@gemini-cli-adapter/core-interface": ["./packages/core-interface/src"],
+      "@gemini-cli-adapter/cli-frontend": ["./packages/cli-frontend/src"],
+      "@gemini-cli-adapter/google-adapter": ["./packages/google-adapter/src"],
+      "@gemini-cli-adapter/shared-types": ["./packages/shared-types/src"]
     }
   },
   "include": [],

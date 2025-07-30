@@ -1,16 +1,13 @@
 {
   "name": "@gemini-cli-adapter/cli-frontend",
   "version": "0.1.0",
-  "description": "Universal AI CLI frontend (adapted from Google's Gemini CLI)",
+  "description": "A modular frontend for AI command-line tools, extracted from Google's Gemini CLI.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vketteni/gemini-cli-adapter.git"
   },
   "type": "module",
   "main": "dist/index.js",
-  "bin": {
-    "ai-cli": "dist/index.js"
-  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
@@ -29,7 +26,7 @@
   },
   "dependencies": {
     "@gemini-cli-adapter/core-interface": "*",
-    "@gemini-cli-adapter/shared-types": "*",
+    
     "@google/genai": "1.9.0",
     "@iarna/toml": "^2.2.5",
     "@types/update-notifier": "^6.0.8",

@@ -22,7 +22,7 @@ Thank you for your interest in contributing to AI CLI Adapter! This document pro
 ### Development Setup
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/ai-cli-adapter.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/gemini-cli-adapter.git`
 3. Install dependencies: `npm install`
 4. Create a branch: `git checkout -b feature/your-feature-name`
 
@@ -76,7 +76,7 @@ docs: update adapter creation guide
 New adapters should implement the `CoreAdapter` interface:
 
 ```typescript
-import { CoreAdapter } from '@ai-cli-adapter/core-interface';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 export class MyAdapter implements CoreAdapter {
   readonly id = 'my-provider';

@@ -1,4 +1,4 @@
-import { CoreAdapter, ChatConfig, ChatEvent, ToolMetadata, ToolRequest, ToolEvent, AdapterConfig, ValidationResult } from '@ai-cli-adapter/core-interface';
+import { CoreAdapter, ChatConfig, ChatEvent, ToolMetadata, ToolRequest, ToolEvent, AdapterConfig, ValidationResult } from '@gemini-cli-adapter/core-interface';
 
 export class GoogleAdapter implements CoreAdapter {
   readonly id = 'google-gemini';

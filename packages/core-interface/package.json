@@ -1,5 +1,5 @@
 {
-  "name": "@ai-cli-adapter/core-interface",
+  "name": "@gemini-cli-adapter/core-interface",
   "version": "0.1.0",
   "description": "Core interface definitions for AI CLI adapters",
   "type": "module",

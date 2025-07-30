@@ -1,7 +1,7 @@
 {
   "name": "gemini-cli-adapter",
   "version": "0.1.0",
-  "description": "Open CLI frontend interface for gemini-cli.",
+  "description": "A modular, open-source version of Google's Gemini CLI.",
   "private": true,
   "workspaces": [
     "packages/*",
@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "typecheck": "npm run typecheck --workspaces",
     "clean": "npm run clean --workspaces && rm -rf node_modules",
-    "dev": "npm run dev -w apps/cli"
+    "dev": "npm run dev -w apps/gemini-cli"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
