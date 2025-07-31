@@ -62,7 +62,7 @@ import {
   AuthType,
   type IdeContext,
   ideContext,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 import { validateAuthMethod } from '../config/auth.js';
 import { useLogger } from './hooks/useLogger.js';
 import { StreamingContext } from './contexts/StreamingContext.js';
@@ -82,7 +82,7 @@ import {
   isProQuotaExceededError,
   isGenericQuotaExceededError,
   UserTierId,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 import { UpdateObject } from './utils/updateCheck.js';
 import ansiEscapes from 'ansi-escapes';
 import { OverflowProvider } from './contexts/OverflowContext.js';
@@ -90,7 +90,7 @@ import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
 import { setUpdateHandler } from '../utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from '../utils/events.js';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 

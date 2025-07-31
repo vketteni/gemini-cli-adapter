@@ -5,8 +5,8 @@
  */
 
 import { Box } from 'ink';
-import { AuthType } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+import { AuthType } from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { GeminiPrivacyNotice } from './GeminiPrivacyNotice.js';
 import { CloudPaidPrivacyNotice } from './CloudPaidPrivacyNotice.js';
 import { CloudFreePrivacyNotice } from './CloudFreePrivacyNotice.js';

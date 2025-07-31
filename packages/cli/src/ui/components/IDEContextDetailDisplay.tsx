@@ -5,7 +5,7 @@
  */
 
 import { Box, Text } from 'ink';
-import { type File, type IdeContext } from '@google/gemini-cli-core';
+import { type File, type IdeContext } from '@gemini-cli-adapter/core-copy';
 import { Colors } from '../colors.js';
 import path from 'node:path';
 
