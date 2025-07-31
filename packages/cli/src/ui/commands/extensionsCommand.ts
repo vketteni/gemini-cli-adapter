@@ -16,9 +16,11 @@ export const extensionsCommand: SlashCommand = {
   description: 'list active extensions',
   kind: CommandKind.BUILT_IN,
   action: async (context: CommandContext): Promise<void> => {
-    const activeExtensions = context.services.config
+    // TODO: Add getExtensions method to SettingsService
+    const config = context.services.adapter && (context.services.adapter as any).config;
+    const activeExtensions = config
       ?.getExtensions()
-      .filter((ext) => ext.isActive);
+      .filter((ext: any) => ext.isActive);
     if (!activeExtensions || activeExtensions.length === 0) {
       context.ui.addItem(
         {

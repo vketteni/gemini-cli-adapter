@@ -12,13 +12,13 @@ export const clearCommand: SlashCommand = {
   description: 'clear the screen and conversation history',
   kind: CommandKind.BUILT_IN,
   action: async (context, _args) => {
-    const geminiClient = context.services.config?.getGeminiClient();
+    const chatService = context.services.adapter?.chatService;
 
-    if (geminiClient) {
+    if (chatService) {
       context.ui.setDebugMessage('Clearing terminal and resetting chat.');
       // If resetChat fails, the exception will propagate and halt the command,
       // which is the correct behavior to signal a failure to the user.
-      await geminiClient.resetChat();
+      await chatService.resetChat();
     } else {
       context.ui.setDebugMessage('Clearing terminal.');
     }

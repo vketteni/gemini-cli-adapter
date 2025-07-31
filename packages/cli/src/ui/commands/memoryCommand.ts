@@ -25,8 +25,8 @@ export const memoryCommand: SlashCommand = {
       description: 'Show the current memory contents.',
       kind: CommandKind.BUILT_IN,
       action: async (context) => {
-        const memoryContent = context.services.config?.getUserMemory() || '';
-        const fileCount = context.services.config?.getGeminiMdFileCount() || 0;
+        const memoryContent = context.services.adapter?.memoryService?.getUserMemory() || '';
+        const fileCount = context.services.adapter?.memoryService?.getGeminiMdFileCount() || 0;
 
         const messageContent =
           memoryContent.length > 0
@@ -84,7 +84,8 @@ export const memoryCommand: SlashCommand = {
         );
 
         try {
-          const config = await context.services.config;
+          // TODO: Add loadServerHierarchicalMemory method to MemoryService
+          const config = context.services.adapter && (context.services.adapter as any).config;
           if (config) {
             const { memoryContent, fileCount } =
               await loadServerHierarchicalMemory(
@@ -95,8 +96,8 @@ export const memoryCommand: SlashCommand = {
                 config.getFileFilteringOptions(),
                 context.services.settings.merged.memoryDiscoveryMaxDirs,
               );
-            config.setUserMemory(memoryContent);
-            config.setGeminiMdFileCount(fileCount);
+            context.services.adapter?.memoryService?.setUserMemory(memoryContent);
+            context.services.adapter?.memoryService?.setGeminiMdFileCount(fileCount);
 
             const successMessage =
               memoryContent.length > 0

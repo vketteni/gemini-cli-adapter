@@ -21,14 +21,16 @@ export const initCommand: SlashCommand = {
     context: CommandContext,
     _args: string,
   ): Promise<SlashCommandActionReturn> => {
-    if (!context.services.config) {
+    // TODO: Add getTargetDir method to WorkspaceService
+    const config = context.services.adapter && (context.services.adapter as any).config;
+    if (!config) {
       return {
         type: 'message',
         messageType: 'error',
         content: 'Configuration not available.',
       };
     }
-    const targetDir = context.services.config.getTargetDir();
+    const targetDir = config.getTargetDir();
     const geminiMdPath = path.join(targetDir, 'GEMINI.md');
 
     if (fs.existsSync(geminiMdPath)) {

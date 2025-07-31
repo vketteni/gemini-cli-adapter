@@ -37,8 +37,8 @@ export const compressCommand: SlashCommand = {
     try {
       ui.setPendingItem(pendingMessage);
       const promptId = `compress-${Date.now()}`;
-      const compressed = await context.services.config
-        ?.getGeminiClient()
+      const compressed = await context.services.adapter
+        ?.chatService
         ?.tryCompressChat(promptId, true);
       if (compressed) {
         ui.addItem(

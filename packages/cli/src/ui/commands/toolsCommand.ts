@@ -24,19 +24,19 @@ export const toolsCommand: SlashCommand = {
       useShowDescriptions = true;
     }
 
-    const toolRegistry = await context.services.config?.getToolRegistry();
-    if (!toolRegistry) {
+    const toolingService = context.services.adapter?.toolingService;
+    if (!toolingService) {
       context.ui.addItem(
         {
           type: MessageType.ERROR,
-          text: 'Could not retrieve tool registry.',
+          text: 'Could not retrieve tooling service.',
         },
         Date.now(),
       );
       return;
     }
 
-    const tools = toolRegistry.getAllTools();
+    const tools = await toolingService.getAllTools();
     // Filter out MCP tools by checking for the absence of a serverName property
     const geminiTools = tools.filter((tool) => !('serverName' in tool));
 
