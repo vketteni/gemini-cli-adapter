@@ -6,24 +6,25 @@ This project aims to create a robust and flexible adapter for the Gemini CLI, de
 
 ## Architecture
 
-The core of this project revolves around a **CoreAdapter Interface** that acts as a translation layer between the CLI frontend and various core modules.
+The project's architecture centers on a new, domain-driven **`CoreAdapter` interface**. This interface will act as a clean, modern, and intuitive contract for any backend AI service to integrate with the Gemini CLI.
+
+The legacy `@google/gemini-cli-core` will be wrapped by a `GoogleAdapter`, which is the first and primary implementation of the `CoreAdapter` interface.
+
+The CLI frontend itself will be **refactored** to interact directly with the new `CoreAdapter` interface, removing its legacy dependencies on the original core module's complex structure.
 
 ```
 CLI-Frontend ↔ CoreAdapter Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
 CLI-Frontend ↔ CoreAdapter Interface ↔ OpenAIAdapter ↔ OpenAI-Core-Module
-CLI-Frontend ↔ CoreAdapter Interface ↔ AnthropicAdapter ↔ Anthropic-Core-Module
 ```
 
-A **Hybrid Approach** is used, combining:
-*   **Package Aliasing:** `@google/gemini-cli-core` is aliased to `gemini-cli-core-shim` to allow for internal redirection without modifying the CLI frontend's import statements.
-*   **Translation Layer Pattern:** Adapters (like `GoogleAdapter`) translate between the `CoreAdapter` interface and the actual core modules, handling data format and interaction pattern impedance matching.
+This approach ensures that future "builders" of alternative adapters (like for OpenAI or Anthropic) have a simple and logical interface to implement, maximizing the project's extensibility.
 
 ## Key Features & Goals
 
 *   **Decoupling:** Sever the tight coupling between the CLI frontend and specific core implementations.
-*   **Extensibility:** Enable seamless integration of diverse AI core modules.
-*   **Backward Compatibility:** Ensure the existing CLI frontend continues to function without code changes.
-*   **Clean Interface:** Provide a generalized, module-agnostic interface for core functionalities.
+*   **Extensibility:** Enable seamless integration of diverse AI core modules through a clean, builder-friendly interface.
+*   **Maintainability:** Improve the long-term health of the CLI by refactoring it against a modern, domain-driven interface.
+*   **Clean Interface:** Provide a generalized, module-agnostic interface for core functionalities like chat, tooling, and workspace management.
 
 ## Getting Started
 
@@ -47,20 +48,22 @@ To set up the project locally:
 
 ## Project Structure
 
-*   `packages/cli`: The main CLI frontend module.
-*   `packages/core-interface`: Defines the `CoreAdapter` interface.
-*   `packages/gemini-cli-core-shim`: The shim module used for package aliasing, which will eventually delegate to the `GoogleAdapter`.
+*   `packages/cli`: The main CLI frontend module, which will be refactored.
+*   `packages/core-interface`: Defines the new, domain-driven `CoreAdapter` interface.
+*   `packages/gemini-cli-core-shim`: A shim module that will facilitate the transition by initially housing the `GoogleAdapter`.
 *   `docs/`: Project documentation, including architectural guides.
 *   `analysis_notes/`: Detailed analysis of the CLI's interaction with the original core module.
 
 ## Current Status & Roadmap
 
-The project is currently in **Phase 1: End-to-End Analysis**. This phase focuses on comprehensively mapping all interactions between the CLI frontend and the `@google/gemini-cli-core` to inform the design of the `CoreAdapter` interface.
+The project has completed its initial analysis phase and has defined a clear architectural path forward.
 
 **Next Steps:**
-*   **Phase 2: Google-Shim Expansion:** Expand the `gemini-cli-core-shim` to compile and work with the CLI frontend, using stub functions.
-*   **Phase 3: GoogleAdapter as Translation Layer:** Implement the `GoogleAdapter` to bridge to the real `@google/gemini-cli-core` module.
-*   **Phase 4: Alternative Adapter Validation:** Prove the architecture by creating a mock alternative adapter (e.g., OpenAI).
+
+*   **Phase 1: Define `CoreAdapter` Interface:** Formalize the new, domain-driven `CoreAdapter` interface within `packages/core-interface`.
+*   **Phase 2: Implement `GoogleAdapter`:** Create the `GoogleAdapter` which implements the new interface and acts as a translation layer to the original `@google/gemini-cli-core`.
+*   **Phase 3: Incremental CLI Refactoring:** Systematically refactor the `packages/cli` frontend, file by file, to remove legacy calls and use the new `CoreAdapter` interface instead. This will be done with a full test suite to ensure no regressions.
+*   **Phase 4: Alternative Adapter Validation:** Prove the architecture by creating a mock or partial alternative adapter (e.g., for OpenAI).
 
 ## Contributing
 
