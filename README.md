@@ -54,26 +54,50 @@ To set up the project locally:
 *   `docs/`: Project documentation, including architectural guides.
 *   `analysis_notes/`: Detailed analysis of the CLI's interaction with the original core module.
 
-## Refactoring Workflow
+## Implementation Status
 
-To ensure a clean separation of concerns, the refactoring process follows a strict dependency injection pattern:
+**Current Progress: Phase 1 Complete (0% decoupling achieved)**
 
-1.  **Core Logic is Decoupled:** Any refactored part of the CLI frontend (e.g., `nonInteractiveCli.ts`) must **only** depend on the `CoreAdapter` interface, not on any concrete implementation like the `GoogleAdapter`.
-2.  **Injection at the Entry Point:** The concrete adapter instance (e.g., `GoogleAdapter`) is instantiated at the highest possible level, ideally in the main application entry point (e.g., `gemini.tsx`).
-3.  **Passing the Adapter:** The instantiated adapter is then passed down as a dependency to the refactored functions and components that need it.
+### ✅ **Phase 1: CoreAdapter Interface Definition** 
+**Status: COMPLETE**
+- ✅ Interface defined with 6 service domains: `ChatService`, `ToolingService`, `WorkspaceService`, `AuthService`, `MemoryService`, `SettingsService`
+- ✅ Comprehensive method signatures covering all CLI needs
+- **Location:** `packages/core-interface/src/adapter.ts`
 
-This ensures that the core CLI logic remains completely agnostic of the backend implementation, fulfilling the project's primary architectural goal.
+### ❌ **Phase 2: GoogleAdapter Implementation**
+**Status: PLACEHOLDER ONLY**
+- ❌ All service methods throw "Method not implemented" 
+- ❌ No actual wrapping of `@google/gemini-cli-core`
+- **Needs:** Complete implementation of all 6 services
+- **Location:** `packages/gemini-cli-core-shim/src/google-adapter.ts`
+
+### ❌ **Phase 3: CLI Refactoring** 
+**Status: HEAVILY COUPLED - No refactoring started**
+
+**Critical Coupling Points Still Present:**
+- **Config object** - Central service locator used throughout
+- **Direct GeminiClient usage** - Chat operations bypass interface  
+- **Direct tool execution** - `executeToolCall`, `CoreToolScheduler` 
+- **Direct event handling** - `ServerGeminiStreamEvent` processing
+
+**Priority Refactoring Targets:**
+1. `packages/cli/src/nonInteractiveCli.ts` - Core entry point
+2. `packages/cli/src/ui/hooks/useGeminiStream.ts` - 20+ direct core imports
+3. `packages/cli/src/ui/hooks/useReactToolScheduler.ts` - Direct CoreToolScheduler
+4. `packages/cli/src/config/config.ts` - Configuration loading
+
+### ⏸️ **Phase 4: Alternative Adapter Validation**
+**Status: BLOCKED** - Requires Phase 2 & 3 completion
 
 ## Current Status & Roadmap
 
-The project has completed its initial analysis phase and has defined a clear architectural path forward.
+**Next Immediate Steps:**
 
-**Next Steps:**
-
-*   **Phase 1: Define `CoreAdapter` Interface:** Formalize the new, domain-driven `CoreAdapter` interface within `packages/core-interface`.
-*   **Phase 2: Implement `GoogleAdapter`:** Create the `GoogleAdapter` which implements the new interface and acts as a translation layer to the original `@google/gemini-cli-core`.
-*   **Phase 3: Incremental CLI Refactoring:** Systematically refactor the `packages/cli` frontend, file by file, to remove legacy calls and use the new `CoreAdapter` interface instead. This will be done with a full test suite to ensure no regressions.
-*   **Phase 4: Alternative Adapter Validation:** Prove the architecture by creating a mock or partial alternative adapter (e.g., for OpenAI).
+*   **Phase 2: Implement `GoogleAdapter`:** Replace placeholder stubs with actual `@google/gemini-cli-core` wrapping
+*   **Phase 3a: Entry Point Refactoring:** Modify `nonInteractiveCli.ts` and `gemini.tsx` to accept `CoreAdapter` instead of `Config`
+*   **Phase 3b: Hooks Layer Refactoring:** Refactor `useGeminiStream` and `useReactToolScheduler` to use adapter services  
+*   **Phase 3c: Incremental CLI Refactoring:** Systematically refactor remaining CLI components file by file
+*   **Phase 4: Alternative Adapter Validation:** Create mock adapter to prove architecture works
 
 ## Contributing
 
