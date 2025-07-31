@@ -21,7 +21,7 @@ export interface ChatService {
   /**
    * Sends a prompt to the model and returns a stream of events.
    */
-  sendMessageStream(prompt: string): AsyncIterable<any>;
+  sendMessageStream(request: any, prompt_id: string): AsyncIterable<any>;
 
   /**
    * Retrieves the current chat history.
@@ -67,6 +67,11 @@ export interface ToolingService {
    * Checks the permissions for a given shell command.
    */
   checkCommandPermissions(command: string): Promise<any>;
+
+  /**
+   * Retrieves the function declarations for all available tools.
+   */
+  getFunctionDeclarations(): Promise<any[]>;
 }
 
 /**
@@ -158,6 +163,11 @@ export interface SettingsService {
    * Gets the configured AI model.
    */
   getModel(): string;
+
+  /**
+   * Gets the maximum number of turns for a session.
+   */
+  getMaxSessionTurns(): number;
 }
 
 
@@ -168,6 +178,21 @@ export interface SettingsService {
  * single point of interaction for the CLI frontend.
  */
 export interface CoreAdapter {
+  /**
+   * Initializes the adapter.
+   */
+  initialize(): Promise<void>;
+
+  /**
+   * Checks if the telemetry SDK is initialized.
+   */
+  isTelemetryInitialized(): boolean;
+
+  /**
+   * Shuts down the telemetry SDK.
+   */
+  shutdownTelemetry(): Promise<void>;
+
   chat: ChatService;
   tools: ToolingService;
   workspace: WorkspaceService;
