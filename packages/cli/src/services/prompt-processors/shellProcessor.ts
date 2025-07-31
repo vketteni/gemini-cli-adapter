@@ -7,7 +7,7 @@
 import {
   checkCommandPermissions,
   ShellExecutionService,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 
 import { CommandContext } from '../../ui/commands/types.js';
 import { IPromptProcessor } from './types.js';

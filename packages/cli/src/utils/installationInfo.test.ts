@@ -9,9 +9,9 @@ import { getInstallationInfo, PackageManager } from './installationInfo.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as childProcess from 'child_process';
-import { isGitRepository } from '@google/gemini-cli-core';
+import { isGitRepository } from '@gemini-cli-adapter/core-copy';
 
-vi.mock('@google/gemini-cli-core', () => ({
+vi.mock('@gemini-cli-adapter/core-copy', () => ({
   isGitRepository: vi.fn(),
 }));
 

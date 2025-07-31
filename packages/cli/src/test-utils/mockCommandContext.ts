@@ -7,8 +7,9 @@
 import { vi } from 'vitest';
 import { CommandContext } from '../ui/commands/types.js';
 import { LoadedSettings } from '../config/settings.js';
-import { GitService } from '@google/gemini-cli-core';
+import { GitService } from '@gemini-cli-adapter/core-copy';
 import { SessionStatsState } from '../ui/contexts/SessionContext.js';
+import { createMockCoreAdapter } from './mockCoreAdapter.js';
 
 // A utility type to make all properties of an object, and its nested objects, partial.
 type DeepPartial<T> = T extends object
@@ -34,7 +35,7 @@ export const createMockCommandContext = (
       args: '',
     },
     services: {
-      config: null,
+      adapter: createMockCoreAdapter(),
       settings: { merged: {} } as LoadedSettings,
       git: undefined as GitService | undefined,
       logger: {
@@ -53,6 +54,7 @@ export const createMockCommandContext = (
       setPendingItem: vi.fn(),
       loadHistory: vi.fn(),
       toggleCorgiMode: vi.fn(),
+      toggleVimEnabled: vi.fn().mockResolvedValue(false),
     },
     session: {
       stats: {
@@ -70,6 +72,7 @@ export const createMockCommandContext = (
           },
         },
       } as SessionStatsState,
+      sessionShellAllowlist: new Set(),
     },
   };
 
