@@ -15,7 +15,7 @@ import {
   SETTINGS_DIRECTORY_NAME,
 } from '../config/settings.js';
 import { promisify } from 'util';
-import { SandboxConfig } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 
 const execAsync = promisify(exec);
 
@@ -181,9 +181,10 @@ function entrypoint(workdir: string): string[] {
 }
 
 export async function start_sandbox(
-  config: SandboxConfig,
+  adapter: CoreAdapter,
   nodeArgs: string[] = [],
 ) {
+  const config = adapter.settings.getSandboxConfig();
   if (config.command === 'sandbox-exec') {
     // disallow BUILD_SANDBOX
     if (process.env.BUILD_SANDBOX) {

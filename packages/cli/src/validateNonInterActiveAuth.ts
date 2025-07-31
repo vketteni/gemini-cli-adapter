@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AuthType, Config } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
+import { AuthType } from '@google/gemini-cli-core';
 import { USER_SETTINGS_PATH } from './config/settings.js';
 import { validateAuthMethod } from './config/auth.js';
 
@@ -23,8 +24,8 @@ function getAuthTypeFromEnv(): AuthType | undefined {
 
 export async function validateNonInteractiveAuth(
   configuredAuthType: AuthType | undefined,
-  nonInteractiveConfig: Config,
-) {
+  adapter: CoreAdapter,
+): Promise<CoreAdapter> {
   const effectiveAuthType = configuredAuthType || getAuthTypeFromEnv();
 
   if (!effectiveAuthType) {
@@ -34,12 +35,12 @@ export async function validateNonInteractiveAuth(
     process.exit(1);
   }
 
-  const err = validateAuthMethod(effectiveAuthType);
+  const err = validateAuthMethod(adapter, effectiveAuthType);
   if (err != null) {
     console.error(err);
     process.exit(1);
   }
 
-  await nonInteractiveConfig.refreshAuth(effectiveAuthType);
-  return nonInteractiveConfig;
+  await adapter.auth.refreshAuth(effectiveAuthType);
+  return adapter;
 }
