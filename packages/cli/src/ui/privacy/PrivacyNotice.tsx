@@ -5,24 +5,25 @@
  */
 
 import { Box } from 'ink';
-import { type Config, AuthType } from '@google/gemini-cli-core';
+import { AuthType } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { GeminiPrivacyNotice } from './GeminiPrivacyNotice.js';
 import { CloudPaidPrivacyNotice } from './CloudPaidPrivacyNotice.js';
 import { CloudFreePrivacyNotice } from './CloudFreePrivacyNotice.js';
 
 interface PrivacyNoticeProps {
   onExit: () => void;
-  config: Config;
+  adapter: CoreAdapter;
 }
 
 const PrivacyNoticeText = ({
-  config,
+  adapter,
   onExit,
 }: {
-  config: Config;
+  adapter: CoreAdapter;
   onExit: () => void;
 }) => {
-  const authType = config.getContentGeneratorConfig()?.authType;
+  const authType = adapter.settings.getContentGeneratorConfig()?.authType;
 
   switch (authType) {
     case AuthType.USE_GEMINI:
@@ -31,12 +32,12 @@ const PrivacyNoticeText = ({
       return <CloudPaidPrivacyNotice onExit={onExit} />;
     case AuthType.LOGIN_WITH_GOOGLE:
     default:
-      return <CloudFreePrivacyNotice config={config} onExit={onExit} />;
+      return <CloudFreePrivacyNotice adapter={adapter} onExit={onExit} />;
   }
 };
 
-export const PrivacyNotice = ({ onExit, config }: PrivacyNoticeProps) => (
+export const PrivacyNotice = ({ onExit, adapter }: PrivacyNoticeProps) => (
   <Box borderStyle="round" padding={1} flexDirection="column">
-    <PrivacyNoticeText config={config} onExit={onExit} />
+    <PrivacyNoticeText adapter={adapter} onExit={onExit} />
   </Box>
 );

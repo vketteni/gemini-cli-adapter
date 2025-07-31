@@ -17,7 +17,7 @@ import { useShellHistory } from '../hooks/useShellHistory.js';
 import { useCompletion } from '../hooks/useCompletion.js';
 import { useKeypress, Key } from '../hooks/useKeypress.js';
 import { CommandContext, SlashCommand } from '../commands/types.js';
-import { Config } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import {
   clipboardHasImage,
   saveClipboardImage,
@@ -30,7 +30,7 @@ export interface InputPromptProps {
   onSubmit: (value: string) => void;
   userMessages: readonly string[];
   onClearScreen: () => void;
-  config: Config;
+  adapter: CoreAdapter;
   slashCommands: readonly SlashCommand[];
   commandContext: CommandContext;
   placeholder?: string;
@@ -47,7 +47,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
   onSubmit,
   userMessages,
   onClearScreen,
-  config,
+  adapter,
   slashCommands,
   commandContext,
   placeholder = '  Type your message or @path/to/file',
@@ -62,14 +62,14 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
 
   const completion = useCompletion(
     buffer,
-    config.getTargetDir(),
+    adapter.workspace.getProjectRoot(),
     slashCommands,
     commandContext,
-    config,
+    adapter,
   );
 
   const resetCompletionState = completion.resetCompletionState;
-  const shellHistory = useShellHistory(config.getProjectRoot());
+  const shellHistory = useShellHistory(adapter.workspace.getProjectRoot());
 
   const handleSubmitAndClear = useCallback(
     (submittedValue: string) => {
@@ -120,15 +120,16 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
   const handleClipboardImage = useCallback(async () => {
     try {
       if (await clipboardHasImage()) {
-        const imagePath = await saveClipboardImage(config.getTargetDir());
+        const targetDir = adapter.workspace.getProjectRoot();
+        const imagePath = await saveClipboardImage(targetDir);
         if (imagePath) {
           // Clean up old images
-          cleanupOldClipboardImages(config.getTargetDir()).catch(() => {
+          cleanupOldClipboardImages(targetDir).catch(() => {
             // Ignore cleanup errors
           });
 
           // Get relative path from current directory
-          const relativePath = path.relative(config.getTargetDir(), imagePath);
+          const relativePath = path.relative(targetDir, imagePath);
 
           // Insert @path reference at cursor position
           const insertText = `@${relativePath}`;
@@ -162,7 +163,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
     } catch (error) {
       console.error('Error handling clipboard image:', error);
     }
-  }, [buffer, config]);
+  }, [buffer, adapter]);
 
   const handleInput = useCallback(
     (key: Key) => {

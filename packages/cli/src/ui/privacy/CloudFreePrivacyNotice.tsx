@@ -8,20 +8,20 @@ import { Box, Newline, Text, useInput } from 'ink';
 import { RadioButtonSelect } from '../components/shared/RadioButtonSelect.js';
 import { usePrivacySettings } from '../hooks/usePrivacySettings.js';
 import { CloudPaidPrivacyNotice } from './CloudPaidPrivacyNotice.js';
-import { Config } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { Colors } from '../colors.js';
 
 interface CloudFreePrivacyNoticeProps {
-  config: Config;
+  adapter: CoreAdapter;
   onExit: () => void;
 }
 
 export const CloudFreePrivacyNotice = ({
-  config,
+  adapter,
   onExit,
 }: CloudFreePrivacyNoticeProps) => {
   const { privacyState, updateDataCollectionOptIn } =
-    usePrivacySettings(config);
+    usePrivacySettings(adapter);
 
   useInput((input, key) => {
     if (privacyState.error && key.escape) {
