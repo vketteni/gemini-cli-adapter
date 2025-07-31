@@ -10,10 +10,10 @@ import toml from '@iarna/toml';
 import { glob } from 'glob';
 import { z } from 'zod';
 import {
-  Config,
   getProjectCommandsDir,
   getUserCommandsDir,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { ICommandLoader } from './types.js';
 import {
   CommandContext,
@@ -65,8 +65,8 @@ const TomlCommandDefSchema = z.object({
 export class FileCommandLoader implements ICommandLoader {
   private readonly projectRoot: string;
 
-  constructor(private readonly config: Config | null) {
-    this.projectRoot = config?.getProjectRoot() || process.cwd();
+  constructor(private readonly adapter: CoreAdapter | null) {
+    this.projectRoot = adapter?.workspaceService?.getProjectRoot() || process.cwd();
   }
 
   /**

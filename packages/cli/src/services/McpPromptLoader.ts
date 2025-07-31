@@ -5,10 +5,10 @@
  */
 
 import {
-  Config,
   getErrorMessage,
   getMCPServerPrompts,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import {
   CommandContext,
   CommandKind,
@@ -23,7 +23,7 @@ import { PromptArgument } from '@modelcontextprotocol/sdk/types.js';
  * Model-Context-Protocol (MCP) servers.
  */
 export class McpPromptLoader implements ICommandLoader {
-  constructor(private readonly config: Config | null) {}
+  constructor(private readonly adapter: CoreAdapter | null) {}
 
   /**
    * Loads all available prompts from all configured MCP servers and adapts
@@ -34,12 +34,14 @@ export class McpPromptLoader implements ICommandLoader {
    */
   loadCommands(_signal: AbortSignal): Promise<SlashCommand[]> {
     const promptCommands: SlashCommand[] = [];
-    if (!this.config) {
+    // TODO: Add MCP support to CoreAdapter interface
+    const config = this.adapter && (this.adapter as any).config;
+    if (!config) {
       return Promise.resolve([]);
     }
-    const mcpServers = this.config.getMcpServers() || {};
+    const mcpServers = config.getMcpServers() || {};
     for (const serverName in mcpServers) {
-      const prompts = getMCPServerPrompts(this.config, serverName) || [];
+      const prompts = getMCPServerPrompts(config, serverName) || [];
       for (const prompt of prompts) {
         const commandName = `${prompt.name}`;
         const newPromptCommand: SlashCommand = {

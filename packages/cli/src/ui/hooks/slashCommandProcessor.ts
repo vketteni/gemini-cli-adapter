@@ -10,13 +10,13 @@ import process from 'node:process';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
 import { useStateAndRef } from './useStateAndRef.js';
 import {
-  Config,
   GitService,
   Logger,
   logSlashCommand,
   SlashCommandEvent,
   ToolConfirmationOutcome,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import {
   Message,
@@ -36,7 +36,7 @@ import { McpPromptLoader } from '../../services/McpPromptLoader.js';
  * Hook to define and process slash commands (e.g., /help, /clear).
  */
 export const useSlashCommandProcessor = (
-  config: Config | null,
+  adapter: CoreAdapter | null,
   settings: LoadedSettings,
   addItem: UseHistoryManagerReturn['addItem'],
   clearItems: UseHistoryManagerReturn['clearItems'],
@@ -67,18 +67,20 @@ export const useSlashCommandProcessor = (
     new Set<string>(),
   );
   const gitService = useMemo(() => {
-    if (!config?.getProjectRoot()) {
+    const projectRoot = adapter?.workspaceService?.getProjectRoot();
+    if (!projectRoot) {
       return;
     }
-    return new GitService(config.getProjectRoot());
-  }, [config]);
+    return new GitService(projectRoot);
+  }, [adapter]);
 
   const logger = useMemo(() => {
-    const l = new Logger(config?.getSessionId() || '');
+    const sessionId = adapter?.settingsService?.getSessionId() || '';
+    const l = new Logger(sessionId);
     // The logger's initialize is async, but we can create the instance
     // synchronously. Commands that use it will await its initialization.
     return l;
-  }, [config]);
+  }, [adapter]);
 
   const [pendingCompressionItemRef, setPendingCompressionItem] =
     useStateAndRef<HistoryItemWithoutId | null>(null);
@@ -142,7 +144,7 @@ export const useSlashCommandProcessor = (
   const commandContext = useMemo(
     (): CommandContext => ({
       services: {
-        config,
+        adapter,
         settings,
         git: gitService,
         logger,
@@ -167,7 +169,7 @@ export const useSlashCommandProcessor = (
       },
     }),
     [
-      config,
+      adapter,
       settings,
       gitService,
       logger,
@@ -189,9 +191,9 @@ export const useSlashCommandProcessor = (
     const controller = new AbortController();
     const load = async () => {
       const loaders = [
-        new McpPromptLoader(config),
-        new BuiltinCommandLoader(config),
-        new FileCommandLoader(config),
+        new McpPromptLoader(adapter),
+        new BuiltinCommandLoader(adapter),
+        new FileCommandLoader(adapter),
       ];
       const commandService = await CommandService.create(
         loaders,
@@ -205,7 +207,7 @@ export const useSlashCommandProcessor = (
     return () => {
       controller.abort();
     };
-  }, [config]);
+  }, [adapter]);
 
   const handleSlashCommand = useCallback(
     async (
@@ -272,7 +274,9 @@ export const useSlashCommandProcessor = (
           const args = parts.slice(pathIndex).join(' ');
 
           if (commandToExecute.action) {
-            if (config) {
+            // TODO: Add logSlashCommand method to CoreAdapter interface
+            // For now, we'll need to access the internal config from the adapter
+            if (adapter && (adapter as any).config) {
               const resolvedCommandPath = canonicalPath;
               const event = new SlashCommandEvent(
                 resolvedCommandPath[0],
@@ -280,7 +284,7 @@ export const useSlashCommandProcessor = (
                   ? resolvedCommandPath.slice(1).join(' ')
                   : undefined,
               );
-              logSlashCommand(config, event);
+              logSlashCommand((adapter as any).config, event);
             }
 
             const fullCommandContext: CommandContext = {
@@ -354,9 +358,7 @@ export const useSlashCommandProcessor = (
                     }
                   }
                 case 'load_history': {
-                  await config
-                    ?.getGeminiClient()
-                    ?.setHistory(result.clientHistory);
+                  await adapter?.chatService?.setHistory(result.clientHistory);
                   fullCommandContext.ui.clear();
                   result.history.forEach((item, index) => {
                     fullCommandContext.ui.addItem(item, index);
@@ -458,7 +460,7 @@ export const useSlashCommandProcessor = (
       }
     },
     [
-      config,
+      adapter,
       addItem,
       setShowHelp,
       openAuthDialog,

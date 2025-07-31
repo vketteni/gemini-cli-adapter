@@ -6,7 +6,7 @@
 
 import { ICommandLoader } from './types.js';
 import { SlashCommand } from '../ui/commands/types.js';
-import { Config } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { aboutCommand } from '../ui/commands/aboutCommand.js';
 import { authCommand } from '../ui/commands/authCommand.js';
 import { bugCommand } from '../ui/commands/bugCommand.js';
@@ -36,7 +36,7 @@ import { vimCommand } from '../ui/commands/vimCommand.js';
  * of the Gemini CLI application.
  */
 export class BuiltinCommandLoader implements ICommandLoader {
-  constructor(private config: Config | null) {}
+  constructor(private adapter: CoreAdapter | null) {}
 
   /**
    * Gathers all raw built-in command definitions, injects dependencies where

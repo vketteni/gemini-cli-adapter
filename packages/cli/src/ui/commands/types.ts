@@ -6,7 +6,8 @@
 
 import { Content } from '@google/genai';
 import { HistoryItemWithoutId } from '../types.js';
-import { Config, GitService, Logger } from '@google/gemini-cli-core';
+import { GitService, Logger } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { LoadedSettings } from '../../config/settings.js';
 import { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
 import type { HistoryItem } from '../types.js';
@@ -25,8 +26,8 @@ export interface CommandContext {
   };
   // Core services and configuration
   services: {
-    // TODO(abhipatel12): Ensure that config is never null.
-    config: Config | null;
+    // TODO(abhipatel12): Ensure that adapter is never null.
+    adapter: CoreAdapter | null;
     settings: LoadedSettings;
     git: GitService | undefined;
     logger: Logger;
