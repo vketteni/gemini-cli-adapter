@@ -26,13 +26,24 @@ import { runNonInteractive } from './nonInteractiveCli.refactored.js';
 import { loadExtensions, Extension } from './config/extension.js';
 import { cleanupCheckpoints, registerCleanup } from './utils/cleanup.js';
 import { getCliVersion } from './utils/version.js';
-import { GoogleAdapter } from '@gemini-cli/gemini-cli-core-shim';
 import { validateAuthMethod } from './config/auth.js';
 import { setMaxSizedBoxDebugging } from './ui/components/shared/MaxSizedBox.js';
 import { validateNonInteractiveAuth } from './validateNonInterActiveAuth.js';
 import { checkForUpdates } from './ui/utils/updateCheck.js';
 import { handleAutoUpdate } from './utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from './utils/events.js';
+import { createAdapterFromConfig } from './adapters/adapterFactory.js';
+import {
+  Config,
+  AuthType,
+  ApprovalMode,
+  ShellTool,
+  EditTool,
+  WriteFileTool,
+  logUserPrompt,
+  getOauthClient,
+  sessionId,
+} from '@google/gemini-cli-core';
 
 function getNodeMemoryArgs(config: Config): string[] {
   const totalMemoryMB = os.totalmem() / (1024 * 1024);
@@ -127,6 +138,9 @@ export async function main() {
     sessionId,
     argv,
   );
+
+  // Create the core adapter from the config
+  const adapter = createAdapterFromConfig(config);
 
   if (argv.promptInteractive && !process.stdin.isTTY) {
     console.error(
@@ -229,6 +243,7 @@ export async function main() {
     const instance = render(
       <React.StrictMode>
         <AppWrapper
+          adapter={adapter}
           config={config}
           settings={settings}
           startupWarnings={startupWarnings}
@@ -272,9 +287,7 @@ export async function main() {
     prompt_length: input.length,
   });
 
-  const googleAdapter = new GoogleAdapter();
-
-  await runNonInteractive(googleAdapter, input, prompt_id);
+  await runNonInteractive(adapter, input, prompt_id);
   process.exit(0);
 }
 
