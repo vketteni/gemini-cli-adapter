@@ -13,7 +13,6 @@ import {
 } from './useReactToolScheduler.js';
 import { PartUnion, FunctionResponse } from '@google/genai';
 import {
-  Config,
   ToolCallRequestInfo,
   Tool,
   ToolRegistry,
@@ -26,6 +25,7 @@ import {
   ApprovalMode,
   Icon,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import {
   HistoryItemWithoutId,
   ToolCallStatus,
@@ -38,7 +38,6 @@ vi.mock('@google/gemini-cli-core', async () => {
   return {
     ...actual,
     ToolRegistry: vi.fn(),
-    Config: vi.fn(),
   };
 });
 
@@ -46,11 +45,35 @@ const mockToolRegistry = {
   getTool: vi.fn(),
 };
 
-const mockConfig = {
-  getToolRegistry: vi.fn(() => mockToolRegistry as unknown as ToolRegistry),
-  getApprovalMode: vi.fn(() => ApprovalMode.DEFAULT),
-  getUsageStatisticsEnabled: () => true,
-  getDebugMode: () => false,
+const mockAdapter: CoreAdapter = {
+  initialize: vi.fn(),
+  isTelemetryInitialized: vi.fn(() => false),
+  shutdownTelemetry: vi.fn(),
+  chat: {} as any,
+  tools: {
+    getTool: vi.fn(),
+    getAllTools: vi.fn(),
+    executeToolCall: vi.fn(),
+    checkCommandPermissions: vi.fn(),
+    getFunctionDeclarations: vi.fn(),
+    getToolRegistry: vi.fn(() => mockToolRegistry as unknown as ToolRegistry),
+  },
+  workspace: {} as any,
+  auth: {} as any,
+  memory: {} as any,
+  settings: {
+    getApprovalMode: vi.fn(() => 'default' as const),
+    setApprovalMode: vi.fn(),
+    getProjectRoot: vi.fn(),
+    getSessionId: vi.fn(),
+    getModel: vi.fn(),
+    getMaxSessionTurns: vi.fn(),
+    createLogger: vi.fn(),
+    getProjectTempDir: vi.fn(),
+    getCheckpointingEnabled: vi.fn(),
+    setQuotaErrorOccurred: vi.fn(),
+    getContentGeneratorConfig: vi.fn(),
+  },
 };
 
 const mockTool: Tool = {
@@ -106,7 +129,7 @@ describe('useReactToolScheduler in YOLO Mode', () => {
     (mockToolRequiresConfirmation.shouldConfirmExecute as Mock).mockClear();
 
     // IMPORTANT: Enable YOLO mode for this test suite
-    (mockConfig.getApprovalMode as Mock).mockReturnValue(ApprovalMode.YOLO);
+    (mockAdapter.settings.getApprovalMode as Mock).mockReturnValue('yolo');
 
     vi.useFakeTimers();
   });
@@ -115,15 +138,16 @@ describe('useReactToolScheduler in YOLO Mode', () => {
     vi.clearAllTimers();
     vi.useRealTimers();
     // IMPORTANT: Disable YOLO mode after this test suite
-    (mockConfig.getApprovalMode as Mock).mockReturnValue(ApprovalMode.DEFAULT);
+    (mockAdapter.settings.getApprovalMode as Mock).mockReturnValue('default');
   });
 
   const renderSchedulerInYoloMode = () =>
     renderHook(() =>
       useReactToolScheduler(
         onComplete,
-        mockConfig as unknown as Config,
+        mockAdapter,
         setPendingHistoryItem,
+        () => undefined,
       ),
     );
 
@@ -271,8 +295,9 @@ describe('useReactToolScheduler', () => {
     renderHook(() =>
       useReactToolScheduler(
         onComplete,
-        mockConfig as unknown as Config,
+        mockAdapter,
         setPendingHistoryItem,
+        () => undefined,
       ),
     );
 

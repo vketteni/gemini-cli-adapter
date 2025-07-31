@@ -7,8 +7,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useInput } from 'ink';
 import {
-  Config,
-  GeminiClient,
   GeminiEventType as ServerGeminiEventType,
   ServerGeminiStreamEvent as GeminiEvent,
   ServerGeminiContentEvent as ContentEvent,
@@ -27,6 +25,7 @@ import {
   UserPromptEvent,
   DEFAULT_GEMINI_FLASH_MODEL,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { type Part, type PartListUnion, FinishReason } from '@google/genai';
 import {
   StreamingState,
@@ -79,11 +78,12 @@ enum StreamProcessingStatus {
  * API interaction, and tool call lifecycle.
  */
 export const useGeminiStream = (
-  geminiClient: GeminiClient,
+  adapter: CoreAdapter,
+  geminiClient: any, // Legacy - will be removed
   history: HistoryItem[],
   addItem: UseHistoryManagerReturn['addItem'],
   setShowHelp: React.Dispatch<React.SetStateAction<boolean>>,
-  config: Config,
+  config: any, // Legacy - will be removed
   onDebugMessage: (message: string) => void,
   handleSlashCommand: (
     cmd: PartListUnion,
@@ -95,6 +95,13 @@ export const useGeminiStream = (
   modelSwitchedFromQuotaError: boolean,
   setModelSwitchedFromQuotaError: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
+  // Extract services from adapter
+  const chatService = adapter.chatService;
+  const toolingService = adapter.toolingService;
+  const settingsService = adapter.settingsService;
+  const workspaceService = adapter.workspaceService;
+  const memoryService = adapter.memoryService;
+  
   const [initError, setInitError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const turnCancelledRef = useRef(false);
@@ -104,13 +111,14 @@ export const useGeminiStream = (
     useStateAndRef<HistoryItemWithoutId | null>(null);
   const processedMemoryToolsRef = useRef<Set<string>>(new Set());
   const { startNewPrompt, getPromptCount } = useSessionStats();
-  const logger = useLogger();
-  const gitService = useMemo(() => {
-    if (!config.getProjectRoot()) {
+  const logger = useLogger(adapter);
+  const gitService = useMemo(async () => {
+    const projectRoot = await workspaceService.getProjectRoot();
+    if (!projectRoot) {
       return;
     }
-    return new GitService(config.getProjectRoot());
-  }, [config]);
+    return new GitService(projectRoot);
+  }, [workspaceService]);
 
   const [toolCalls, scheduleToolCalls, markToolsAsSubmitted] =
     useReactToolScheduler(
@@ -131,7 +139,7 @@ export const useGeminiStream = (
           );
         }
       },
-      config,
+      adapter,
       setPendingHistoryItem,
       getPreferredEditor,
     );

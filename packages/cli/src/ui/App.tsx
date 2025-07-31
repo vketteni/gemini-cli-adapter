@@ -90,11 +90,13 @@ import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
 import { setUpdateHandler } from '../utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from '../utils/events.js';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
 interface AppProps {
-  config: Config;
+  adapter: CoreAdapter;
+  config: Config;  // Keep config for now during transition
   settings: LoadedSettings;
   startupWarnings?: string[];
   version: string;
@@ -108,7 +110,7 @@ export const AppWrapper = (props: AppProps) => (
   </SessionStatsProvider>
 );
 
-const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
+const App = ({ adapter, config, settings, startupWarnings = [], version }: AppProps) => {
   const isFocused = useFocus();
   useBracketedPaste();
   const [updateInfo, setUpdateInfo] = useState<UpdateObject | null>(null);
@@ -231,7 +233,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     handleAuthSelect,
     isAuthenticating,
     cancelAuthentication,
-  } = useAuthCommand(settings, setAuthError, config);
+  } = useAuthCommand(settings, setAuthError, adapter);
 
   useEffect(() => {
     if (settings.merged.selectedAuthType) {
@@ -461,7 +463,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     commandContext,
     shellConfirmationRequest,
   } = useSlashCommandProcessor(
-    config,
+    adapter,
     settings,
     addItem,
     clearItems,
@@ -486,6 +488,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     pendingHistoryItems: pendingGeminiHistoryItems,
     thought,
   } = useGeminiStream(
+    adapter,
     config.getGeminiClient(),
     history,
     addItem,
@@ -594,7 +597,7 @@ const App = ({ config, settings, startupWarnings = [], version }: AppProps) => {
     }
   }, [config]);
 
-  const logger = useLogger();
+  const logger = useLogger(adapter);
   const [userMessages, setUserMessages] = useState<string[]>([]);
 
   useEffect(() => {

@@ -8,16 +8,15 @@ import { useState, useCallback, useEffect } from 'react';
 import { LoadedSettings, SettingScope } from '../../config/settings.js';
 import {
   AuthType,
-  Config,
-  clearCachedCredentialFile,
   getErrorMessage,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { runExitCleanup } from '../../utils/cleanup.js';
 
 export const useAuthCommand = (
   settings: LoadedSettings,
   setAuthError: (error: string | null) => void,
-  config: Config,
+  adapter: CoreAdapter,
 ) => {
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(
     settings.merged.selectedAuthType === undefined,
@@ -38,7 +37,7 @@ export const useAuthCommand = (
 
       try {
         setIsAuthenticating(true);
-        await config.refreshAuth(authType);
+        await adapter.auth.refreshAuth(authType);
         console.log(`Authenticated via "${authType}".`);
       } catch (e) {
         setAuthError(`Failed to login. Message: ${getErrorMessage(e)}`);
@@ -49,17 +48,17 @@ export const useAuthCommand = (
     };
 
     void authFlow();
-  }, [isAuthDialogOpen, settings, config, setAuthError, openAuthDialog]);
+  }, [isAuthDialogOpen, settings, adapter, setAuthError, openAuthDialog]);
 
   const handleAuthSelect = useCallback(
     async (authType: AuthType | undefined, scope: SettingScope) => {
       if (authType) {
-        await clearCachedCredentialFile();
+        await adapter.auth.clearCachedCredentialFile();
 
         settings.setValue(scope, 'selectedAuthType', authType);
         if (
           authType === AuthType.LOGIN_WITH_GOOGLE &&
-          config.isBrowserLaunchSuppressed()
+          adapter.auth.isBrowserLaunchSuppressed()
         ) {
           runExitCleanup();
           console.log(
@@ -75,7 +74,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       setIsAuthDialogOpen(false);
       setAuthError(null);
     },
-    [settings, setAuthError, config],
+    [settings, setAuthError, adapter],
   );
 
   const cancelAuthentication = useCallback(() => {

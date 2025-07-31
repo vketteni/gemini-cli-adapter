@@ -5,7 +5,6 @@
  */
 
 import {
-  Config,
   ToolCallRequestInfo,
   ExecutingToolCall,
   ScheduledToolCall,
@@ -22,6 +21,7 @@ import {
   Status as CoreStatus,
   EditorType,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { useCallback, useState, useMemo } from 'react';
 import {
   HistoryItemToolGroup,
@@ -65,7 +65,7 @@ export type TrackedToolCall =
 
 export function useReactToolScheduler(
   onComplete: (tools: CompletedToolCall[]) => void,
-  config: Config,
+  adapter: CoreAdapter,
   setPendingHistoryItem: React.Dispatch<
     React.SetStateAction<HistoryItemWithoutId | null>
   >,
@@ -134,15 +134,15 @@ export function useReactToolScheduler(
   const scheduler = useMemo(
     () =>
       new CoreToolScheduler({
-        toolRegistry: config.getToolRegistry(),
+        toolRegistry: adapter.tools.getToolRegistry(),
         outputUpdateHandler,
         onAllToolCallsComplete: allToolCallsCompleteHandler,
         onToolCallsUpdate: toolCallsUpdateHandler,
         getPreferredEditor,
-        config,
+        config: adapter, // Pass adapter as config for now - will need proper typing later
       }),
     [
-      config,
+      adapter,
       outputUpdateHandler,
       allToolCallsCompleteHandler,
       toolCallsUpdateHandler,
