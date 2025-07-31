@@ -2,18 +2,7 @@
  * Core interface definitions for GEMINI CLI adapters
  */
 
-export * from './types/adapter.js';
-export * from './types/chat.js';
-export * from './types/tools.js';
-export * from './types/config.js';
-export * from './types/services.js';
-export * from './types/errors.js';
-
-// Re-export specific types for convenience
-export { Icon } from './types/tools.js';
-export { AuthType, EditorType, ApprovalMode, IDEConnectionStatus, UserTierId } from './types/config.js';
-export { ToolConfirmationOutcome } from './types/tools.js';
-export { getErrorMessage, isNodeError, UnauthorizedError } from './types/errors.js';
+export * from './adapter.js';
 
 /**
  * Shared types across all packages
@@ -36,4 +25,28 @@ export interface GitInfo {
   branch: string;
   commit: string;
   status: 'clean' | 'dirty';
+}
+
+/**
+ * Authentication types for different providers
+ */
+export enum AuthType {
+  LOGIN_WITH_GOOGLE = 'oauth-personal',
+  USE_GEMINI = 'gemini-api-key',
+  USE_VERTEX_AI = 'vertex-ai',
+  CLOUD_SHELL = 'cloud-shell',
+}
+
+/**
+ * Icon types for tool display
+ */
+export enum Icon {
+  FileSearch = 'fileSearch',
+  Folder = 'folder',
+  Globe = 'globe',
+  Hammer = 'hammer',
+  LightBulb = 'lightBulb',
+  Pencil = 'pencil',
+  Regex = 'regex',
+  Terminal = 'terminal',
 }

@@ -258,6 +258,16 @@ export interface SettingsService {
    * Loads environment variables and settings.
    */
   loadEnvironment(): void;
+
+  /**
+   * Gets the configured MCP servers.
+   */
+  getMcpServers(): any;
+
+  /**
+   * Gets the current authentication type.
+   */
+  getAuthType(): any;
 }
 
 
