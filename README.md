@@ -54,6 +54,16 @@ To set up the project locally:
 *   `docs/`: Project documentation, including architectural guides.
 *   `analysis_notes/`: Detailed analysis of the CLI's interaction with the original core module.
 
+## Refactoring Workflow
+
+To ensure a clean separation of concerns, the refactoring process follows a strict dependency injection pattern:
+
+1.  **Core Logic is Decoupled:** Any refactored part of the CLI frontend (e.g., `nonInteractiveCli.ts`) must **only** depend on the `CoreAdapter` interface, not on any concrete implementation like the `GoogleAdapter`.
+2.  **Injection at the Entry Point:** The concrete adapter instance (e.g., `GoogleAdapter`) is instantiated at the highest possible level, ideally in the main application entry point (e.g., `gemini.tsx`).
+3.  **Passing the Adapter:** The instantiated adapter is then passed down as a dependency to the refactored functions and components that need it.
+
+This ensures that the core CLI logic remains completely agnostic of the backend implementation, fulfilling the project's primary architectural goal.
+
 ## Current Status & Roadmap
 
 The project has completed its initial analysis phase and has defined a clear architectural path forward.
