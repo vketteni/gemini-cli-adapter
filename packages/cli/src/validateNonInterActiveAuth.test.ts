@@ -9,7 +9,7 @@ import {
   validateNonInteractiveAuth,
   NonInteractiveConfig,
 } from './validateNonInterActiveAuth.js';
-import { AuthType } from '@google/gemini-cli-core';
+import { AuthType } from '@gemini-cli-adapter/core-copy';
 
 describe('validateNonInterActiveAuth', () => {
   let originalEnvGeminiApiKey: string | undefined;

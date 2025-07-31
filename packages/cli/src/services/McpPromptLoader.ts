@@ -7,8 +7,8 @@
 import {
   getErrorMessage,
   getMCPServerPrompts,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import {
   CommandContext,
   CommandKind,
@@ -88,11 +88,11 @@ export class McpPromptLoader implements ICommandLoader {
             context: CommandContext,
             args: string,
           ): Promise<SlashCommandActionReturn> => {
-            if (!this.config) {
+            if (!this.adapter) {
               return {
                 type: 'message',
                 messageType: 'error',
-                content: 'Config not loaded.',
+                content: 'Adapter not loaded.',
               };
             }
 
@@ -106,7 +106,7 @@ export class McpPromptLoader implements ICommandLoader {
             }
 
             try {
-              const mcpServers = this.config.getMcpServers() || {};
+              const mcpServers = this.adapter.settings.getMcpServers() || {};
               const mcpServerConfig = mcpServers[serverName];
               if (!mcpServerConfig) {
                 return {

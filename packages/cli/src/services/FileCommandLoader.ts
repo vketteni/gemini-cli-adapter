@@ -12,8 +12,8 @@ import { z } from 'zod';
 import {
   getProjectCommandsDir,
   getUserCommandsDir,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { ICommandLoader } from './types.js';
 import {
   CommandContext,
@@ -66,7 +66,7 @@ export class FileCommandLoader implements ICommandLoader {
   private readonly projectRoot: string;
 
   constructor(private readonly adapter: CoreAdapter | null) {
-    this.projectRoot = adapter?.workspaceService?.getProjectRoot() || process.cwd();
+    this.projectRoot = adapter?.workspace?.getProjectRoot() || process.cwd();
   }
 
   /**
@@ -140,18 +140,10 @@ export class FileCommandLoader implements ICommandLoader {
     dirs.push({ path: getProjectCommandsDir(this.projectRoot) });
 
     // 3. Extension commands (processed last to detect all conflicts)
-    if (this.config) {
-      const activeExtensions = this.config
-        .getExtensions()
-        .filter((ext) => ext.isActive)
-        .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically for deterministic loading
-
-      const extensionCommandDirs = activeExtensions.map((ext) => ({
-        path: path.join(ext.path, 'commands'),
-        extensionName: ext.name,
-      }));
-
-      dirs.push(...extensionCommandDirs);
+    if (this.adapter) {
+      // Extensions are managed through the settings service
+      // TODO: Add getExtensions method to SettingsService interface if extensions are still needed
+      // For now, skip extension commands until interface is updated
     }
 
     return dirs;

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { CoreAdapter } from '@gemini-cli/core-interface';
-import { AuthType } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { AuthType } from '@gemini-cli-adapter/core-copy';
 import { USER_SETTINGS_PATH } from './config/settings.js';
 import { validateAuthMethod } from './config/auth.js';
 
