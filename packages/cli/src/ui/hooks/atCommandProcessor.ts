@@ -8,11 +8,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { PartListUnion, PartUnion } from '@google/genai';
 import {
-  Config,
   getErrorMessage,
   isNodeError,
   unescapePath,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import {
   HistoryItem,
   IndividualToolCallDisplay,
@@ -22,7 +22,7 @@ import { UseHistoryManagerReturn } from './useHistoryManager.js';
 
 interface HandleAtCommandParams {
   query: string;
-  config: Config;
+  adapter: CoreAdapter;
   addItem: UseHistoryManagerReturn['addItem'];
   onDebugMessage: (message: string) => void;
   messageId: number;
@@ -116,7 +116,7 @@ function parseAllAtCommands(query: string): AtCommandPart[] {
  */
 export async function handleAtCommand({
   query,
-  config,
+  adapter,
   addItem,
   onDebugMessage,
   messageId: userMessageTimestamp,
@@ -135,9 +135,12 @@ export async function handleAtCommand({
   addItem({ type: 'user', text: query }, userMessageTimestamp);
 
   // Get centralized file discovery service
-  const fileDiscovery = config.getFileService();
+  const fileDiscovery = adapter.workspace.getFileDiscoveryService();
 
-  const respectFileIgnore = config.getFileFilteringOptions();
+  const respectFileIgnore = {
+    respectGitIgnore: true, // TODO: Get from adapter settings
+    respectGeminiIgnore: true // TODO: Get from adapter settings
+  };
 
   const pathSpecsToRead: string[] = [];
   const atPathToResolvedSpecMap = new Map<string, string>();
@@ -148,9 +151,8 @@ export async function handleAtCommand({
     both: [],
   };
 
-  const toolRegistry = await config.getToolRegistry();
-  const readManyFilesTool = toolRegistry.getTool('read_many_files');
-  const globTool = toolRegistry.getTool('glob');
+  const readManyFilesTool = await adapter.tools.getTool('read_many_files');
+  const globTool = await adapter.tools.getTool('glob');
 
   if (!readManyFilesTool) {
     addItem(
@@ -219,7 +221,8 @@ export async function handleAtCommand({
     let resolvedSuccessfully = false;
 
     try {
-      const absolutePath = path.resolve(config.getTargetDir(), pathName);
+      const targetDir = adapter.workspace.getProjectRoot(); // Using project root as target dir
+      const absolutePath = path.resolve(targetDir, pathName);
       const stats = await fs.stat(absolutePath);
       if (stats.isDirectory()) {
         currentPathSpec =
@@ -233,15 +236,16 @@ export async function handleAtCommand({
       resolvedSuccessfully = true;
     } catch (error) {
       if (isNodeError(error) && error.code === 'ENOENT') {
-        if (config.getEnableRecursiveFileSearch() && globTool) {
+        if (globTool) { // Remove the recursive file search check for now
           onDebugMessage(
             `Path ${pathName} not found directly, attempting glob search.`,
           );
           try {
+            const targetDir = adapter.workspace.getProjectRoot();
             const globResult = await globTool.execute(
               {
                 pattern: `**/*${pathName}*`,
-                path: config.getTargetDir(),
+                path: targetDir,
               },
               signal,
             );
@@ -255,7 +259,7 @@ export async function handleAtCommand({
               if (lines.length > 1 && lines[1]) {
                 const firstMatchAbsolute = lines[1].trim();
                 currentPathSpec = path.relative(
-                  config.getTargetDir(),
+                  targetDir,
                   firstMatchAbsolute,
                 );
                 onDebugMessage(

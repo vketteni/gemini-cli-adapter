@@ -11,12 +11,10 @@ import {
 } from '../types.js';
 import { useCallback } from 'react';
 import {
-  Config,
-  GeminiClient,
   isBinary,
   ShellExecutionResult,
-  ShellExecutionService,
 } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 import { type PartListUnion } from '@google/genai';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
 import { SHELL_COMMAND_NAME } from '../constants.js';
@@ -29,8 +27,8 @@ import fs from 'fs';
 export const OUTPUT_UPDATE_INTERVAL_MS = 1000;
 const MAX_OUTPUT_LENGTH = 10000;
 
-function addShellCommandToGeminiHistory(
-  geminiClient: GeminiClient,
+async function addShellCommandToHistory(
+  adapter: CoreAdapter,
   rawQuery: string,
   resultText: string,
 ) {
@@ -39,7 +37,8 @@ function addShellCommandToGeminiHistory(
       ? resultText.substring(0, MAX_OUTPUT_LENGTH) + '\n... (truncated)'
       : resultText;
 
-  geminiClient.addHistory({
+  const history = await adapter.chat.getHistory();
+  history.push({
     role: 'user',
     parts: [
       {
@@ -55,6 +54,7 @@ ${modelContent}
       },
     ],
   });
+  await adapter.chat.setHistory(history);
 }
 
 /**
@@ -68,8 +68,7 @@ export const useShellCommandProcessor = (
   >,
   onExec: (command: Promise<void>) => void,
   onDebugMessage: (message: string) => void,
-  config: Config,
-  geminiClient: GeminiClient,
+  adapter: CoreAdapter,
 ) => {
   const handleShellCommand = useCallback(
     (rawQuery: PartListUnion, abortSignal: AbortSignal): boolean => {
@@ -85,7 +84,7 @@ export const useShellCommandProcessor = (
       );
 
       const isWindows = os.platform() === 'win32';
-      const targetDir = config.getTargetDir();
+      const targetDir = adapter.workspace.getProjectRoot();
       let commandToExecute = rawQuery;
       let pwdFilePath: string | undefined;
 
@@ -134,7 +133,8 @@ export const useShellCommandProcessor = (
         onDebugMessage(`Executing in ${targetDir}: ${commandToExecute}`);
 
         try {
-          const { pid, result } = ShellExecutionService.execute(
+          const shellService = adapter.tools.getShellExecutionService();
+          const { pid, result } = shellService.execute(
             commandToExecute,
             targetDir,
             (event) => {
@@ -251,8 +251,8 @@ export const useShellCommandProcessor = (
               );
 
               // Add the same complete, contextual result to the LLM's history.
-              addShellCommandToGeminiHistory(
-                geminiClient,
+              addShellCommandToHistory(
+                adapter,
                 rawQuery,
                 finalOutput,
               );
@@ -301,12 +301,11 @@ export const useShellCommandProcessor = (
       return true;
     },
     [
-      config,
+      adapter,
       onDebugMessage,
       addItemToHistory,
       setPendingHistoryItem,
       onExec,
-      geminiClient,
     ],
   );
 

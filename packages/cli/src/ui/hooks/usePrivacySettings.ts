@@ -5,7 +5,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Config, CodeAssistServer, UserTierId } from '@google/gemini-cli-core';
+import { CodeAssistServer, UserTierId } from '@google/gemini-cli-core';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 
 export interface PrivacyState {
   isLoading: boolean;
@@ -14,7 +15,7 @@ export interface PrivacyState {
   dataCollectionOptIn?: boolean;
 }
 
-export const usePrivacySettings = (config: Config) => {
+export const usePrivacySettings = (adapter: CoreAdapter) => {
   const [privacyState, setPrivacyState] = useState<PrivacyState>({
     isLoading: true,
   });
@@ -25,7 +26,7 @@ export const usePrivacySettings = (config: Config) => {
         isLoading: true,
       });
       try {
-        const server = getCodeAssistServer(config);
+        const server = adapter.auth.getCodeAssistServer();
         const tier = await getTier(server);
         if (tier !== UserTierId.FREE) {
           // We don't need to fetch opt-out info since non-free tier
@@ -51,12 +52,12 @@ export const usePrivacySettings = (config: Config) => {
       }
     };
     fetchInitialState();
-  }, [config]);
+  }, [adapter]);
 
   const updateDataCollectionOptIn = useCallback(
     async (optIn: boolean) => {
       try {
-        const server = getCodeAssistServer(config);
+        const server = adapter.auth.getCodeAssistServer();
         const updatedOptIn = await setRemoteDataCollectionOptIn(server, optIn);
         setPrivacyState({
           isLoading: false,
@@ -70,7 +71,7 @@ export const usePrivacySettings = (config: Config) => {
         });
       }
     },
-    [config],
+    [adapter],
   );
 
   return {
@@ -79,16 +80,6 @@ export const usePrivacySettings = (config: Config) => {
   };
 };
 
-function getCodeAssistServer(config: Config): CodeAssistServer {
-  const server = config.getGeminiClient().getContentGenerator();
-  // Neither of these cases should ever happen.
-  if (!(server instanceof CodeAssistServer)) {
-    throw new Error('Oauth not being used');
-  } else if (!server.projectId) {
-    throw new Error('Oauth not being used');
-  }
-  return server;
-}
 
 async function getTier(server: CodeAssistServer): Promise<UserTierId> {
   const loadRes = await server.loadCodeAssist({
