@@ -19,7 +19,7 @@ import {
   CodeAssistServer,
   mcpServerRequiresOAuth,
   MCPOAuthProvider
-} from "@gemini-cli/core-copy";
+} from "@gemini-cli-adapter/core-copy";
 
 class GoogleChatService implements ChatService {
     private config: Config;
@@ -298,6 +298,14 @@ class GoogleSettingsService implements SettingsService {
         // Import and call the loadEnvironment function from settings
         // For now, we'll delegate this to a utility function if needed
         // This might require importing from the config/settings module
+    }
+
+    getMcpServers(): any {
+        return this.config.getMcpServers();
+    }
+
+    getAuthType(): any {
+        return this.config.getContentGeneratorConfig().authType;
     }
 }
 

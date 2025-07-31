@@ -11,7 +11,8 @@
     "prebuild": "npm run clean"
   },
   "dependencies": {
-    "@gemini-cli-adapter/core-interface": "^0.1.0"
+    "@gemini-cli-adapter/core-interface": "^0.1.0",
+    "@gemini-cli-adapter/core-copy": "*"
   },
   "devDependencies": {
     "typescript": "^5.3.0"
