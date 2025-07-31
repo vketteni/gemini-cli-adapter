@@ -23,7 +23,7 @@ const getSavedChatTags = async (
   context: CommandContext,
   mtSortDesc: boolean,
 ): Promise<ChatDetail[]> => {
-  const geminiDir = context.services.adapter?.workspaceService?.getProjectTempDir();
+  const geminiDir = context.services.adapter?.workspace?.getProjectTempDir();
   if (!geminiDir) {
     return [];
   }

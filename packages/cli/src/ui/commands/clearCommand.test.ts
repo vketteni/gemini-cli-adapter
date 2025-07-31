@@ -10,8 +10,8 @@ import { type CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
 
 // Mock the telemetry service
-vi.mock('@google/gemini-cli-core', async () => {
-  const actual = await vi.importActual('@google/gemini-cli-core');
+vi.mock('@gemini-cli-adapter/core-copy', async () => {
+  const actual = await vi.importActual('@gemini-cli-adapter/core-copy');
   return {
     ...actual,
     uiTelemetryService: {
@@ -20,7 +20,7 @@ vi.mock('@google/gemini-cli-core', async () => {
   };
 });
 
-import { GeminiClient, uiTelemetryService } from '@google/gemini-cli-core';
+import { GeminiClient, uiTelemetryService } from '@gemini-cli-adapter/core-copy';
 
 describe('clearCommand', () => {
   let mockContext: CommandContext;
@@ -80,21 +80,21 @@ describe('clearCommand', () => {
       throw new Error('clearCommand must have an action.');
     }
 
-    const nullConfigContext = createMockCommandContext({
+    const nullAdapterContext = createMockCommandContext({
       services: {
-        config: null,
+        adapter: null,
       },
     });
 
-    await clearCommand.action(nullConfigContext, '');
+    await clearCommand.action(nullAdapterContext, '');
 
-    expect(nullConfigContext.ui.setDebugMessage).toHaveBeenCalledWith(
+    expect(nullAdapterContext.ui.setDebugMessage).toHaveBeenCalledWith(
       'Clearing terminal.',
     );
     expect(mockResetChat).not.toHaveBeenCalled();
     expect(uiTelemetryService.resetLastPromptTokenCount).toHaveBeenCalledTimes(
       1,
     );
-    expect(nullConfigContext.ui.clear).toHaveBeenCalledTimes(1);
+    expect(nullAdapterContext.ui.clear).toHaveBeenCalledTimes(1);
   });
 });

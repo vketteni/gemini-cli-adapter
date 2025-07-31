@@ -14,11 +14,11 @@ import {
   getErrorMessage,
   loadServerHierarchicalMemory,
   type FileDiscoveryService,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 
-vi.mock('@google/gemini-cli-core', async (importOriginal) => {
+vi.mock('@gemini-cli-adapter/core-copy', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@google/gemini-cli-core')>();
+    await importOriginal<typeof import('@gemini-cli-adapter/core-copy')>();
   return {
     ...original,
     getErrorMessage: vi.fn((error: unknown) => {
@@ -154,22 +154,25 @@ describe('memoryCommand', () => {
       refreshCommand = getSubCommand('refresh');
       mockSetUserMemory = vi.fn();
       mockSetGeminiMdFileCount = vi.fn();
-      const mockConfig = {
-        setUserMemory: mockSetUserMemory,
-        setGeminiMdFileCount: mockSetGeminiMdFileCount,
-        getWorkingDir: () => '/test/dir',
-        getDebugMode: () => false,
-        getFileService: () => ({}) as FileDiscoveryService,
-        getExtensionContextFilePaths: () => [],
-        getFileFilteringOptions: () => ({
-          ignore: [],
-          include: [],
-        }),
-      };
-
       mockContext = createMockCommandContext({
         services: {
-          config: Promise.resolve(mockConfig),
+          adapter: {
+            memory: {
+              setUserMemory: mockSetUserMemory,
+              getMemoryFileCount: vi.fn().mockReturnValue(0),
+            },
+            workspace: {
+              getProjectRoot: vi.fn().mockReturnValue('/test/dir'),
+              getFileDiscoveryService: vi.fn().mockReturnValue({} as FileDiscoveryService),
+            },
+            settings: {
+              getDebugMode: vi.fn().mockReturnValue(false),
+              getFileFilteringOptions: vi.fn().mockReturnValue({
+                ignore: [],
+                include: [],
+              }),
+            },
+          },
           settings: {
             merged: {
               memoryDiscoveryMaxDirs: 1000,
@@ -260,18 +263,18 @@ describe('memoryCommand', () => {
       expect(getErrorMessage).toHaveBeenCalledWith(error);
     });
 
-    it('should not throw if config service is unavailable', async () => {
+    it('should not throw if adapter service is unavailable', async () => {
       if (!refreshCommand.action) throw new Error('Command has no action');
 
-      const nullConfigContext = createMockCommandContext({
-        services: { config: null },
+      const nullAdapterContext = createMockCommandContext({
+        services: { adapter: null },
       });
 
       await expect(
-        refreshCommand.action(nullConfigContext, ''),
+        refreshCommand.action(nullAdapterContext, ''),
       ).resolves.toBeUndefined();
 
-      expect(nullConfigContext.ui.addItem).toHaveBeenCalledWith(
+      expect(nullAdapterContext.ui.addItem).toHaveBeenCalledWith(
         {
           type: MessageType.INFO,
           text: 'Refreshing memory from source files...',

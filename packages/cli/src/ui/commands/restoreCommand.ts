@@ -12,7 +12,7 @@ import {
   type SlashCommandActionReturn,
   CommandKind,
 } from './types.js';
-import { Config } from '@google/gemini-cli-core';
+import { Config } from '@gemini-cli-adapter/core-copy';
 
 async function restoreAction(
   context: CommandContext,

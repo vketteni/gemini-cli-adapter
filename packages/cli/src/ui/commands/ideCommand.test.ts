@@ -15,11 +15,11 @@ import {
 } from 'vitest';
 import { ideCommand } from './ideCommand.js';
 import { type CommandContext } from './types.js';
-import { type Config } from '@google/gemini-cli-core';
+import { type Config } from '@gemini-cli-adapter/core-copy';
 import * as child_process from 'child_process';
 import { glob } from 'glob';
 
-import { IDEConnectionStatus } from '@google/gemini-cli-core/index.js';
+import { IDEConnectionStatus } from '@gemini-cli-adapter/core-copy/index.js';
 
 vi.mock('child_process');
 vi.mock('glob');

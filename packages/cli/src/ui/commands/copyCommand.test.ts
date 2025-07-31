@@ -276,14 +276,14 @@ describe('copyCommand', () => {
     expect(mockCopyToClipboard).not.toHaveBeenCalled();
   });
 
-  it('should handle unavailable config service', async () => {
+  it('should handle unavailable adapter service', async () => {
     if (!copyCommand.action) throw new Error('Command has no action');
 
-    const nullConfigContext = createMockCommandContext({
-      services: { config: null },
+    const nullAdapterContext = createMockCommandContext({
+      services: { adapter: null },
     });
 
-    const result = await copyCommand.action(nullConfigContext, '');
+    const result = await copyCommand.action(nullAdapterContext, '');
 
     expect(result).toEqual({
       type: 'message',

@@ -7,7 +7,7 @@
 import {
   getErrorMessage,
   loadServerHierarchicalMemory,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 import { MessageType } from '../types.js';
 import {
   CommandKind,
@@ -25,8 +25,8 @@ export const memoryCommand: SlashCommand = {
       description: 'Show the current memory contents.',
       kind: CommandKind.BUILT_IN,
       action: async (context) => {
-        const memoryContent = context.services.adapter?.memoryService?.getUserMemory() || '';
-        const fileCount = context.services.adapter?.memoryService?.getGeminiMdFileCount() || 0;
+        const memoryContent = context.services.adapter?.memory?.getUserMemory() || '';
+        const fileCount = context.services.adapter?.memory?.getGeminiMdFileCount() || 0;
 
         const messageContent =
           memoryContent.length > 0
@@ -96,8 +96,8 @@ export const memoryCommand: SlashCommand = {
                 config.getFileFilteringOptions(),
                 context.services.settings.merged.memoryDiscoveryMaxDirs,
               );
-            context.services.adapter?.memoryService?.setUserMemory(memoryContent);
-            context.services.adapter?.memoryService?.setGeminiMdFileCount(fileCount);
+            context.services.adapter?.memory?.setUserMemory(memoryContent);
+            context.services.adapter?.memory?.setGeminiMdFileCount(fileCount);
 
             const successMessage =
               memoryContent.length > 0

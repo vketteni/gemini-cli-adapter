@@ -24,7 +24,7 @@ export const toolsCommand: SlashCommand = {
       useShowDescriptions = true;
     }
 
-    const toolingService = context.services.adapter?.toolingService;
+    const toolingService = context.services.adapter?.tools;
     if (!toolingService) {
       context.ui.addItem(
         {
