@@ -41,7 +41,7 @@ export interface ChatService {
   /**
    * Attempts to compress the chat history.
    */
-  tryCompressChat(): Promise<boolean>;
+  tryCompressChat(promptId?: string, forceCompress?: boolean): Promise<any>;
 }
 
 /**
@@ -72,6 +72,16 @@ export interface ToolingService {
    * Retrieves the function declarations for all available tools.
    */
   getFunctionDeclarations(): Promise<any[]>;
+
+  /**
+   * Gets the tool registry instance for advanced tool management.
+   */
+  getToolRegistry(): Promise<any>;
+
+  /**
+   * Gets the shell execution service for running shell commands.
+   */
+  getShellExecutionService(): any;
 }
 
 /**
@@ -93,6 +103,16 @@ export interface WorkspaceService {
    * Checks if the current directory is a Git repository.
    */
   isGitRepository(): Promise<boolean>;
+
+  /**
+   * Gets the file discovery service.
+   */
+  getFileDiscoveryService(): any;
+
+  /**
+   * Gets the project root directory.
+   */
+  getProjectRoot(): string;
 }
 
 /**
@@ -113,6 +133,31 @@ export interface AuthService {
    * Gets the current authentication type.
    */
   getAuthType(): any;
+
+  /**
+   * Checks if browser launch is suppressed for authentication.
+   */
+  isBrowserLaunchSuppressed(): boolean;
+
+  /**
+   * Validates an authentication method.
+   */
+  validateAuthMethod(authMethod: string): string | null;
+
+  /**
+   * Gets the code assist server instance.
+   */
+  getCodeAssistServer(): any;
+
+  /**
+   * Checks if MCP server requires OAuth.
+   */
+  mcpServerRequiresOAuth(serverName: string): boolean;
+
+  /**
+   * Gets the MCP OAuth provider for a server.
+   */
+  getMCPOAuthProvider(serverName: string): any;
 }
 
 /**
@@ -133,6 +178,16 @@ export interface MemoryService {
    * Sets the user-defined memory content.
    */
   setUserMemory(content: string): void;
+
+  /**
+   * Gets the count of GEMINI.md files loaded.
+   */
+  getGeminiMdFileCount(): number;
+
+  /**
+   * Sets the count of GEMINI.md files loaded.
+   */
+  setGeminiMdFileCount(count: number): void;
 }
 
 /**
@@ -168,6 +223,41 @@ export interface SettingsService {
    * Gets the maximum number of turns for a session.
    */
   getMaxSessionTurns(): number;
+
+  /**
+   * Creates a logger instance for telemetry.
+   */
+  createLogger(): any;
+
+  /**
+   * Gets the project temporary directory.
+   */
+  getProjectTempDir(): string;
+
+  /**
+   * Gets whether checkpointing is enabled.
+   */
+  getCheckpointingEnabled(): boolean;
+
+  /**
+   * Sets quota error occurred flag.
+   */
+  setQuotaErrorOccurred(occurred: boolean): void;
+
+  /**
+   * Gets content generator configuration.
+   */
+  getContentGeneratorConfig(): any;
+
+  /**
+   * Gets the sandbox configuration.
+   */
+  getSandboxConfig(): any;
+
+  /**
+   * Loads environment variables and settings.
+   */
+  loadEnvironment(): void;
 }
 
 
