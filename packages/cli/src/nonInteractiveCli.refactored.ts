@@ -1,6 +1,6 @@
 
 
-import { CoreAdapter } from "@gemini-cli/core-interface";
+import { CoreAdapter } from "@gemini-cli-adapter/core-interface";
 import {
   Content,
   Part,

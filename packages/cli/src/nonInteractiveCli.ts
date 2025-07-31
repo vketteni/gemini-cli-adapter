@@ -9,14 +9,14 @@ import {
   shutdownTelemetry,
   isTelemetrySdkInitialized,
   AuthType,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 import {
   Content,
   Part,
   FunctionCall,
   GenerateContentResponse,
 } from '@google/genai';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 import { parseAndFormatApiError } from './ui/utils/errorParsing.js';
 
@@ -55,9 +55,9 @@ export async function runNonInteractive(
     }
   });
 
-  const chatService = adapter.chatService;
-  const toolingService = adapter.toolingService;
-  const settingsService = adapter.settingsService;
+  const chatService = adapter.chat;
+  const toolingService = adapter.tools;
+  const settingsService = adapter.settings;
 
   const abortController = new AbortController();
   let currentMessages: Content[] = [{ role: 'user', parts: [{ text: input }] }];

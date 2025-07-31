@@ -43,7 +43,7 @@ import {
   logUserPrompt,
   getOauthClient,
   sessionId,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 
 function getNodeMemoryArgs(config: Config): string[] {
   const totalMemoryMB = os.totalmem() / (1024 * 1024);

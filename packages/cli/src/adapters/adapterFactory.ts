@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Config } from '@google/gemini-cli-core';
-import { GoogleAdapter } from '@gemini-cli/gemini-cli-core-shim';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+import { Config } from '@gemini-cli-adapter/core-copy';
+import { GoogleAdapter } from '@gemini-cli-adapter/gemini-cli-core-shim';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 /**
  * Factory function to create a CoreAdapter instance from a Config object.
