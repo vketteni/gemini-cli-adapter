@@ -5,12 +5,10 @@
  */
 
 import {
-  Config,
   ToolCallRequestInfo,
-  executeToolCall,
-  ToolRegistry,
   shutdownTelemetry,
   isTelemetrySdkInitialized,
+  AuthType,
 } from '@google/gemini-cli-core';
 import {
   Content,
@@ -18,6 +16,7 @@ import {
   FunctionCall,
   GenerateContentResponse,
 } from '@google/genai';
+import { CoreAdapter } from '@gemini-cli/core-interface';
 
 import { parseAndFormatApiError } from './ui/utils/errorParsing.js';
 
@@ -44,11 +43,10 @@ function getResponseText(response: GenerateContentResponse): string | null {
 }
 
 export async function runNonInteractive(
-  config: Config,
+  adapter: CoreAdapter,
   input: string,
   prompt_id: string,
 ): Promise<void> {
-  await config.initialize();
   // Handle EPIPE errors when the output is piped to a command that closes early.
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EPIPE') {
@@ -57,20 +55,18 @@ export async function runNonInteractive(
     }
   });
 
-  const geminiClient = config.getGeminiClient();
-  const toolRegistry: ToolRegistry = await config.getToolRegistry();
+  const chatService = adapter.chatService;
+  const toolingService = adapter.toolingService;
+  const settingsService = adapter.settingsService;
 
-  const chat = await geminiClient.getChat();
   const abortController = new AbortController();
   let currentMessages: Content[] = [{ role: 'user', parts: [{ text: input }] }];
   let turnCount = 0;
   try {
     while (true) {
       turnCount++;
-      if (
-        config.getMaxSessionTurns() > 0 &&
-        turnCount > config.getMaxSessionTurns()
-      ) {
+      const maxSessionTurns = await settingsService.getMaxSessionTurns();
+      if (maxSessionTurns > 0 && turnCount > maxSessionTurns) {
         console.error(
           '\n Reached max session turns for this session. Increase the number of turns by specifying maxSessionTurns in settings.json.',
         );
@@ -78,14 +74,13 @@ export async function runNonInteractive(
       }
       const functionCalls: FunctionCall[] = [];
 
-      const responseStream = await chat.sendMessageStream(
+      const functionDeclarations = await toolingService.getFunctionDeclarations();
+      const responseStream = await chatService.sendMessageStream(
         {
           message: currentMessages[0]?.parts || [], // Ensure parts are always provided
           config: {
             abortSignal: abortController.signal,
-            tools: [
-              { functionDeclarations: toolRegistry.getFunctionDeclarations() },
-            ],
+            tools: [{ functionDeclarations }],
           },
         },
         prompt_id,
@@ -118,10 +113,8 @@ export async function runNonInteractive(
             prompt_id,
           };
 
-          const toolResponse = await executeToolCall(
-            config,
+          const toolResponse = await toolingService.executeToolCall(
             requestInfo,
-            toolRegistry,
             abortController.signal,
           );
 
@@ -157,11 +150,9 @@ export async function runNonInteractive(
       }
     }
   } catch (error) {
+    const authType = await settingsService.getAuthType();
     console.error(
-      parseAndFormatApiError(
-        error,
-        config.getContentGeneratorConfig()?.authType,
-      ),
+      parseAndFormatApiError(error, authType),
     );
     process.exit(1);
   } finally {
