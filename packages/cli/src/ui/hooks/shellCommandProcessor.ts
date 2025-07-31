@@ -13,8 +13,8 @@ import { useCallback } from 'react';
 import {
   isBinary,
   ShellExecutionResult,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { type PartListUnion } from '@google/genai';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
 import { SHELL_COMMAND_NAME } from '../constants.js';

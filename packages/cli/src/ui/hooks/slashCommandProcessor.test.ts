@@ -9,9 +9,9 @@ const { logSlashCommand, SlashCommandEvent } = vi.hoisted(() => ({
   SlashCommandEvent: vi.fn((command, subCommand) => ({ command, subCommand })),
 }));
 
-vi.mock('@google/gemini-cli-core', async (importOriginal) => {
+vi.mock('@gemini-cli-adapter/core-copy', async (importOriginal) => {
   const original =
-    await importOriginal<typeof import('@google/gemini-cli-core')>();
+    await importOriginal<typeof import('@gemini-cli-adapter/core-copy')>();
   return {
     ...original,
     logSlashCommand,
@@ -63,12 +63,13 @@ import {
   ConfirmShellCommandsActionReturn,
   SlashCommand,
 } from '../commands/types.js';
-import { Config, ToolConfirmationOutcome } from '@google/gemini-cli-core';
+import { ToolConfirmationOutcome } from '@gemini-cli-adapter/core-copy';
 import { LoadedSettings } from '../../config/settings.js';
 import { MessageType } from '../types.js';
 import { BuiltinCommandLoader } from '../../services/BuiltinCommandLoader.js';
 import { FileCommandLoader } from '../../services/FileCommandLoader.js';
 import { McpPromptLoader } from '../../services/McpPromptLoader.js';
+import { createMockCoreAdapter } from '../../test-utils/mockCoreAdapter.js';
 
 const createTestCommand = (
   overrides: Partial<SlashCommand>,
@@ -88,14 +89,17 @@ describe('useSlashCommandProcessor', () => {
   const mockOpenAuthDialog = vi.fn();
   const mockSetQuittingMessages = vi.fn();
 
-  const mockConfig = {
-    getProjectRoot: vi.fn(() => '/mock/cwd'),
-    getSessionId: vi.fn(() => 'test-session'),
-    getGeminiClient: vi.fn(() => ({
+  const mockAdapter = createMockCoreAdapter({
+    workspace: {
+      getProjectRoot: vi.fn().mockReturnValue('/mock/cwd'),
+    },
+    settings: {
+      getSessionId: vi.fn().mockReturnValue('test-session'),
+    },
+    chat: {
       setHistory: vi.fn().mockResolvedValue(undefined),
-    })),
-    getExtensions: vi.fn(() => []),
-  } as unknown as Config;
+    },
+  });
 
   const mockSettings = {} as LoadedSettings;
 
@@ -119,7 +123,7 @@ describe('useSlashCommandProcessor', () => {
 
     const { result } = renderHook(() =>
       useSlashCommandProcessor(
-        mockConfig,
+        mockAdapter,
         mockSettings,
         mockAddItem,
         mockClearItems,
@@ -144,9 +148,9 @@ describe('useSlashCommandProcessor', () => {
   describe('Initialization and Command Loading', () => {
     it('should initialize CommandService with all required loaders', () => {
       setupProcessorHook();
-      expect(BuiltinCommandLoader).toHaveBeenCalledWith(mockConfig);
-      expect(FileCommandLoader).toHaveBeenCalledWith(mockConfig);
-      expect(McpPromptLoader).toHaveBeenCalledWith(mockConfig);
+      expect(BuiltinCommandLoader).toHaveBeenCalledWith(mockAdapter);
+      expect(FileCommandLoader).toHaveBeenCalledWith(mockAdapter);
+      expect(McpPromptLoader).toHaveBeenCalledWith(mockAdapter);
     });
 
     it('should call loadCommands and populate state after mounting', async () => {
@@ -289,7 +293,7 @@ describe('useSlashCommandProcessor', () => {
       expect(childAction).toHaveBeenCalledWith(
         expect.objectContaining({
           services: expect.objectContaining({
-            config: mockConfig,
+            adapter: mockAdapter,
           }),
           ui: expect.objectContaining({
             addItem: mockAddItem,
@@ -806,7 +810,7 @@ describe('useSlashCommandProcessor', () => {
       const abortSpy = vi.spyOn(AbortController.prototype, 'abort');
       const { unmount } = renderHook(() =>
         useSlashCommandProcessor(
-          mockConfig,
+          mockAdapter,
           mockSettings,
           mockAddItem,
           mockClearItems,

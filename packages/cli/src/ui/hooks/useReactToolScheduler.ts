@@ -20,8 +20,8 @@ import {
   ToolCall,
   Status as CoreStatus,
   EditorType,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { useCallback, useState, useMemo } from 'react';
 import {
   HistoryItemToolGroup,

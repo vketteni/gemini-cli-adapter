@@ -24,8 +24,8 @@ import {
   Status as ToolCallStatusType,
   ApprovalMode,
   Icon,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import {
   HistoryItemWithoutId,
   ToolCallStatus,
@@ -33,8 +33,8 @@ import {
 } from '../types.js';
 
 // Mocks
-vi.mock('@google/gemini-cli-core', async () => {
-  const actual = await vi.importActual('@google/gemini-cli-core');
+vi.mock('@gemini-cli-adapter/core-copy', async () => {
+  const actual = await vi.importActual('@gemini-cli-adapter/core-copy');
   return {
     ...actual,
     ToolRegistry: vi.fn(),

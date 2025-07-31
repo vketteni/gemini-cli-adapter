@@ -15,8 +15,8 @@ import {
   logSlashCommand,
   SlashCommandEvent,
   ToolConfirmationOutcome,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import {
   Message,
@@ -67,7 +67,7 @@ export const useSlashCommandProcessor = (
     new Set<string>(),
   );
   const gitService = useMemo(() => {
-    const projectRoot = adapter?.workspaceService?.getProjectRoot();
+    const projectRoot = adapter?.workspace?.getProjectRoot();
     if (!projectRoot) {
       return;
     }
@@ -75,7 +75,7 @@ export const useSlashCommandProcessor = (
   }, [adapter]);
 
   const logger = useMemo(() => {
-    const sessionId = adapter?.settingsService?.getSessionId() || '';
+    const sessionId = adapter?.settings?.getSessionId() || '';
     const l = new Logger(sessionId);
     // The logger's initialize is async, but we can create the instance
     // synchronously. Commands that use it will await its initialization.
@@ -358,7 +358,7 @@ export const useSlashCommandProcessor = (
                     }
                   }
                 case 'load_history': {
-                  await adapter?.chatService?.setHistory(result.clientHistory);
+                  await adapter?.chat?.setHistory(result.clientHistory);
                   fullCommandContext.ui.clear();
                   result.history.forEach((item, index) => {
                     fullCommandContext.ui.addItem(item, index);

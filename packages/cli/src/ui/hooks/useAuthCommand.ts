@@ -9,8 +9,8 @@ import { LoadedSettings, SettingScope } from '../../config/settings.js';
 import {
   AuthType,
   getErrorMessage,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { runExitCleanup } from '../../utils/cleanup.js';
 
 export const useAuthCommand = (

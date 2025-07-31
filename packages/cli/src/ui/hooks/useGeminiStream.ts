@@ -24,8 +24,8 @@ import {
   UnauthorizedError,
   UserPromptEvent,
   DEFAULT_GEMINI_FLASH_MODEL,
-} from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli/core-interface';
+} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { type Part, type PartListUnion, FinishReason } from '@google/genai';
 import {
   StreamingState,
@@ -96,11 +96,11 @@ export const useGeminiStream = (
   setModelSwitchedFromQuotaError: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   // Extract services from adapter
-  const chatService = adapter.chatService;
-  const toolingService = adapter.toolingService;
-  const settingsService = adapter.settingsService;
-  const workspaceService = adapter.workspaceService;
-  const memoryService = adapter.memoryService;
+  const chatService = adapter.chat;
+  const toolingService = adapter.tools;
+  const settingsService = adapter.settings;
+  const workspaceService = adapter.workspace;
+  const memoryService = adapter.memory;
   
   const [initError, setInitError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);

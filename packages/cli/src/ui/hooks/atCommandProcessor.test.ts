@@ -12,7 +12,7 @@ import {
   GlobTool,
   ReadManyFilesTool,
   ToolRegistry,
-} from '@google/gemini-cli-core';
+} from '@gemini-cli-adapter/core-copy';
 import * as os from 'os';
 import { ToolCallStatus } from '../types.js';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
