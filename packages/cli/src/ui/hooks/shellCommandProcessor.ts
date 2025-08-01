@@ -13,6 +13,7 @@ import { useCallback } from 'react';
 import {
   isBinary,
   ShellExecutionResult,
+  ShellOutputEvent,
 } from '@gemini-cli-adapter/core-copy';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { type PartListUnion } from '@google/genai';
@@ -137,7 +138,7 @@ export const useShellCommandProcessor = (
           const { pid, result } = shellService.execute(
             commandToExecute,
             targetDir,
-            (event) => {
+            (event: ShellOutputEvent) => {
               switch (event.type) {
                 case 'data':
                   // Do not process text data if we've already switched to binary mode.
@@ -257,7 +258,7 @@ export const useShellCommandProcessor = (
                 finalOutput,
               );
             })
-            .catch((err) => {
+            .catch((err: unknown) => {
               setPendingHistoryItem(null);
               const errorMessage =
                 err instanceof Error ? err.message : String(err);
@@ -276,7 +277,7 @@ export const useShellCommandProcessor = (
               }
               resolve();
             });
-        } catch (err) {
+        } catch (err: unknown) {
           // This block handles synchronous errors from `execute`
           setPendingHistoryItem(null);
           const errorMessage = err instanceof Error ? err.message : String(err);

@@ -237,7 +237,7 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
 
   useEffect(() => {
     if (settings.merged.selectedAuthType) {
-      const error = validateAuthMethod(settings.merged.selectedAuthType);
+      const error = validateAuthMethod(adapter, settings.merged.selectedAuthType);
       if (error) {
         setAuthError(error);
         openAuthDialog();
@@ -489,11 +489,9 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
     thought,
   } = useGeminiStream(
     adapter,
-    config.getGeminiClient(),
     history,
     addItem,
     setShowHelp,
-    config,
     setDebugMessage,
     handleSlashCommand,
     shellModeActive,
@@ -893,6 +891,7 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
                 onSelect={handleAuthSelect}
                 settings={settings}
                 initialErrorMessage={authError}
+                adapter={adapter}
               />
             </Box>
           ) : isEditorDialogOpen ? (
@@ -911,7 +910,7 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
           ) : showPrivacyNotice ? (
             <PrivacyNotice
               onExit={() => setShowPrivacyNotice(false)}
-              config={config}
+              adapter={adapter}
             />
           ) : (
             <>
@@ -995,7 +994,7 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
                   onSubmit={handleFinalSubmit}
                   userMessages={userMessages}
                   onClearScreen={handleClearScreen}
-                  config={config}
+                  adapter={adapter}
                   slashCommands={slashCommands}
                   commandContext={commandContext}
                   shellModeActive={shellModeActive}

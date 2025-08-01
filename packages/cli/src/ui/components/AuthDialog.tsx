@@ -11,11 +11,13 @@ import { RadioButtonSelect } from './shared/RadioButtonSelect.js';
 import { LoadedSettings, SettingScope } from '../../config/settings.js';
 import { AuthType } from '@gemini-cli-adapter/core-copy';
 import { validateAuthMethod } from '../../config/auth.js';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 interface AuthDialogProps {
   onSelect: (authMethod: AuthType | undefined, scope: SettingScope) => void;
   settings: LoadedSettings;
   initialErrorMessage?: string | null;
+  adapter: CoreAdapter;
 }
 
 function parseDefaultAuthType(
@@ -34,6 +36,7 @@ export function AuthDialog({
   onSelect,
   settings,
   initialErrorMessage,
+  adapter,
 }: AuthDialogProps): React.JSX.Element {
   const [errorMessage, setErrorMessage] = useState<string | null>(() => {
     if (initialErrorMessage) {
@@ -99,7 +102,7 @@ export function AuthDialog({
   });
 
   const handleAuthSelect = (authMethod: AuthType) => {
-    const error = validateAuthMethod(authMethod);
+    const error = validateAuthMethod(adapter, authMethod);
     if (error) {
       setErrorMessage(error);
     } else {
