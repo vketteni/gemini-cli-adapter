@@ -43,7 +43,7 @@ export class ShellProcessor implements IPromptProcessor {
   constructor(private readonly commandName: string) {}
 
   async process(prompt: string, context: CommandContext): Promise<string> {
-    const { config, sessionShellAllowlist } = {
+    const { adapter, sessionShellAllowlist } = {
       ...context.services,
       ...context.session,
     };
@@ -59,7 +59,7 @@ export class ShellProcessor implements IPromptProcessor {
     for (const match of matches) {
       const command = match[1].trim();
       const { allAllowed, disallowedCommands, blockReason, isHardDenial } =
-        checkCommandPermissions(command, config!, sessionShellAllowlist);
+        await adapter!.tools.checkCommandPermissions(command, sessionShellAllowlist);
 
       if (!allAllowed) {
         // If it's a hard denial, this is a non-recoverable security error.
@@ -70,7 +70,7 @@ export class ShellProcessor implements IPromptProcessor {
         }
 
         // Add each soft denial disallowed command to the set for confirmation.
-        disallowedCommands.forEach((uc) => commandsToConfirm.add(uc));
+        disallowedCommands.forEach((uc: string) => commandsToConfirm.add(uc));
       }
       commandsToExecute.push({ fullMatch: match[0], command });
     }
@@ -89,7 +89,7 @@ export class ShellProcessor implements IPromptProcessor {
     for (const { fullMatch, command } of commandsToExecute) {
       const { result } = ShellExecutionService.execute(
         command,
-        config!.getTargetDir(),
+        adapter!.workspace.getProjectRoot(),
         () => {}, // No streaming needed.
         new AbortController().signal, // For now, we don't support cancellation from here.
       );

@@ -115,7 +115,6 @@ export async function runNonInteractive(
 
           const toolResponse = await toolingService.executeToolCall(
             requestInfo,
-            abortController.signal,
           );
 
           if (toolResponse.error) {

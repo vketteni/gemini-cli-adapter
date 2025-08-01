@@ -193,7 +193,7 @@ export async function main() {
       if (settings.merged.selectedAuthType) {
         // Validate authentication here because the sandbox will interfere with the Oauth2 web redirect.
         try {
-          const err = validateAuthMethod(settings.merged.selectedAuthType);
+          const err = validateAuthMethod(adapter, settings.merged.selectedAuthType);
           if (err) {
             throw new Error(err);
           }
@@ -203,7 +203,7 @@ export async function main() {
           process.exit(1);
         }
       }
-      await start_sandbox(sandboxConfig, memoryArgs);
+      await start_sandbox(adapter, memoryArgs);
       process.exit(0);
     } else {
       // Not in a sandbox and not entering one, so relaunch with additional
@@ -339,8 +339,9 @@ async function loadNonInteractiveConfig(
     await finalConfig.initialize();
   }
 
+  const finalAdapter = createAdapterFromConfig(finalConfig);
   return await validateNonInteractiveAuth(
     settings.merged.selectedAuthType,
-    finalConfig,
+    finalAdapter,
   );
 }
