@@ -7,6 +7,14 @@
  * domain-driven, separating concerns into logical services.
  */
 
+// Type imports needed by the interfaces
+export interface GeminiCLIExtension {
+  name: string;
+  version: string;
+  isActive: boolean;
+  path: string;
+}
+
 // Note: We will need to define or import types like `Tool`, `ToolCall`,
 // `AuthType`, etc. as we build out the implementation. For now, we use
 // placeholders like `any` or define basic structures.
@@ -42,6 +50,16 @@ export interface ChatService {
    * Attempts to compress the chat history.
    */
   tryCompressChat(promptId?: string, forceCompress?: boolean): Promise<any>;
+
+  /**
+   * Sets the available tools for the chat session.
+   */
+  setTools(): Promise<void>;
+
+  /**
+   * Adds history to the chat session.
+   */
+  addHistory(history: any[]): Promise<void>;
 }
 
 /**
@@ -66,7 +84,7 @@ export interface ToolingService {
   /**
    * Checks the permissions for a given shell command.
    */
-  checkCommandPermissions(command: string): Promise<any>;
+  checkCommandPermissions(command: string, sessionAllowlist?: Set<string>): Promise<any>;
 
   /**
    * Retrieves the function declarations for all available tools.
@@ -82,6 +100,16 @@ export interface ToolingService {
    * Gets the shell execution service for running shell commands.
    */
   getShellExecutionService(): any;
+
+  /**
+   * Gets the prompt registry instance.
+   */
+  getPromptRegistry(): Promise<any>;
+
+  /**
+   * Gets the IDE client instance.
+   */
+  getIdeClient(): any;
 }
 
 /**
@@ -268,8 +296,92 @@ export interface SettingsService {
    * Gets the current authentication type.
    */
   getAuthType(): any;
+
+  /**
+   * Gets the list of blocked MCP servers.
+   */
+  getBlockedMcpServers(): any[];
+
+  /**
+   * Gets the list of active extensions.
+   */
+  getExtensions(): GeminiCLIExtension[];
+
+  /**
+   * Gets whether IDE mode is enabled.
+   */
+  getIdeMode(): boolean;
+
+  /**
+   * Gets the IDE client instance.
+   */
+  getIdeClient(): any;
+
+  /**
+   * Gets whether recursive file search is enabled.
+   */
+  getEnableRecursiveFileSearch(): boolean;
+
+  /**
+   * Gets the file filtering options.
+   */
+  getFileFilteringOptions(): any; // Changed to any for now, will define FilterFilesOptions later
 }
 
+/**
+ * Manages the registration, discovery, and execution of tools.
+ */
+export interface ToolingService {
+  /**
+   * Retrieves a specific tool by name.
+   */
+  getTool(name: string): Promise<any | undefined>;
+
+  /**
+   * Retrieves all available tools.
+   */
+  getAllTools(): Promise<any[]>;
+
+  /**
+   * Executes a tool call.
+   */
+  executeToolCall(toolCall: any): Promise<any>;
+
+  /**
+   * Checks the permissions for a given shell command.
+   */
+  checkCommandPermissions(command: string, sessionAllowlist?: Set<string>): Promise<any>;
+
+  /**
+   * Retrieves the function declarations for all available tools.
+   */
+  getFunctionDeclarations(): Promise<any[]>;
+
+  /**
+   * Gets the tool registry instance for advanced tool management.
+   */
+  getToolRegistry(): Promise<any>;
+
+  /**
+   * Gets the shell execution service for running shell commands.
+   */
+  getShellExecutionService(): any;
+
+  /**
+   * Gets the prompt registry instance.
+   */
+  getPromptRegistry(): Promise<any>;
+
+  /**
+   * Gets the IDE client instance.
+   */
+  getIdeClient(): any;
+
+  /**
+   * Creates a CoreToolScheduler instance.
+   */
+  createCoreToolScheduler(options: any): any;
+}
 
 // --- Core Adapter Interface ---
 
@@ -299,4 +411,12 @@ export interface CoreAdapter {
   auth: AuthService;
   memory: MemoryService;
   settings: SettingsService;
+}
+
+export interface GeminiCLIExtension {
+  name: string;
+  version: string;
+  isActive: boolean;
+  path: string;
+  description?: string;
 }
