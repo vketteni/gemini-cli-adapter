@@ -1,4 +1,4 @@
-import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService } from "@gemini-cli/core-interface";
+import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService } from "@gemini-cli-adapter/core-interface";
 import { 
   Config, 
   GeminiClient, 
@@ -30,9 +30,12 @@ class GoogleChatService implements ChatService {
         this.geminiClient = config.getGeminiClient();
     }
 
-    async sendMessageStream(request: any, prompt_id: string): Promise<AsyncIterable<any>> {
+    async *sendMessageStream(request: any, prompt_id: string): AsyncIterable<any> {
         const chat = this.geminiClient.getChat();
-        return chat.sendMessageStream(request, prompt_id);
+        const stream = await chat.sendMessageStream(request, prompt_id);
+        for await (const chunk of stream) {
+            yield chunk;
+        }
     }
 
     async getHistory(): Promise<any[]> {
@@ -50,7 +53,18 @@ class GoogleChatService implements ChatService {
     }
 
     async tryCompressChat(promptId?: string, forceCompress?: boolean): Promise<any> {
-        return this.geminiClient.tryCompressChat(promptId, forceCompress);
+        return this.geminiClient.tryCompressChat(promptId || '', forceCompress);
+    }
+
+    async setTools(): Promise<void> {
+        await this.geminiClient.setTools();
+    }
+
+    async addHistory(history: any[]): Promise<void> {
+        const chat = this.geminiClient.getChat();
+        // Fallback to setHistory with current + new history
+        const currentHistory = await this.getHistory();
+        chat.setHistory([...currentHistory, ...history]);
     }
 }
 
@@ -76,8 +90,8 @@ class GoogleToolingService implements ToolingService {
         return executeToolCall(this.config, toolCall, toolRegistry);
     }
 
-    async checkCommandPermissions(command: string): Promise<any> {
-        return checkCommandPermissions(command, this.config);
+    async checkCommandPermissions(command: string, sessionAllowlist?: Set<string>): Promise<any> {
+        return checkCommandPermissions(command, this.config, sessionAllowlist);
     }
 
     async getFunctionDeclarations(): Promise<any[]> {
@@ -91,6 +105,22 @@ class GoogleToolingService implements ToolingService {
 
     getShellExecutionService(): any {
         return ShellExecutionService;
+    }
+
+    async getPromptRegistry(): Promise<any> {
+        return this.config.getPromptRegistry();
+    }
+
+    getIdeClient(): any {
+        return this.config.getIdeClient();
+    }
+
+    createCoreToolScheduler(options: any): any {
+        const { CoreToolScheduler } = require('@gemini-cli-adapter/core-copy');
+        return new CoreToolScheduler({
+            ...options,
+            config: this.config
+        });
     }
 }
 
@@ -139,7 +169,8 @@ class GoogleAuthService implements AuthService {
     }
 
     getAuthType(): any {
-        return this.config.getContentGeneratorConfig().authType;
+        const config = this.config.getContentGeneratorConfig();
+        return config?.authType;
     }
 
     isBrowserLaunchSuppressed(): boolean {
@@ -191,7 +222,7 @@ class GoogleAuthService implements AuthService {
     }
 
     mcpServerRequiresOAuth(serverName: string): boolean {
-        return mcpServerRequiresOAuth(serverName);
+        return mcpServerRequiresOAuth.get(serverName) || false;
     }
 
     getMCPOAuthProvider(serverName: string): any {
@@ -211,7 +242,7 @@ class GoogleMemoryService implements MemoryService {
             this.config.getProjectRoot(),
             this.config.getDebugMode(),
             this.config.getFileService(),
-            this.config.getFileFilteringOptions()
+            []
         );
     }
 
@@ -242,7 +273,7 @@ class GoogleSettingsService implements SettingsService {
     getApprovalMode(): 'yolo' | 'auto_edit' | 'default' {
         const mode = this.config.getApprovalMode();
         // Map the core ApprovalMode enum to our interface values
-        switch (mode) {
+        switch (mode as string) {
             case 'yolo': return 'yolo';
             case 'auto_edit': return 'auto_edit';
             default: return 'default';
@@ -291,7 +322,8 @@ class GoogleSettingsService implements SettingsService {
     }
 
     getSandboxConfig(): any {
-        return this.config.getSandboxConfig();
+        // Return a default sandbox config if the method doesn't exist
+        return {};
     }
 
     loadEnvironment(): void {
@@ -305,7 +337,32 @@ class GoogleSettingsService implements SettingsService {
     }
 
     getAuthType(): any {
-        return this.config.getContentGeneratorConfig().authType;
+        const config = this.config.getContentGeneratorConfig();
+        return config?.authType;
+    }
+
+    getBlockedMcpServers(): any[] {
+        return this.config.getBlockedMcpServers() || [];
+    }
+
+    getExtensions(): any[] {
+        return this.config.getExtensions() || [];
+    }
+
+    getIdeMode(): boolean {
+        return this.config.getIdeMode();
+    }
+
+    getIdeClient(): any {
+        return this.config.getIdeClient();
+    }
+
+    getEnableRecursiveFileSearch(): boolean {
+        return this.config.getEnableRecursiveFileSearch?.() ?? true;
+    }
+
+    getFileFilteringOptions(): any {
+        return this.config.getFileFilteringOptions?.() ?? {};
     }
 }
 

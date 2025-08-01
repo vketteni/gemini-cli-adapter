@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Compatibility shim for @google/gemini-cli-core package",
   "type": "module",
-  "main": "dist/minimal.js",
-  "types": "dist/minimal.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
