@@ -8,15 +8,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { glob } from 'glob';
-import {
-  isNodeError,
-  escapePath,
-  unescapePath,
-  getErrorMessage,
-  Config,
-  FileDiscoveryService,
-  DEFAULT_FILE_FILTERING_OPTIONS,
-} from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import {
   MAX_SUGGESTIONS_TO_SHOW,
   Suggestion,
@@ -25,6 +17,7 @@ import { CommandContext, SlashCommand } from '../commands/types.js';
 import { TextBuffer } from '../components/shared/text-buffer.js';
 import { isSlashCommand } from '../utils/commandUtils.js';
 import { toCodePoints } from '../utils/textUtils.js';
+import { escapePath, unescapePath, isNodeError, getErrorMessage, FileDiscoveryService, DEFAULT_FILE_FILTERING_OPTIONS } from '@gemini-cli-adapter/core-copy';
 
 export interface UseCompletionReturn {
   suggestions: Suggestion[];
@@ -46,7 +39,7 @@ export function useCompletion(
   cwd: string,
   slashCommands: readonly SlashCommand[],
   commandContext: CommandContext,
-  config?: Config,
+  adapter?: CoreAdapter,
 ): UseCompletionReturn {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeSuggestionIndex, setActiveSuggestionIndex] =
@@ -449,11 +442,11 @@ export function useCompletion(
       setIsLoadingSuggestions(true);
       let fetchedSuggestions: Suggestion[] = [];
 
-      const fileDiscoveryService = config ? config.getFileService() : null;
+      const fileDiscoveryService = adapter ? adapter.workspace.getFileDiscoveryService() : null;
       const enableRecursiveSearch =
-        config?.getEnableRecursiveFileSearch() ?? true;
+        adapter?.settings.getEnableRecursiveFileSearch() ?? true;
       const filterOptions =
-        config?.getFileFilteringOptions() ?? DEFAULT_FILE_FILTERING_OPTIONS;
+        adapter?.settings.getFileFilteringOptions() ?? DEFAULT_FILE_FILTERING_OPTIONS;
 
       try {
         // If there's no slash, or it's the root, do a recursive search from cwd
@@ -590,7 +583,7 @@ export function useCompletion(
     resetCompletionState,
     slashCommands,
     commandContext,
-    config,
+    adapter,
   ]);
 
   const handleAutocomplete = useCallback(

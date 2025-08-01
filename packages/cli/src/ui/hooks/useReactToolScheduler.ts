@@ -12,7 +12,6 @@ import {
   WaitingToolCall,
   CompletedToolCall,
   CancelledToolCall,
-  CoreToolScheduler,
   OutputUpdateHandler,
   AllToolCallsCompleteHandler,
   ToolCallsUpdateHandler,
@@ -133,13 +132,13 @@ export function useReactToolScheduler(
 
   const scheduler = useMemo(
     () =>
-      new CoreToolScheduler({
+      adapter.tools.createCoreToolScheduler({
         toolRegistry: adapter.tools.getToolRegistry(),
         outputUpdateHandler,
         onAllToolCallsComplete: allToolCallsCompleteHandler,
         onToolCallsUpdate: toolCallsUpdateHandler,
         getPreferredEditor,
-        config: adapter, // Pass adapter as config for now - will need proper typing later
+        telemetryService: adapter,
       }),
     [
       adapter,
