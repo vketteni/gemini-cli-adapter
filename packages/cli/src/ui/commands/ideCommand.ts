@@ -5,7 +5,8 @@
  */
 
 import { fileURLToPath } from 'url';
-import { Config, IDEConnectionStatus } from '@gemini-cli-adapter/core-copy';
+import { IDEConnectionStatus } from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import {
   CommandContext,
   SlashCommand,
@@ -34,8 +35,8 @@ function isVSCodeInstalled(): boolean {
   }
 }
 
-export const ideCommand = (config: Config | null): SlashCommand | null => {
-  if (!config?.getIdeMode()) {
+export const ideCommand = (adapter: CoreAdapter | null): SlashCommand | null => {
+  if (!adapter?.settings.getIdeMode()) {
     return null;
   }
 
@@ -49,7 +50,7 @@ export const ideCommand = (config: Config | null): SlashCommand | null => {
         description: 'check status of IDE integration',
         kind: CommandKind.BUILT_IN,
         action: (_context: CommandContext): SlashCommandActionReturn => {
-          const connection = config.getIdeClient()?.getConnectionStatus();
+          const connection = adapter.tools.getIdeClient()?.getConnectionStatus();
           switch (connection?.status) {
             case IDEConnectionStatus.Connected:
               return {

@@ -10,17 +10,28 @@ import {
   CommandKind,
 } from './types.js';
 import { MessageType } from '../types.js';
+import { type Extension } from '../../config/extension.js';
+import { GeminiCLIExtension } from '@gemini-cli-adapter/core-interface';
 
 export const extensionsCommand: SlashCommand = {
   name: 'extensions',
   description: 'list active extensions',
   kind: CommandKind.BUILT_IN,
   action: async (context: CommandContext): Promise<void> => {
-    // TODO: Add getExtensions method to SettingsService
-    const config = context.services.adapter && (context.services.adapter as any).config;
-    const activeExtensions = config
-      ?.getExtensions()
-      .filter((ext: any) => ext.isActive);
+    if (!context.services.adapter) {
+      context.ui.addItem(
+        {
+          type: MessageType.ERROR,
+          text: 'Adapter not available.',
+        },
+        Date.now(),
+      );
+      return;
+    }
+    
+    const activeExtensions = context.services.adapter.settings
+      .getExtensions()
+      .filter((ext: GeminiCLIExtension) => ext.isActive);
     if (!activeExtensions || activeExtensions.length === 0) {
       context.ui.addItem(
         {
@@ -33,7 +44,7 @@ export const extensionsCommand: SlashCommand = {
     }
 
     const extensionLines = activeExtensions.map(
-      (ext) => `  - \u001b[36m${ext.name} (v${ext.version})\u001b[0m`,
+      (ext: GeminiCLIExtension) => `  - \u001b[36m${ext.name} (v${ext.version})\u001b[0m`,
     );
     const message = `Active extensions:\n\n${extensionLines.join('\n')}\n`;
 
