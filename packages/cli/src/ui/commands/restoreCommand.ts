@@ -12,18 +12,18 @@ import {
   type SlashCommandActionReturn,
   CommandKind,
 } from './types.js';
-import { Config } from '@gemini-cli-adapter/core-copy';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 async function restoreAction(
   context: CommandContext,
   args: string,
 ): Promise<void | SlashCommandActionReturn> {
   const { services, ui } = context;
-  const { config, git: gitService } = services;
+  const { adapter, git: gitService } = services;
   const { addItem, loadHistory } = ui;
 
-  const checkpointDir = config?.getProjectTempDir()
-    ? path.join(config.getProjectTempDir(), 'checkpoints')
+  const checkpointDir = adapter?.settings.getProjectTempDir()
+    ? path.join(adapter.settings.getProjectTempDir(), 'checkpoints')
     : undefined;
 
   if (!checkpointDir) {
@@ -91,7 +91,7 @@ async function restoreAction(
     }
 
     if (toolCallData.clientHistory) {
-      await config?.getGeminiClient()?.setHistory(toolCallData.clientHistory);
+      await adapter?.chat.setHistory(toolCallData.clientHistory);
     }
 
     if (toolCallData.commitHash) {
@@ -124,9 +124,9 @@ async function completion(
   _partialArg: string,
 ): Promise<string[]> {
   const { services } = context;
-  const { config } = services;
-  const checkpointDir = config?.getProjectTempDir()
-    ? path.join(config.getProjectTempDir(), 'checkpoints')
+  const { adapter } = services;
+  const checkpointDir = adapter?.settings.getProjectTempDir()
+    ? path.join(adapter.settings.getProjectTempDir(), 'checkpoints')
     : undefined;
   if (!checkpointDir) {
     return [];
@@ -141,8 +141,8 @@ async function completion(
   }
 }
 
-export const restoreCommand = (config: Config | null): SlashCommand | null => {
-  if (!config?.getCheckpointingEnabled()) {
+export const restoreCommand = (adapter: CoreAdapter | null): SlashCommand | null => {
+  if (!adapter?.settings.getCheckpointingEnabled()) {
     return null;
   }
 

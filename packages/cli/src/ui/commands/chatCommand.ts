@@ -106,9 +106,9 @@ const saveCommand: SlashCommand = {
       };
     }
 
-    const { logger, config } = context.services;
+    const { logger, adapter } = context.services;
     await logger.initialize();
-    const chat = await config?.getGeminiClient()?.getChat();
+    const chat = adapter?.chat;
     if (!chat) {
       return {
         type: 'message',
@@ -117,7 +117,7 @@ const saveCommand: SlashCommand = {
       };
     }
 
-    const history = chat.getHistory();
+    const history = await chat.getHistory();
     if (history.length > 0) {
       await logger.saveCheckpoint(history, tag);
       return {

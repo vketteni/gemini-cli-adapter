@@ -18,7 +18,6 @@ import {
   getMCPServerStatus,
   MCPDiscoveryState,
   MCPServerStatus,
-  mcpServerRequiresOAuth,
   getErrorMessage,
 } from '@gemini-cli-adapter/core-copy';
 import open from 'open';
@@ -36,16 +35,16 @@ const getMcpStatus = async (
   showSchema: boolean,
   showTips: boolean = false,
 ): Promise<SlashCommandActionReturn> => {
-  const { config } = context.services;
-  if (!config) {
+  const { adapter } = context.services;
+  if (!adapter) {
     return {
       type: 'message',
       messageType: 'error',
-      content: 'Config not loaded.',
+      content: 'Adapter not loaded.',
     };
   }
 
-  const toolRegistry = await config.getToolRegistry();
+  const toolRegistry = await adapter.tools.getToolRegistry();
   if (!toolRegistry) {
     return {
       type: 'message',
@@ -54,9 +53,9 @@ const getMcpStatus = async (
     };
   }
 
-  const mcpServers = config.getMcpServers() || {};
+  const mcpServers = adapter.settings.getMcpServers() || {};
   const serverNames = Object.keys(mcpServers);
-  const blockedMcpServers = config.getBlockedMcpServers() || [];
+  const blockedMcpServers = adapter.settings.getBlockedMcpServers() || [];
 
   if (serverNames.length === 0 && blockedMcpServers.length === 0) {
     const docsUrl = 'https://goo.gle/gemini-cli-docs-mcp';
@@ -99,10 +98,10 @@ const getMcpStatus = async (
   const allTools = toolRegistry.getAllTools();
   for (const serverName of serverNames) {
     const serverTools = allTools.filter(
-      (tool) =>
+      (tool: any) =>
         tool instanceof DiscoveredMCPTool && tool.serverName === serverName,
     ) as DiscoveredMCPTool[];
-    const promptRegistry = await config.getPromptRegistry();
+    const promptRegistry = await adapter.tools.getPromptRegistry();
     const serverPrompts = promptRegistry.getPromptsByServer(serverName) || [];
 
     const status = getMCPServerStatus(serverName);
@@ -127,7 +126,7 @@ const getMcpStatus = async (
     }
 
     // Get server description if available
-    const server = mcpServers[serverName];
+    const server: { extensionName?: string; oauth?: { enabled: boolean }; description?: string; } = mcpServers[serverName];
     let serverDisplayName = serverName;
     if (server.extensionName) {
       serverDisplayName += ` (from ${server.extensionName})`;
@@ -136,7 +135,7 @@ const getMcpStatus = async (
     // Format server header with bold formatting and status
     message += `${statusIndicator} \u001b[1m${serverDisplayName}\u001b[0m - ${statusText}`;
 
-    let needsAuthHint = mcpServerRequiresOAuth.get(serverName) || false;
+    let needsAuthHint = adapter.auth.mcpServerRequiresOAuth(serverName) || false;
     // Add OAuth status if applicable
     if (server?.oauth?.enabled) {
       needsAuthHint = true;
@@ -207,7 +206,7 @@ const getMcpStatus = async (
 
     if (serverTools.length > 0) {
       message += `  ${COLOR_CYAN}Tools:${RESET_COLOR}\n`;
-      serverTools.forEach((tool) => {
+      serverTools.forEach((tool: DiscoveredMCPTool) => {
         if (showDescriptions && tool.description) {
           // Format tool name in cyan using simple ANSI cyan color
           message += `  - ${COLOR_CYAN}${tool.name}${RESET_COLOR}`;
@@ -321,22 +320,22 @@ const authCommand: SlashCommand = {
     args: string,
   ): Promise<MessageActionReturn> => {
     const serverName = args.trim();
-    const { config } = context.services;
+    const { adapter } = context.services;
 
-    if (!config) {
+    if (!adapter) {
       return {
         type: 'message',
         messageType: 'error',
-        content: 'Config not loaded.',
+        content: 'Adapter not loaded.',
       };
     }
 
-    const mcpServers = config.getMcpServers() || {};
+    const mcpServers = adapter.settings.getMcpServers() || {};
 
     if (!serverName) {
       // List servers that support OAuth
       const oauthServers = Object.entries(mcpServers)
-        .filter(([_, server]) => server.oauth?.enabled)
+        .filter(([_, server]: [string, any]) => server.oauth?.enabled)
         .map(([name, _]) => name);
 
       if (oauthServers.length === 0) {
@@ -400,7 +399,7 @@ const authCommand: SlashCommand = {
       );
 
       // Trigger tool re-discovery to pick up authenticated server
-      const toolRegistry = await config.getToolRegistry();
+      const toolRegistry = await adapter.tools.getToolRegistry();
       if (toolRegistry) {
         context.ui.addItem(
           {
@@ -412,10 +411,7 @@ const authCommand: SlashCommand = {
         await toolRegistry.discoverToolsForServer(serverName);
       }
       // Update the client with the new tools
-      const geminiClient = config.getGeminiClient();
-      if (geminiClient) {
-        await geminiClient.setTools();
-      }
+      await adapter.chat.setTools();
 
       return {
         type: 'message',
@@ -431,10 +427,10 @@ const authCommand: SlashCommand = {
     }
   },
   completion: async (context: CommandContext, partialArg: string) => {
-    const { config } = context.services;
-    if (!config) return [];
+    const { adapter } = context.services;
+    if (!adapter) return [];
 
-    const mcpServers = config.getMcpServers() || {};
+    const mcpServers = adapter.settings.getMcpServers() || {};
     return Object.keys(mcpServers).filter((name) =>
       name.startsWith(partialArg),
     );
@@ -473,16 +469,16 @@ const refreshCommand: SlashCommand = {
   action: async (
     context: CommandContext,
   ): Promise<SlashCommandActionReturn> => {
-    const { config } = context.services;
-    if (!config) {
+    const { adapter } = context.services;
+    if (!adapter) {
       return {
         type: 'message',
         messageType: 'error',
-        content: 'Config not loaded.',
+        content: 'Adapter not loaded.',
       };
     }
 
-    const toolRegistry = await config.getToolRegistry();
+    const toolRegistry = await adapter.tools.getToolRegistry();
     if (!toolRegistry) {
       return {
         type: 'message',
@@ -502,10 +498,7 @@ const refreshCommand: SlashCommand = {
     await toolRegistry.discoverMcpTools();
 
     // Update the client with the new tools
-    const geminiClient = config.getGeminiClient();
-    if (geminiClient) {
-      await geminiClient.setTools();
-    }
+    await adapter.chat.setTools();
 
     return getMcpStatus(context, false, false, false);
   },

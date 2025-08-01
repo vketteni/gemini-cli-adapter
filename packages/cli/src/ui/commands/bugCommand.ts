@@ -22,7 +22,7 @@ export const bugCommand: SlashCommand = {
   kind: CommandKind.BUILT_IN,
   action: async (context: CommandContext, args?: string): Promise<void> => {
     const bugDescription = (args || '').trim();
-    const { config } = context.services;
+    const { adapter } = context.services;
 
     const osVersion = `${process.platform} ${process.version}`;
     let sandboxEnv = 'no sandbox';
@@ -33,7 +33,7 @@ export const bugCommand: SlashCommand = {
         process.env.SEATBELT_PROFILE || 'unknown'
       })`;
     }
-    const modelVersion = config?.getModel() || 'Unknown';
+    const modelVersion = adapter?.settings?.getModel() || 'Unknown';
     const cliVersion = await getCliVersion();
     const memoryUsage = formatMemoryUsage(process.memoryUsage().rss);
 
@@ -49,10 +49,11 @@ export const bugCommand: SlashCommand = {
     let bugReportUrl =
       'https://github.com/google-gemini/gemini-cli/issues/new?template=bug_report.yml&title={title}&info={info}';
 
-    const bugCommandSettings = config?.getBugCommand();
-    if (bugCommandSettings?.urlTemplate) {
-      bugReportUrl = bugCommandSettings.urlTemplate;
-    }
+    // Note: Bug command settings not available through adapter interface yet
+    // const bugCommandSettings = adapter?.settings?.getBugCommand();
+    // if (bugCommandSettings?.urlTemplate) {
+    //   bugReportUrl = bugCommandSettings.urlTemplate;
+    // }
 
     bugReportUrl = bugReportUrl
       .replace('{title}', encodeURIComponent(bugDescription))

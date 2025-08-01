@@ -10,6 +10,7 @@ import {
   SlashCommand,
   SlashCommandActionReturn,
 } from './types.js';
+import { type Part } from '@google/genai';
 
 export const copyCommand: SlashCommand = {
   name: 'copy',
@@ -33,8 +34,8 @@ export const copyCommand: SlashCommand = {
     }
     // Extract text from the parts
     const lastAiOutput = lastAiMessage.parts
-      ?.filter((part) => part.text)
-      .map((part) => part.text)
+      ?.filter((part: Part) => part.text)
+      .map((part: Part) => part.text)
       .join('');
 
     if (lastAiOutput) {
