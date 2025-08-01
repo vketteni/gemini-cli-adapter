@@ -21,5 +21,5 @@
     "src/**/*.test.tsx",
     "src/test-utils"
   ],
-  "references": [{ "path": "../core-interface" }]
+  "references": [{ "path": "../core-interface" }, { "path": "../core_copy" }]
 }
