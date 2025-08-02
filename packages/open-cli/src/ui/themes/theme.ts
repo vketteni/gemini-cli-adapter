@@ -32,6 +32,9 @@ export interface CustomTheme extends ColorsTheme {
   name: string;
 }
 
+// Open CLI branding gradient colors - blue to green gradient
+export const openCliGradientColors = ['#3b82f6', '#06b6d4', '#10b981'];
+
 export const lightTheme: ColorsTheme = {
   type: 'light',
   Background: '#FAFAFA',
@@ -47,7 +50,7 @@ export const lightTheme: ColorsTheme = {
   DiffRemoved: '#FFCCCC',
   Comment: '#008000',
   Gray: '#97a0b0',
-  GradientColors: ['#4796E4', '#847ACE', '#C3677F'],
+  GradientColors: openCliGradientColors,
 };
 
 export const darkTheme: ColorsTheme = {
@@ -65,7 +68,7 @@ export const darkTheme: ColorsTheme = {
   DiffRemoved: '#430000',
   Comment: '#6C7086',
   Gray: '#6C7086',
-  GradientColors: ['#4796E4', '#847ACE', '#C3677F'],
+  GradientColors: openCliGradientColors,
 };
 
 export const ansiTheme: ColorsTheme = {
