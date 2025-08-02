@@ -130,12 +130,12 @@ To set up the project locally:
 - ✅ **COMPLETED:** Updated GoogleAdapter with missing interface methods
 - **Target:** Complete removal of direct `@google/gemini-cli-core` imports ✅
 
-### 🚀 **Phase 4: Alternative Adapter Validation**
-**Status: READY TO BEGIN** - Phase 3E completion enables multi-core-module architecture
+### 🚀 **Phase 4: Gemini CLI Core Adapter Integration**
+**Status: READY TO BEGIN** - Phase 3E completion enables the Gemini CLI core adapter implementation
 
 ## Current Status & Roadmap
 
-**Current Progress: Phase 3E COMPLETE - Architecture fully decoupled, ready for multi-core-module validation**
+**Current Progress: Phase 3E COMPLETE - Architecture fully decoupled, ready for Gemini CLI core adapter integration**
 
 ### 🎯 **Current Next Steps (Phase 4)**
 
@@ -147,9 +147,9 @@ To set up the project locally:
 
 ### 📋 **Future Roadmap (Phase 4+)**
 
-**Phase 4: Alternative Adapter Validation**
-- **Mock Adapter Creation** - Develop test adapter implementing CoreAdapter interface  
-- **Multi-Core-Module Testing** - Validate CLI works with custom core module backends
+**Phase 4: Gemini CLI Core Adapter Integration**
+- **Gemini CLI Core Adapter** - Integrate the actual Gemini CLI core module through the adapter interface
+- **Core Module Integration Testing** - Validate CLI works with the Gemini CLI core implementation
 - **Developer Guide** - Document adapter implementation guide for core module builders
 - **Performance Benchmarking** - Ensure no regression vs original implementation
 
@@ -189,13 +189,13 @@ CLI Frontend → CoreAdapter Interface → [GoogleAdapter|CustomAdapter|YourAdap
 
 **Key Technical Challenges Remaining:**
 - **Performance Validation**: Ensure no regression vs original implementation  
-- **Alternative Adapter Validation**: Test with custom core module implementations
+- **Gemini Core Adapter Integration**: Complete integration with the Gemini CLI core module
 
-### 🚀 **Phase 4: Extensibility Validation**
+### 🚀 **Phase 4: Gemini Core Integration**
 
-**Success Criteria for Alternative Adapter Support:**
-- Create mock/test adapter implementing CoreAdapter interface
-- Demonstrate CLI works with custom core module backends
+**Success Criteria for Gemini CLI Core Adapter:**
+- Complete integration of Gemini CLI core module through the adapter interface
+- Demonstrate CLI works with the actual Gemini CLI core implementation
 - Validate clean separation of concerns
 - Document adapter implementation guide for core module builders
 
