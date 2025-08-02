@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 
 /**
  * Hook to manage the logger instance using CoreAdapter.

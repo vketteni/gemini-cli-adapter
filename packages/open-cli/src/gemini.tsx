@@ -33,7 +33,7 @@ import { checkForUpdates } from './ui/utils/updateCheck.js';
 import { handleAutoUpdate } from './utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from './utils/events.js';
 import { createAdapterFromConfig } from './adapters/adapterFactory.js';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 import {
   Config,
   AuthType,

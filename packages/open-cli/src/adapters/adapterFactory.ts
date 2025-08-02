@@ -1,7 +1,7 @@
 
 import { Config } from '@google/gemini-cli-core';
-import { GoogleAdapter } from '@gemini-cli-adapter/gemini-cli-core-shim';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { GoogleAdapter } from '@open-cli/gemini-cli-core-shim';
+import { CoreAdapter } from '@open-cli/interface';
 
 /**
  * Supported adapter types for the CLI

@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 
 // A utility type to make all properties of an object, and its nested objects, partial.
 type DeepPartial<T> = T extends object

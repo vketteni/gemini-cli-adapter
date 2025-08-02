@@ -25,7 +25,7 @@ import {
   ApprovalMode,
   Icon,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 import {
   HistoryItemWithoutId,
   ToolCallStatus,

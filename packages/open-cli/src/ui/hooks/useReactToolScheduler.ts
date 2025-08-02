@@ -20,7 +20,7 @@ import {
   Status as CoreStatus,
   EditorType,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 import { useCallback, useState, useMemo } from 'react';
 import {
   HistoryItemToolGroup,

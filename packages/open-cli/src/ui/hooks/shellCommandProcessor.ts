@@ -15,7 +15,7 @@ import {
   ShellExecutionResult,
   ShellOutputEvent,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 import { type PartListUnion } from '@google/genai';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
 import { SHELL_COMMAND_NAME } from '../constants.js';

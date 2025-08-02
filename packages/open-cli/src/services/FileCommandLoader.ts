@@ -13,7 +13,7 @@ import {
   getProjectCommandsDir,
   getUserCommandsDir,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 import { ICommandLoader } from './types.js';
 import {
   CommandContext,

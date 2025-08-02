@@ -1,4 +1,4 @@
-import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService } from "@gemini-cli-adapter/core-interface";
+import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService } from "@open-cli/interface";
 import { CoreToolScheduler } from "@google/gemini-cli-core";
 import { GoogleAuth } from 'google-auth-library';
 import { 

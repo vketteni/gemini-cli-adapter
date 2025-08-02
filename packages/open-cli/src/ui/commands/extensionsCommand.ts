@@ -11,7 +11,7 @@ import {
 } from './types.js';
 import { MessageType } from '../types.js';
 import { type Extension } from '../../config/extension.js';
-import { GeminiCLIExtension } from '@gemini-cli-adapter/core-interface';
+import { GeminiCLIExtension } from '@open-cli/interface';
 
 export const extensionsCommand: SlashCommand = {
   name: 'extensions',

@@ -8,7 +8,7 @@
 import { Content } from '@google/genai';
 import { HistoryItemWithoutId } from '../types.js';
 import { GitService, Logger } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 import { LoadedSettings } from '../../config/settings.js';
 import { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
 import type { HistoryItem } from '../types.js';
