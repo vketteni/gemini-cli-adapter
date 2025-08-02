@@ -1,30 +1,28 @@
-# Gemini CLI Adapter
+# Open CLI
 
 ## Overview
 
-This project aims to create a robust and flexible adapter for the Gemini CLI, designed to decouple the CLI frontend from its core module (`@google/gemini-cli-core`). The primary goal is to introduce a clean, generalized interface that allows for easy integration of alternative core modules (e.g., OpenAI, Anthropic) while maintaining backward compatibility with the existing CLI.
+An open-source CLI frontend extracted from Google's Gemini CLI, designed for builders of AI-powered core modules. Through clean interface abstraction, this project enables developers to integrate their own agentic systems, tools, and AI providers while leveraging a proven, feature-rich CLI experience.
 
 ## Architecture
 
-The project's architecture centers on a new, domain-driven **`CoreAdapter` interface**. This interface will act as a clean, modern, and intuitive contract for any backend AI service to integrate with the Gemini CLI.
+The project's architecture centers on a domain-driven **`CoreAdapter` interface** that provides a clean, modern contract for integrating AI-powered core modules with the CLI frontend.
 
-The legacy `@google/gemini-cli-core` will be wrapped by a `GoogleAdapter`, which is the first and primary implementation of the `CoreAdapter` interface.
-
-The CLI frontend itself will be **refactored** to interact directly with the new `CoreAdapter` interface, removing its legacy dependencies on the original core module's complex structure.
+The original `@google/gemini-cli-core` is wrapped by a `GoogleAdapter`, serving as the reference implementation of the `CoreAdapter` interface.
 
 ```
-CLI-Frontend ↔ CoreAdapter Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
-CLI-Frontend ↔ CoreAdapter Interface ↔ OpenAIAdapter ↔ OpenAI-Core-Module
+CLI Frontend ↔ CoreAdapter Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
+CLI Frontend ↔ CoreAdapter Interface ↔ CustomAdapter ↔ Your-Core-Module
 ```
 
-This approach ensures that future "builders" of alternative adapters (like for OpenAI or Anthropic) have a simple and logical interface to implement, maximizing the project's extensibility.
+This architecture enables core module builders to implement a single, well-defined interface while bringing their own agentic systems, tooling, and AI capabilities to the proven CLI experience.
 
 ## Key Features & Goals
 
-*   **Decoupling:** Sever the tight coupling between the CLI frontend and specific core implementations.
-*   **Extensibility:** Enable seamless integration of diverse AI core modules through a clean, builder-friendly interface.
-*   **Maintainability:** Improve the long-term health of the CLI by refactoring it against a modern, domain-driven interface.
-*   **Clean Interface:** Provide a generalized, module-agnostic interface for core functionalities like chat, tooling, and workspace management.
+*   **Decoupled Architecture:** Clean separation between CLI frontend and core module implementations
+*   **Builder-Friendly Interface:** Simple, well-defined contract for integrating custom core modules
+*   **Production-Ready:** Extracted from Google's proven Gemini CLI with full feature parity
+*   **Extensible Design:** Support for diverse agentic systems, tools, and AI capabilities through unified interface
 
 ## Getting Started
 
@@ -32,8 +30,8 @@ To set up the project locally:
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-repo/gemini-cli-adapter.git
-    cd gemini-cli-adapter
+    git clone https://github.com/vketteni/open-cli.git
+    cd open-cli
     ```
 2.  **Install dependencies:**
     This project uses `npm` workspaces.
@@ -48,11 +46,11 @@ To set up the project locally:
 
 ## Project Structure
 
-*   `packages/cli`: The main CLI frontend module, which will be refactored.
-*   `packages/interface`: Defines the new, domain-driven `CoreAdapter` interface.
-*   `packages/gemini-cli-core-shim`: A shim module that will facilitate the transition by initially housing the `GoogleAdapter`.
-*   `docs/`: Project documentation, including architectural guides.
-*   `analysis_notes/`: Detailed analysis of the CLI's interaction with the original core module.
+*   `packages/open-cli`: The main CLI frontend module, extracted and refactored from Gemini CLI
+*   `packages/interface`: Defines the domain-driven `CoreAdapter` interface for core module integration
+*   `packages/gemini-cli-core-shim`: Reference implementation wrapping Google's original core module
+*   `apps/open-cli`: The CLI application entry point
+*   `docs/`: Project documentation and architectural guides
 
 ## Implementation Status
 
@@ -126,33 +124,33 @@ To set up the project locally:
 - ✅ Migrated 98 test files to use CoreAdapter pattern
 - ✅ Updated command contexts and test utilities to use adapter-based dependency injection
 - ✅ **RESOLVED:** Fixed all critical TypeScript compilation errors in CLI package
-- ✅ **COMPLETED:** Import path corrections (`@gemini-cli/` → `@gemini-cli-adapter/`)
+- ✅ **COMPLETED:** Import path corrections (`@gemini-cli/` → `@open-cli/`)
 - ✅ **COMPLETED:** Added missing type exports (Icon, AuthType enums) to interface
 - ✅ **COMPLETED:** Fixed service property naming (`.chatService` → `.chat`, etc.)
 - ✅ **COMPLETED:** Updated GoogleAdapter with missing interface methods
 - **Target:** Complete removal of direct `@google/gemini-cli-core` imports ✅
 
 ### 🚀 **Phase 4: Alternative Adapter Validation**
-**Status: READY TO BEGIN** - Phase 3E completion enables multi-provider architecture
+**Status: READY TO BEGIN** - Phase 3E completion enables multi-core-module architecture
 
 ## Current Status & Roadmap
 
-**Current Progress: Phase 3E COMPLETE - Architecture fully decoupled, ready for multi-provider validation**
+**Current Progress: Phase 3E COMPLETE - Architecture fully decoupled, ready for multi-core-module validation**
 
 ### 🎯 **Current Next Steps (Phase 4)**
 
 **READY FOR PHASE 4 IMPLEMENTATION:**
 1. **Mock Adapter Creation** - Develop test adapter implementing CoreAdapter interface
-2. **Multi-provider Testing** - Validate CLI works with non-Google backend
-3. **End-to-end Integration Testing** - Confirm decoupled architecture works with alternative providers
+2. **Multi-Core-Module Testing** - Validate CLI works with alternative core module implementations
+3. **End-to-end Integration Testing** - Confirm decoupled architecture works with custom core modules
 4. **Performance Validation** - Ensure no regression vs original implementation
 
 ### 📋 **Future Roadmap (Phase 4+)**
 
 **Phase 4: Alternative Adapter Validation**
 - **Mock Adapter Creation** - Develop test adapter implementing CoreAdapter interface  
-- **Multi-provider Testing** - Validate CLI works with non-Google backend
-- **Developer Guide** - Document adapter implementation guide for third-party developers
+- **Multi-Core-Module Testing** - Validate CLI works with custom core module backends
+- **Developer Guide** - Document adapter implementation guide for core module builders
 - **Performance Benchmarking** - Ensure no regression vs original implementation
 
 ### 🏗️ **Architecture Transition Strategy**
@@ -165,7 +163,7 @@ Test Infrastructure → CoreAdapter Mocks → Comprehensive Test Coverage
 
 **Target State (Phase 4 Complete):**
 ```
-CLI Frontend → CoreAdapter Interface → [GoogleAdapter|OpenAIAdapter|AnthropicAdapter]
+CLI Frontend → CoreAdapter Interface → [GoogleAdapter|CustomAdapter|YourAdapter]
 ```
 
 **Key Technical Challenges Accomplished:**
@@ -185,21 +183,21 @@ CLI Frontend → CoreAdapter Interface → [GoogleAdapter|OpenAIAdapter|Anthropi
 
 **Key Technical Challenges Completed:**
 - ✅ **Build System Completion**: All TypeScript compilation issues resolved
-- ✅ **Import Path Standardization**: All packages now use correct `@gemini-cli-adapter/` naming
+- ✅ **Import Path Standardization**: All packages now use correct `@open-cli/` naming
 - ✅ **Service Interface Consistency**: All service properties use correct naming (chat, tools, settings, etc.)
 - ✅ **Type Export Coverage**: Missing types (Icon, AuthType) added to interface
 
 **Key Technical Challenges Remaining:**
 - **Performance Validation**: Ensure no regression vs original implementation  
-- **Alternative Adapter Validation**: Test with non-Google backend implementations
+- **Alternative Adapter Validation**: Test with custom core module implementations
 
 ### 🚀 **Phase 4: Extensibility Validation**
 
 **Success Criteria for Alternative Adapter Support:**
 - Create mock/test adapter implementing CoreAdapter interface
-- Demonstrate CLI works with non-Google backend
+- Demonstrate CLI works with custom core module backends
 - Validate clean separation of concerns
-- Document adapter implementation guide for third-party developers
+- Document adapter implementation guide for core module builders
 
 ## Contributing
 
