@@ -2,9 +2,9 @@
   "files": [],
   "include": [],
   "references": [
-    { "path": "./packages/core-interface" },
+    { "path": "./packages/interface" },
     { "path": "./packages/gemini-cli-core-shim" },
-    { "path": "./packages/cli" },
-    { "path": "./apps/gemini-cli" }
+    { "path": "./packages/open-cli" },
+    { "path": "./apps/open-cli" }
   ]
 }

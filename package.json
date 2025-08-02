@@ -5,8 +5,8 @@
   "type": "module",
   "private": true,
   "workspaces": [
-    "packages/core-interface",
-    "packages/cli",
+    "packages/interface",
+    "packages/open-cli",
     "packages/gemini-cli-core-shim",
     "apps/*"
   ],
