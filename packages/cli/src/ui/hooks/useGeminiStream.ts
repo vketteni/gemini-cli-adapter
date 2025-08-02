@@ -17,14 +17,12 @@ import {
   isNodeError,
   MessageSenderType,
   ToolCallRequestInfo,
-  logUserPrompt,
   GitService,
   EditorType,
   ThoughtSummary,
   UnauthorizedError,
-  UserPromptEvent,
   DEFAULT_GEMINI_FLASH_MODEL,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { type Part, type PartListUnion, FinishReason } from '@google/genai';
 import {
@@ -229,14 +227,9 @@ export const useGeminiStream = (
 
       if (typeof query === 'string') {
         const trimmedQuery = query.trim();
-        logger?.logUserPrompt(
-          new UserPromptEvent(
-            trimmedQuery.length,
-            prompt_id,
-            adapter.auth.getAuthType(),
-            trimmedQuery,
-          ),
-        );
+        if (logger) {
+          logger.logMessage(MessageSenderType.USER, trimmedQuery);
+        }
         onDebugMessage(`User query: '${trimmedQuery}'`);
         await logger?.logMessage(MessageSenderType.USER, trimmedQuery);
 

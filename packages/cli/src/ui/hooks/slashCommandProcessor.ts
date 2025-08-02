@@ -12,10 +12,8 @@ import { useStateAndRef } from './useStateAndRef.js';
 import {
   GitService,
   Logger,
-  logSlashCommand,
-  SlashCommandEvent,
   ToolConfirmationOutcome,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import {
@@ -274,18 +272,7 @@ export const useSlashCommandProcessor = (
           const args = parts.slice(pathIndex).join(' ');
 
           if (commandToExecute.action) {
-            // TODO: Add logSlashCommand method to CoreAdapter interface
-            // For now, we'll need to access the internal config from the adapter
-            if (adapter && (adapter as any).config) {
-              const resolvedCommandPath = canonicalPath;
-              const event = new SlashCommandEvent(
-                resolvedCommandPath[0],
-                resolvedCommandPath.length > 1
-                  ? resolvedCommandPath.slice(1).join(' ')
-                  : undefined,
-              );
-              logSlashCommand((adapter as any).config, event);
-            }
+            // TODO: Add logSlashCommand method to CoreAdapter interface if needed
 
             const fullCommandContext: CommandContext = {
               ...commandContext,

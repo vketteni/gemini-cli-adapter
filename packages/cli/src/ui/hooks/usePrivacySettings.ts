@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { CodeAssistServer, UserTierId } from '@gemini-cli-adapter/core-copy';
+import { CodeAssistServer, UserTierId } from '@google/gemini-cli-core';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 
 export interface PrivacyState {

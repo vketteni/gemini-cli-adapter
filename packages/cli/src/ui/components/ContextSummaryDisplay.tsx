@@ -7,7 +7,7 @@
 import React from 'react';
 import { Text } from 'ink';
 import { Colors } from '../colors.js';
-import { type IdeContext, type MCPServerConfig } from '@gemini-cli-adapter/core-copy';
+import { ideContext, type MCPServerConfig } from '@google/gemini-cli-core';
 
 interface ContextSummaryDisplayProps {
   geminiMdFileCount: number;
@@ -15,7 +15,7 @@ interface ContextSummaryDisplayProps {
   mcpServers?: Record<string, MCPServerConfig>;
   blockedMcpServers?: Array<{ name: string; extensionName: string }>;
   showToolDescriptions?: boolean;
-  ideContext?: IdeContext;
+  ideContext?: ReturnType<typeof ideContext.getOpenFilesContext>;
 }
 
 export const ContextSummaryDisplay: React.FC<ContextSummaryDisplayProps> = ({
@@ -28,7 +28,7 @@ export const ContextSummaryDisplay: React.FC<ContextSummaryDisplayProps> = ({
 }) => {
   const mcpServerCount = Object.keys(mcpServers || {}).length;
   const blockedMcpServerCount = blockedMcpServers?.length || 0;
-  const openFileCount = ideContext?.workspaceState?.openFiles?.length ?? 0;
+  const openFileCount = ideContext ? (ideContext.recentOpenFiles?.length ?? 0) + (ideContext.activeFile ? 1 : 0) : 0;
 
   if (
     geminiMdFileCount === 0 &&

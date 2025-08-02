@@ -60,9 +60,8 @@ import {
   FlashFallbackEvent,
   logFlashFallback,
   AuthType,
-  type IdeContext,
   ideContext,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { validateAuthMethod } from '../config/auth.js';
 import { useLogger } from './hooks/useLogger.js';
 import { StreamingContext } from './contexts/StreamingContext.js';
@@ -82,7 +81,7 @@ import {
   isProQuotaExceededError,
   isGenericQuotaExceededError,
   UserTierId,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { UpdateObject } from './utils/updateCheck.js';
 import ansiEscapes from 'ansi-escapes';
 import { OverflowProvider } from './contexts/OverflowContext.js';
@@ -173,15 +172,15 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
   const [modelSwitchedFromQuotaError, setModelSwitchedFromQuotaError] =
     useState<boolean>(false);
   const [userTier, setUserTier] = useState<UserTierId | undefined>(undefined);
-  const [ideContextState, setIdeContextState] = useState<
-    IdeContext | undefined
+  const [ideContextState, setideContextState] = useState<
+    ReturnType<typeof ideContext.getOpenFilesContext>
   >();
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   useEffect(() => {
-    const unsubscribe = ideContext.subscribeToIdeContext(setIdeContextState);
+    const unsubscribe = ideContext.subscribeToOpenFiles(setideContextState);
     // Set the initial value
-    setIdeContextState(ideContext.getIdeContext());
+    setideContextState(ideContext.getOpenFilesContext());
     return unsubscribe;
   }, []);
 
@@ -402,7 +401,7 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
 
       // Switch model for future use but return false to stop current retry
       config.setModel(fallbackModel);
-      config.setFallbackMode(true);
+      // TODO: setFallbackMode method not available in current API
       logFlashFallback(
         config,
         new FlashFallbackEvent(config.getContentGeneratorConfig().authType!),

@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { isGitRepository } from '@gemini-cli-adapter/core-copy';
+import { } from '@google/gemini-cli-core';
+import { isGitRepository } from "@google/gemini-cli-core/dist/src/utils/gitUtils.js";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as childProcess from 'child_process';

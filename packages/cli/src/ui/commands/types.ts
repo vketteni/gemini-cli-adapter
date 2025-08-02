@@ -1,3 +1,4 @@
+
 /**
  * @license
  * Copyright 2025 Google LLC
@@ -6,7 +7,7 @@
 
 import { Content } from '@google/genai';
 import { HistoryItemWithoutId } from '../types.js';
-import { GitService, Logger } from '@gemini-cli-adapter/core-copy';
+import { GitService, Logger } from '@google/gemini-cli-core';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { LoadedSettings } from '../../config/settings.js';
 import { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';

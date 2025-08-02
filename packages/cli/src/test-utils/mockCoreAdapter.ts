@@ -26,8 +26,8 @@ export const createMockCoreAdapter = (
 ): CoreAdapter => {
   const defaultMocks: CoreAdapter = {
     // Core lifecycle
-    initialize: vi.fn().mockResolvedValue(undefined),
     isTelemetryInitialized: vi.fn().mockReturnValue(false),
+    shutdownTelemetry: vi.fn().mockResolvedValue(undefined),
 
     // Chat Service
     chat: {
@@ -38,32 +38,29 @@ export const createMockCoreAdapter = (
       setHistory: vi.fn().mockResolvedValue(undefined),
       resetChat: vi.fn().mockResolvedValue(undefined),
       tryCompressChat: vi.fn().mockResolvedValue({ compressed: false }),
-      getCompressionMetadata: vi.fn().mockReturnValue({
-        lastCompressionAttempt: null,
-        totalCompressions: 0,
-      }),
+		setTools: vi.fn(),
+		addHistory: vi.fn(),
+    //   getCompressionMetadata: vi.fn().mockReturnValue({
+    //     lastCompressionAttempt: null,
+    //     totalCompressions: 0,
+    //   }),
     },
 
     // Tooling Service
-    tooling: {
+    tools: {
       getTool: vi.fn().mockReturnValue(null),
       getAllTools: vi.fn().mockReturnValue([]),
+      executeToolCall: vi.fn().mockResolvedValue({
+        status: 'success',
+        result: { output: 'Mock tool result' },
+      }),
+      checkCommandPermissions: vi.fn().mockResolvedValue(true),
+      getFunctionDeclarations: vi.fn().mockResolvedValue([]),
       getToolRegistry: vi.fn().mockReturnValue({
         getTool: vi.fn(),
         getAllTools: vi.fn().mockReturnValue([]),
         discoverMcpTools: vi.fn().mockResolvedValue([]),
         discoverToolsForServer: vi.fn().mockResolvedValue([]),
-      }),
-      discoverMcpTools: vi.fn().mockResolvedValue([]),
-      discoverToolsForServer: vi.fn().mockResolvedValue([]),
-      executeToolCall: vi.fn().mockResolvedValue({
-        status: 'success',
-        result: { output: 'Mock tool result' },
-      }),
-      createToolScheduler: vi.fn().mockReturnValue({
-        scheduleToolCall: vi.fn(),
-        processToolCall: vi.fn(),
-        cancel: vi.fn(),
       }),
       getShellExecutionService: vi.fn().mockReturnValue({
         executeCommand: vi.fn().mockResolvedValue({
@@ -73,88 +70,90 @@ export const createMockCoreAdapter = (
         }),
         checkCommandPermissions: vi.fn().mockResolvedValue(true),
       }),
-      isBrowserLaunchSuppressed: vi.fn().mockReturnValue(false),
+      getPromptRegistry: vi.fn().mockResolvedValue({}),
+      getIdeClient: vi.fn().mockReturnValue(null),
+      createCoreToolScheduler: vi.fn().mockReturnValue({
+        scheduleToolCall: vi.fn(),
+        cancel: vi.fn(),
+      }),
     },
 
     // Workspace Service
     workspace: {
-      getProjectRoot: vi.fn().mockReturnValue('/mock/project'),
+      shouldIgnoreFile: vi.fn().mockResolvedValue(false),
       getProjectTempDir: vi.fn().mockReturnValue('/mock/project/.tmp'),
-      getUserCommandsDir: vi.fn().mockReturnValue('/mock/user/commands'),
-      getProjectCommandsDir: vi.fn().mockReturnValue('/mock/project/commands'),
-      shouldIgnoreFile: vi.fn().mockReturnValue(false),
-      unescapePath: vi.fn().mockImplementation((path) => path),
-      escapePath: vi.fn().mockImplementation((path) => path),
-      restoreProjectFromSnapshot: vi.fn().mockResolvedValue(undefined),
-      isGitRepository: vi.fn().mockReturnValue(true),
+      isGitRepository: vi.fn().mockResolvedValue(true),
       getFileDiscoveryService: vi.fn().mockReturnValue({
         shouldIgnoreFile: vi.fn().mockReturnValue(false),
         discoverFiles: vi.fn().mockResolvedValue([]),
       }),
+      getProjectRoot: vi.fn().mockReturnValue('/mock/project'),
     },
 
     // Auth Service
     auth: {
-      getAuthType: vi.fn().mockReturnValue('LOGIN_WITH_GOOGLE'),
       refreshAuth: vi.fn().mockResolvedValue(undefined),
       clearCachedCredentialFile: vi.fn().mockResolvedValue(undefined),
+      getAuthType: vi.fn().mockReturnValue('LOGIN_WITH_GOOGLE'),
+      isBrowserLaunchSuppressed: vi.fn().mockReturnValue(false),
+      validateAuthMethod: vi.fn().mockReturnValue(null),
+      getCodeAssistServer: vi.fn().mockReturnValue(null),
       mcpServerRequiresOAuth: vi.fn().mockReturnValue(false),
       getMCPOAuthProvider: vi.fn().mockReturnValue(null),
-      validateAuth: vi.fn().mockResolvedValue(true),
-      getCodeAssistServer: vi.fn().mockReturnValue(null),
     },
 
     // Memory Service
     memory: {
-      loadServerHierarchicalMemory: vi.fn().mockResolvedValue('Mock memory content'),
+      loadHierarchicalMemory: vi.fn().mockResolvedValue(undefined),
       setUserMemory: vi.fn().mockResolvedValue(undefined),
       getUserMemory: vi.fn().mockReturnValue('Mock user memory'),
-      getMemoryFileCount: vi.fn().mockReturnValue(0),
+      getGeminiMdFileCount: vi.fn().mockReturnValue(0),
+      setGeminiMdFileCount: vi.fn().mockResolvedValue(undefined),
     },
 
     // Settings Service
     settings: {
+      getApprovalMode: vi.fn().mockReturnValue('default'),
+      setApprovalMode: vi.fn().mockResolvedValue(undefined),
+      getProjectRoot: vi.fn().mockReturnValue('/mock/project'),
+      getSessionId: vi.fn().mockReturnValue('mock-session-id'),
       getModel: vi.fn().mockReturnValue('gemini-1.5-pro'),
       getDefaultModel: vi.fn().mockReturnValue('gemini-1.5-pro'),
-      getFileFilteringOptions: vi.fn().mockReturnValue({
-        include: [],
-        exclude: [],
-        maxFiles: 100,
-      }),
-      getSessionId: vi.fn().mockReturnValue('mock-session-id'),
+      getDefaultEmbeddingModel: vi.fn().mockReturnValue('text-embedding-004'),
       getMaxSessionTurns: vi.fn().mockReturnValue(50),
+      createLogger: vi.fn().mockReturnValue({
+        log: vi.fn(),
+        logMessage: vi.fn(),
+        saveCheckpoint: vi.fn(),
+        loadCheckpoint: vi.fn().mockResolvedValue([]),
+      }),
+      getProjectTempDir: vi.fn().mockReturnValue('/mock/project/.tmp'),
       getCheckpointingEnabled: vi.fn().mockReturnValue(false),
-      getIdeMode: vi.fn().mockReturnValue(false),
+      setQuotaErrorOccurred: vi.fn().mockResolvedValue(undefined),
+      getContentGeneratorConfig: vi.fn().mockReturnValue({}),
       getSandboxConfig: vi.fn().mockReturnValue({
         enabled: false,
         allowedCommands: [],
         blockedCommands: [],
       }),
-      getTargetDir: vi.fn().mockReturnValue('/mock/target'),
-      getDebugMode: vi.fn().mockReturnValue(false),
-      getFullContext: vi.fn().mockReturnValue(false),
-      getCoreTools: vi.fn().mockReturnValue([]),
-      getToolDiscoveryCommand: vi.fn().mockReturnValue(null),
-      getToolCallCommand: vi.fn().mockReturnValue(null),
-      getMcpServerCommand: vi.fn().mockReturnValue(null),
+      loadEnvironment: vi.fn().mockResolvedValue(undefined),
       getMcpServers: vi.fn().mockReturnValue({}),
-      getUserAgent: vi.fn().mockReturnValue('MockGeminiCLI/1.0.0'),
-      getApprovalMode: vi.fn().mockReturnValue('APPROVE_ALL'),
-      isVertexAI: vi.fn().mockReturnValue(false),
-      getShowMemoryUsage: vi.fn().mockReturnValue(false),
-      getAccessibilitySettings: vi.fn().mockReturnValue({
-        screenReaderMode: false,
-        highContrast: false,
+      getAuthType: vi.fn().mockReturnValue('LOGIN_WITH_GOOGLE'),
+      getBlockedMcpServers: vi.fn().mockReturnValue([]),
+      getExtensions: vi.fn().mockReturnValue([]),
+      getIdeMode: vi.fn().mockReturnValue(false),
+      getIdeClient: vi.fn().mockReturnValue(null),
+      getEnableRecursiveFileSearch: vi.fn().mockReturnValue(true),
+      getFileFilteringOptions: vi.fn().mockReturnValue({
+        include: [],
+        exclude: [],
+        maxFiles: 100,
       }),
+      getDebugMode: vi.fn().mockReturnValue(false),
+      getListExtensions: vi.fn().mockReturnValue(false),
+      getExperimentalAcp: vi.fn().mockReturnValue(false),
+      getQuestion: vi.fn().mockReturnValue(''),
     },
-
-    // Additional methods found in implementation
-    createLogger: vi.fn().mockReturnValue({
-      log: vi.fn(),
-      logMessage: vi.fn(),
-      saveCheckpoint: vi.fn(),
-      loadCheckpoint: vi.fn().mockResolvedValue([]),
-    }),
   };
 
   // Deep merge function to combine defaults with overrides

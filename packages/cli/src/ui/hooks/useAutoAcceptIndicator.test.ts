@@ -20,14 +20,14 @@ import {
   Config,
   Config as ActualConfigType,
   ApprovalMode,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { useInput, type Key as InkKey } from 'ink';
 
 vi.mock('ink');
 
-vi.mock('@gemini-cli-adapter/core-copy', async () => {
+vi.mock('@google/gemini-cli-core', async () => {
   const actualServerModule = (await vi.importActual(
-    '@gemini-cli-adapter/core-copy',
+    '@google/gemini-cli-core',
   )) as Record<string, unknown>;
   return {
     ...actualServerModule,

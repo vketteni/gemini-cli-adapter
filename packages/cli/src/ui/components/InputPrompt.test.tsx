@@ -7,7 +7,7 @@
 import { render } from 'ink-testing-library';
 import { InputPrompt, InputPromptProps } from './InputPrompt.js';
 import type { TextBuffer } from './shared/text-buffer.js';
-import { Config } from '@gemini-cli-adapter/core-copy';
+import { Config } from '@google/gemini-cli-core';
 import * as path from 'path';
 import {
   CommandContext,

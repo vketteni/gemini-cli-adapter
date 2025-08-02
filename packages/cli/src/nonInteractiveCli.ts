@@ -9,7 +9,7 @@ import {
   shutdownTelemetry,
   isTelemetrySdkInitialized,
   AuthType,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import {
   Content,
   Part,

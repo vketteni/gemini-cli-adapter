@@ -7,7 +7,7 @@
 import { vi } from 'vitest';
 import { CommandContext } from '../ui/commands/types.js';
 import { LoadedSettings } from '../config/settings.js';
-import { GitService } from '@gemini-cli-adapter/core-copy';
+import { GitService } from '@google/gemini-cli-core';
 import { SessionStatsState } from '../ui/contexts/SessionContext.js';
 import { createMockCoreAdapter } from './mockCoreAdapter.js';
 

@@ -5,7 +5,7 @@
  */
 
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
-import { AuthType } from '@gemini-cli-adapter/core-copy';
+import { AuthType } from '@google/gemini-cli-core';
 import { USER_SETTINGS_PATH } from './config/settings.js';
 import { validateAuthMethod } from './config/auth.js';
 

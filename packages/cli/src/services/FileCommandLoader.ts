@@ -12,7 +12,7 @@ import { z } from 'zod';
 import {
   getProjectCommandsDir,
   getUserCommandsDir,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import { ICommandLoader } from './types.js';
 import {

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { MCPServerConfig, GeminiCLIExtension } from '@gemini-cli-adapter/core-copy';
+import { MCPServerConfig, GeminiCLIExtension } from '@google/gemini-cli-core';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -157,7 +157,6 @@ export function annotateActiveExtensions(
       name: extension.config.name,
       version: extension.config.version,
       isActive,
-      path: extension.path,
     });
   }
 

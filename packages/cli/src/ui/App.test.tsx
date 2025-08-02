@@ -16,7 +16,7 @@ import {
   SandboxConfig,
   GeminiClient,
   ideContext,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { LoadedSettings, SettingsFile, Settings } from '../config/settings.js';
 import { createMockCoreAdapter } from '../test-utils/mockCoreAdapter.js';
 import process from 'node:process';
@@ -86,10 +86,10 @@ interface MockServerConfig {
   getUserTier: Mock<() => Promise<string | undefined>>;
 }
 
-// Mock @gemini-cli-adapter/core-copy and its Config class
-vi.mock('@gemini-cli-adapter/core-copy', async (importOriginal) => {
+// Mock @google/gemini-cli-core and its Config class
+vi.mock('@google/gemini-cli-core', async (importOriginal) => {
   const actualCore =
-    await importOriginal<typeof import('@gemini-cli-adapter/core-copy')>();
+    await importOriginal<typeof import('@google/gemini-cli-core')>();
   const ConfigClassMock = vi
     .fn()
     .mockImplementation((optionsPassedToConstructor) => {
@@ -157,8 +157,8 @@ vi.mock('@gemini-cli-adapter/core-copy', async (importOriginal) => {
     });
 
   const ideContextMock = {
-    getIdeContext: vi.fn(),
-    subscribeToIdeContext: vi.fn(() => vi.fn()), // subscribe returns an unsubscribe function
+    getideContext: vi.fn(),
+    subscribeToideContext: vi.fn(() => vi.fn()), // subscribe returns an unsubscribe function
   };
 
   return {
@@ -231,7 +231,7 @@ vi.mock('./utils/updateCheck.js', () => ({
 
 const mockedCheckForUpdates = vi.mocked(checkForUpdates);
 const { isGitRepository: mockedIsGitRepository } = vi.mocked(
-  await import('@gemini-cli-adapter/core-copy'),
+  await import('@google/gemini-cli-core'),
 );
 
 vi.mock('node:child_process');
@@ -298,7 +298,7 @@ describe('App UI', () => {
 
     // Ensure a theme is set so the theme dialog does not appear.
     mockSettings = createMockSettings({ workspace: { theme: 'Default' } });
-    vi.mocked(ideContext.getIdeContext).mockReturnValue(undefined);
+    vi.mocked(ideContext.getideContext).mockReturnValue(undefined);
   });
 
   afterEach(() => {
@@ -478,7 +478,7 @@ describe('App UI', () => {
   });
 
   it('should display active file when available', async () => {
-    vi.mocked(ideContext.getIdeContext).mockReturnValue({
+    vi.mocked(ideContext.getideContext).mockReturnValue({
       workspaceState: {
         openFiles: [
           {
@@ -505,7 +505,7 @@ describe('App UI', () => {
   });
 
   it('should not display any files when not available', async () => {
-    vi.mocked(ideContext.getIdeContext).mockReturnValue({
+    vi.mocked(ideContext.getideContext).mockReturnValue({
       workspaceState: {
         openFiles: [],
       },
@@ -525,7 +525,7 @@ describe('App UI', () => {
   });
 
   it('should display active file and other open files', async () => {
-    vi.mocked(ideContext.getIdeContext).mockReturnValue({
+    vi.mocked(ideContext.getideContext).mockReturnValue({
       workspaceState: {
         openFiles: [
           {
@@ -562,7 +562,7 @@ describe('App UI', () => {
   });
 
   it('should display active file and other context', async () => {
-    vi.mocked(ideContext.getIdeContext).mockReturnValue({
+    vi.mocked(ideContext.getideContext).mockReturnValue({
       workspaceState: {
         openFiles: [
           {

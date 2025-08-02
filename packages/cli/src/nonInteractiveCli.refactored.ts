@@ -35,7 +35,6 @@ function getResponseText(response: GenerateContentResponse): string | null {
 }
 
 export async function runNonInteractive(coreAdapter: CoreAdapter, input: string, prompt_id: string) {
-  await coreAdapter.initialize();
   // Handle EPIPE errors when the output is piped to a command that closes early.
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EPIPE') {

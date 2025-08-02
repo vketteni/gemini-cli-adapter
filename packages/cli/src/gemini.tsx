@@ -33,6 +33,7 @@ import { checkForUpdates } from './ui/utils/updateCheck.js';
 import { handleAutoUpdate } from './utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from './utils/events.js';
 import { createAdapterFromConfig } from './adapters/adapterFactory.js';
+import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import {
   Config,
   AuthType,
@@ -43,9 +44,9 @@ import {
   logUserPrompt,
   getOauthClient,
   sessionId,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 
-function getNodeMemoryArgs(config: Config): string[] {
+function getNodeMemoryArgs(adapter: CoreAdapter): string[] {
   const totalMemoryMB = os.totalmem() / (1024 * 1024);
   const heapStats = v8.getHeapStatistics();
   const currentMaxOldSpaceSizeMb = Math.floor(
@@ -54,7 +55,8 @@ function getNodeMemoryArgs(config: Config): string[] {
 
   // Set target to 50% of total memory
   const targetMaxOldSpaceSizeInMB = Math.floor(totalMemoryMB * 0.5);
-  if (config.getDebugMode()) {
+  const debugMode = adapter.settings.getDebugMode();
+  if (debugMode) {
     console.debug(
       `Current heap size ${currentMaxOldSpaceSizeMb.toFixed(2)} MB`,
     );
@@ -65,7 +67,7 @@ function getNodeMemoryArgs(config: Config): string[] {
   }
 
   if (targetMaxOldSpaceSizeInMB > currentMaxOldSpaceSizeMb) {
-    if (config.getDebugMode()) {
+    if (debugMode) {
       console.debug(
         `Need to relaunch with more memory: ${targetMaxOldSpaceSizeInMB.toFixed(2)} MB`,
       );
@@ -140,7 +142,7 @@ export async function main() {
   );
 
   // Create the core adapter from the config
-  const adapter = createAdapterFromConfig(config);
+  const adapter = await createAdapterFromConfig(config);
 
   if (argv.promptInteractive && !process.stdin.isTTY) {
     console.error(
@@ -149,7 +151,7 @@ export async function main() {
     process.exit(1);
   }
 
-  if (config.getListExtensions()) {
+  if (adapter.settings.getListExtensions && adapter.settings.getListExtensions()) {
     console.log('Installed extensions:');
     for (const extension of extensions) {
       console.log(`- ${extension.config.name}`);
@@ -168,9 +170,8 @@ export async function main() {
     }
   }
 
-  setMaxSizedBoxDebugging(config.getDebugMode());
+  setMaxSizedBoxDebugging(adapter.settings.getDebugMode());
 
-  await config.initialize();
 
   // Load custom themes from settings
   themeManager.loadCustomThemes(settings.merged.customThemes);
@@ -186,9 +187,9 @@ export async function main() {
   // hop into sandbox if we are outside and sandboxing is enabled
   if (!process.env.SANDBOX) {
     const memoryArgs = settings.merged.autoConfigureMaxOldSpaceSize
-      ? getNodeMemoryArgs(config)
+      ? getNodeMemoryArgs(adapter)
       : [];
-    const sandboxConfig = config.getSandbox();
+    const sandboxConfig = adapter.settings.getSandboxConfig();
     if (sandboxConfig) {
       if (settings.merged.selectedAuthType) {
         // Validate authentication here because the sandbox will interfere with the Oauth2 web redirect.
@@ -197,7 +198,7 @@ export async function main() {
           if (err) {
             throw new Error(err);
           }
-          await config.refreshAuth(settings.merged.selectedAuthType);
+          await adapter.auth.refreshAuth(settings.merged.selectedAuthType);
         } catch (err) {
           console.error('Error authenticating:', err);
           process.exit(1);
@@ -217,17 +218,17 @@ export async function main() {
 
   if (
     settings.merged.selectedAuthType === AuthType.LOGIN_WITH_GOOGLE &&
-    config.isBrowserLaunchSuppressed()
+    adapter.auth.isBrowserLaunchSuppressed()
   ) {
     // Do oauth before app renders to make copying the link possible.
     await getOauthClient(settings.merged.selectedAuthType, config);
   }
 
-  if (config.getExperimentalAcp()) {
+  if (adapter.settings.getExperimentalAcp && adapter.settings.getExperimentalAcp()) {
     return runAcpPeer(config, settings);
   }
 
-  let input = config.getQuestion();
+  let input = adapter.settings.getQuestion && adapter.settings.getQuestion();
   const startupWarnings = [
     ...(await getStartupWarnings()),
     ...(await getUserStartupWarnings(workspaceRoot)),
@@ -255,11 +256,11 @@ export async function main() {
 
     checkForUpdates()
       .then((info) => {
-        handleAutoUpdate(info, settings, config.getProjectRoot());
+        handleAutoUpdate(info, settings, adapter.settings.getProjectRoot());
       })
       .catch((err) => {
         // Silently ignore update check errors.
-        if (config.getDebugMode()) {
+        if (adapter.settings.getDebugMode()) {
           console.error('Update check failed:', err);
         }
       });
@@ -283,11 +284,20 @@ export async function main() {
     'event.timestamp': new Date().toISOString(),
     prompt: input,
     prompt_id,
-    auth_type: config.getContentGeneratorConfig()?.authType,
+    auth_type: adapter.settings.getAuthType(),
     prompt_length: input.length,
   });
 
-  await runNonInteractive(adapter, input, prompt_id);
+  // Create restricted adapter (read-only tools only) for non-interactive mode
+  const nonInteractiveAdapter = await loadNonInteractiveConfig(
+    adapter,
+    config,
+    extensions,
+    settings,
+    argv,
+  );
+
+  await runNonInteractive(nonInteractiveAdapter, input, prompt_id);
   process.exit(0);
 }
 
@@ -307,13 +317,14 @@ function setWindowTitle(title: string, settings: LoadedSettings) {
 }
 
 async function loadNonInteractiveConfig(
+  adapter: CoreAdapter,
   config: Config,
   extensions: Extension[],
   settings: LoadedSettings,
   argv: CliArgs,
 ) {
-  let finalConfig = config;
-  if (config.getApprovalMode() !== ApprovalMode.YOLO) {
+  let finalAdapter = adapter;
+  if (adapter.settings.getApprovalMode() !== ApprovalMode.YOLO) {
     // Everything is not allowed, ensure that only read-only tools are configured.
     const existingExcludeTools = settings.merged.excludeTools || [];
     const interactiveTools = [
@@ -330,16 +341,16 @@ async function loadNonInteractiveConfig(
       ...settings.merged,
       excludeTools: newExcludeTools,
     };
-    finalConfig = await loadCliConfig(
+    const restrictedConfig = await loadCliConfig(
       nonInteractiveSettings,
       extensions,
-      config.getSessionId(),
+      sessionId,
       argv,
     );
-    await finalConfig.initialize();
+    await restrictedConfig.initialize();
+    finalAdapter = await createAdapterFromConfig(restrictedConfig);
   }
 
-  const finalAdapter = createAdapterFromConfig(finalConfig);
   return await validateNonInteractiveAuth(
     settings.merged.selectedAuthType,
     finalAdapter,

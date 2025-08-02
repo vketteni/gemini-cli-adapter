@@ -11,7 +11,7 @@ import {
   getErrorMessage,
   isNodeError,
   unescapePath,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
 import {
   HistoryItem,

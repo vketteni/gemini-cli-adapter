@@ -8,7 +8,7 @@ import {
   allowEditorTypeInSandbox,
   checkHasEditorType,
   type EditorType,
-} from '@gemini-cli-adapter/core-copy';
+} from '@google/gemini-cli-core';
 
 export interface EditorDisplay {
   name: string;

@@ -17,7 +17,7 @@ import { CommandContext, SlashCommand } from '../commands/types.js';
 import { TextBuffer } from '../components/shared/text-buffer.js';
 import { isSlashCommand } from '../utils/commandUtils.js';
 import { toCodePoints } from '../utils/textUtils.js';
-import { escapePath, unescapePath, isNodeError, getErrorMessage, FileDiscoveryService, DEFAULT_FILE_FILTERING_OPTIONS } from '@gemini-cli-adapter/core-copy';
+import { escapePath, unescapePath, isNodeError, getErrorMessage, FileDiscoveryService, DEFAULT_FILE_FILTERING_OPTIONS } from '@google/gemini-cli-core';
 
 export interface UseCompletionReturn {
   suggestions: Suggestion[];

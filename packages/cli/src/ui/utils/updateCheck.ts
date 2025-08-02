@@ -28,7 +28,7 @@ export async function checkForUpdates(): Promise<UpdateObject | null> {
     }
     const notifier = updateNotifier({
       pkg: {
-        name: packageJson.name,
+        name: '@gemini-cli-adapter/gemini-cli',
         version: packageJson.version,
       },
       // check every time
