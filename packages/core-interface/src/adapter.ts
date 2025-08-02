@@ -13,6 +13,7 @@ export interface GeminiCLIExtension {
   version: string;
   isActive: boolean;
   path: string;
+  description?: string;
 }
 
 // Note: We will need to define or import types like `Tool`, `ToolCall`,
@@ -110,6 +111,11 @@ export interface ToolingService {
    * Gets the IDE client instance.
    */
   getIdeClient(): any;
+
+  /**
+   * Creates a CoreToolScheduler instance.
+   */
+  createCoreToolScheduler(options: any): any;
 }
 
 /**
@@ -248,6 +254,16 @@ export interface SettingsService {
   getModel(): string;
 
   /**
+   * Gets the default AI model.
+   */
+  getDefaultModel(): string;
+
+  /**
+   * Gets the default AI embedding model.
+   */
+  getDefaultEmbeddingModel(): string;
+
+  /**
    * Gets the maximum number of turns for a session.
    */
   getMaxSessionTurns(): number;
@@ -326,61 +342,26 @@ export interface SettingsService {
    * Gets the file filtering options.
    */
   getFileFilteringOptions(): any; // Changed to any for now, will define FilterFilesOptions later
-}
-
-/**
- * Manages the registration, discovery, and execution of tools.
- */
-export interface ToolingService {
-  /**
-   * Retrieves a specific tool by name.
-   */
-  getTool(name: string): Promise<any | undefined>;
 
   /**
-   * Retrieves all available tools.
+   * Gets whether debug mode is enabled.
    */
-  getAllTools(): Promise<any[]>;
+  getDebugMode(): boolean;
 
   /**
-   * Executes a tool call.
+   * Gets whether to list extensions.
    */
-  executeToolCall(toolCall: any): Promise<any>;
+  getListExtensions?(): boolean;
 
   /**
-   * Checks the permissions for a given shell command.
+   * Gets whether experimental ACP is enabled.
    */
-  checkCommandPermissions(command: string, sessionAllowlist?: Set<string>): Promise<any>;
+  getExperimentalAcp?(): boolean;
 
   /**
-   * Retrieves the function declarations for all available tools.
+   * Gets the input question from CLI arguments.
    */
-  getFunctionDeclarations(): Promise<any[]>;
-
-  /**
-   * Gets the tool registry instance for advanced tool management.
-   */
-  getToolRegistry(): Promise<any>;
-
-  /**
-   * Gets the shell execution service for running shell commands.
-   */
-  getShellExecutionService(): any;
-
-  /**
-   * Gets the prompt registry instance.
-   */
-  getPromptRegistry(): Promise<any>;
-
-  /**
-   * Gets the IDE client instance.
-   */
-  getIdeClient(): any;
-
-  /**
-   * Creates a CoreToolScheduler instance.
-   */
-  createCoreToolScheduler(options: any): any;
+  getQuestion?(): string;
 }
 
 // --- Core Adapter Interface ---
@@ -390,11 +371,6 @@ export interface ToolingService {
  * single point of interaction for the CLI frontend.
  */
 export interface CoreAdapter {
-  /**
-   * Initializes the adapter.
-   */
-  initialize(): Promise<void>;
-
   /**
    * Checks if the telemetry SDK is initialized.
    */
@@ -411,12 +387,4 @@ export interface CoreAdapter {
   auth: AuthService;
   memory: MemoryService;
   settings: SettingsService;
-}
-
-export interface GeminiCLIExtension {
-  name: string;
-  version: string;
-  isActive: boolean;
-  path: string;
-  description?: string;
 }

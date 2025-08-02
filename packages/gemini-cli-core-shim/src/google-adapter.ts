@@ -1,12 +1,13 @@
 import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService } from "@gemini-cli-adapter/core-interface";
+import { CoreToolScheduler } from "@google/gemini-cli-core";
+import { GoogleAuth } from 'google-auth-library';
 import { 
-  Config, 
+  Config,
   GeminiClient, 
-  executeToolCall, 
+  executeToolCall,
   ToolCallRequestInfo,
   ToolRegistry,
   getProjectTempDir,
-  isGitRepository,
   loadServerHierarchicalMemory,
   AuthType,
   isTelemetrySdkInitialized,
@@ -18,8 +19,11 @@ import {
   ShellExecutionService,
   CodeAssistServer,
   mcpServerRequiresOAuth,
-  MCPOAuthProvider
-} from "@gemini-cli-adapter/core-copy";
+  MCPOAuthProvider,
+  DEFAULT_GEMINI_MODEL,
+  DEFAULT_GEMINI_EMBEDDING_MODEL
+} from "@google/gemini-cli-core";
+import { isGitRepository } from "@google/gemini-cli-core/dist/src/utils/gitUtils.js";
 
 class GoogleChatService implements ChatService {
     private config: Config;
@@ -116,7 +120,6 @@ class GoogleToolingService implements ToolingService {
     }
 
     createCoreToolScheduler(options: any): any {
-        const { CoreToolScheduler } = require('@gemini-cli-adapter/core-copy');
         return new CoreToolScheduler({
             ...options,
             config: this.config
@@ -294,7 +297,15 @@ class GoogleSettingsService implements SettingsService {
     }
 
     getModel(): string {
-        return this.config.getModel();  
+        return this.config.getModel();
+    }
+
+    getDefaultModel(): string {
+        return DEFAULT_GEMINI_MODEL;
+    }
+
+    getDefaultEmbeddingModel(): string {
+        return DEFAULT_GEMINI_EMBEDDING_MODEL;
     }
 
     getMaxSessionTurns(): number {
@@ -322,8 +333,8 @@ class GoogleSettingsService implements SettingsService {
     }
 
     getSandboxConfig(): any {
-        // Return a default sandbox config if the method doesn't exist
-        return {};
+        // Stubbing out sandbox functionality for now.
+        return null;
     }
 
     loadEnvironment(): void {
@@ -364,37 +375,60 @@ class GoogleSettingsService implements SettingsService {
     getFileFilteringOptions(): any {
         return this.config.getFileFilteringOptions?.() ?? {};
     }
+
+    getDebugMode(): boolean {
+        return this.config.getDebugMode();
+    }
+
+    getListExtensions?(): boolean {
+        return this.config.getListExtensions?.() ?? false;
+    }
+
+    getExperimentalAcp?(): boolean {
+        return this.config.getExperimentalAcp?.() ?? false;
+    }
+
+    getQuestion?(): string {
+        return this.config.getQuestion?.() ?? '';
+    }
 }
 
 export class GoogleAdapter implements CoreAdapter {
-    private config: Config;
+  chat!: ChatService;
+  tools!: ToolingService;
+  workspace!: WorkspaceService;
+  auth!: AuthService;
+  memory!: MemoryService;
+  settings!: SettingsService;
 
-    chat: ChatService;
-    tools: ToolingService;
-    workspace: WorkspaceService;
-    auth: AuthService;
-    memory: MemoryService;
-    settings: SettingsService;
+  private constructor(private config: Config) {
+    // Services will be initialized in static create() method
+  }
 
-    constructor(config: Config) {
-        this.config = config;
-        this.chat = new GoogleChatService(config);
-        this.tools = new GoogleToolingService(config);
-        this.workspace = new GoogleWorkspaceService(config);
-        this.auth = new GoogleAuthService(config);
-        this.memory = new GoogleMemoryService(config);
-        this.settings = new GoogleSettingsService(config);
-    }
+  /**
+   * Asynchronously creates a fully-initialized GoogleAdapter.
+   */
+  static async create(config: Config): Promise<GoogleAdapter> {
+    await config.initialize(); // Ensure all config-dependent resources are ready
 
-    async initialize(): Promise<void> {
-        await this.config.initialize();
-    }
+    const adapter = new GoogleAdapter(config);
 
-    isTelemetryInitialized(): boolean {
-        return isTelemetrySdkInitialized();
-    }
+    adapter.chat = new GoogleChatService(config);
+    adapter.tools = new GoogleToolingService(config);
+    adapter.workspace = new GoogleWorkspaceService(config);
+    adapter.auth = new GoogleAuthService(config);
+    adapter.memory = new GoogleMemoryService(config);
+    adapter.settings = new GoogleSettingsService(config);
 
-    async shutdownTelemetry(): Promise<void> {
-        await shutdownTelemetry();
-    }
+    return adapter;
+  }
+
+  isTelemetryInitialized(): boolean {
+    return isTelemetrySdkInitialized();
+  }
+
+  async shutdownTelemetry(): Promise<void> {
+    await shutdownTelemetry();
+  }
 }
+
