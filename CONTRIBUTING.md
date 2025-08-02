@@ -22,7 +22,7 @@ Thank you for your interest in contributing to GEMINI CLI Adapter! This document
 ### Development Setup
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/gemini-cli-adapter.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/open-cli.git`
 3. Install dependencies: `npm install`
 4. Create a branch: `git checkout -b feature/your-feature-name`
 

@@ -13,7 +13,7 @@ body:
     id: version
     attributes:
       label: Version
-      description: What version of gemini-cli-adapter are you running?
+      description: What version of open-cli are you running?
       placeholder: e.g. 0.1.0
     validations:
       required: true
