@@ -71,14 +71,14 @@ npm install -g ${appPackage.name}
 
 ## Usage
 \`\`\`bash
-gemini-adapter --help
-gemini-adapter list-adapters
+open-cli --help
+open-cli list-adapters
 \`\`\`
 
 ## Set Adapter Type
 \`\`\`bash
-export GEMINI_ADAPTER_TYPE=google
-gemini-adapter list-adapters
+export OPENCLI_ADAPTER_TYPE=google
+open-cli list-adapters
 \`\`\`
 `;
 

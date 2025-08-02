@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Gemini CLI Adapter - Global Installation Script
+# OpenCLI - Global Installation Script
 
 set -e
 
-echo "🚀 Installing Gemini CLI Adapter globally..."
+echo "🚀 Installing OpenCLI globally..."
 
 # Ensure we're in the right directory
 if [ ! -f "package.json" ]; then
@@ -17,19 +17,18 @@ echo "🏗️  Building project..."
 npm run build
 
 # Install the CLI globally
-echo "📦 Installing CLI globally..."
-npm install -g ./apps/gemini-cli
+echo "📦 Installing OpenCLI globally..."
+npm install -g ./apps/open-cli
 
 echo ""
 echo "✅ Installation complete!"
 echo ""
 echo "🎉 You can now use the CLI with these commands:"
-echo "   gemini-adapter --help"
-echo "   gemini-adapter list-adapters"
-echo "   demo-cli --help         (legacy alias)"
+echo "   open-cli --help"
+echo "   open-cli list-adapters"
 echo ""
 echo "🔧 Set your preferred adapter:"
 echo "   export GEMINI_ADAPTER_TYPE=google"
 echo ""
 echo "📋 To uninstall:"
-echo "   npm uninstall -g @open-cli/gemini-cli"
+echo "   npm uninstall -g @open-cli/open-cli"
