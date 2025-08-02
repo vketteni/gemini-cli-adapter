@@ -7,7 +7,7 @@
  */
 
 // @ts-ignore - TypeScript has issues with the relative import but runtime works
-import { main } from '../../../packages/cli/dist/gemini.js';
+import { main } from '../../../packages/open-cli/dist/gemini.js';
 
 // --- Global Entry Point ---
 main().catch((error: Error) => {

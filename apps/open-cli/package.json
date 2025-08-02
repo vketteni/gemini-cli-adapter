@@ -1,11 +1,10 @@
 {
-  "name": "@open-cli/gemini-cli",
+  "name": "@open-cli/open-cli",
   "version": "0.1.0",
   "description": "The refactored Gemini CLI, powered by a modular adapter interface.",
   "type": "module",
   "bin": {
-    "gemini-adapter": "./dist/index.js",
-    "demo-cli": "./dist/index.js"
+    "open-cli": "./dist/index.js"
   },
   "preferGlobal": true,
   "files": [
@@ -14,12 +13,8 @@
     "LICENSE"
   ],
   "keywords": [
-    "gemini",
-    "cli",
-    "adapter",
-    "ai",
-    "google",
-    "multi-provider"
+    "open",
+    "cli"
   ],
   "scripts": {
     "build": "tsc",
