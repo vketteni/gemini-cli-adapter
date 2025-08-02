@@ -49,7 +49,7 @@ To set up the project locally:
 ## Project Structure
 
 *   `packages/cli`: The main CLI frontend module, which will be refactored.
-*   `packages/core-interface`: Defines the new, domain-driven `CoreAdapter` interface.
+*   `packages/interface`: Defines the new, domain-driven `CoreAdapter` interface.
 *   `packages/gemini-cli-core-shim`: A shim module that will facilitate the transition by initially housing the `GoogleAdapter`.
 *   `docs/`: Project documentation, including architectural guides.
 *   `analysis_notes/`: Detailed analysis of the CLI's interaction with the original core module.
@@ -62,7 +62,7 @@ To set up the project locally:
 **Status: COMPLETE**
 - ✅ Interface defined with 6 service domains: `ChatService`, `ToolingService`, `WorkspaceService`, `AuthService`, `MemoryService`, `SettingsService`
 - ✅ Comprehensive method signatures covering all CLI needs
-- **Location:** `packages/core-interface/src/adapter.ts`
+- **Location:** `packages/interface/src/adapter.ts`
 
 ### ✅ **Phase 2: GoogleAdapter Implementation**
 **Status: COMPLETE**
@@ -127,7 +127,7 @@ To set up the project locally:
 - ✅ Updated command contexts and test utilities to use adapter-based dependency injection
 - ✅ **RESOLVED:** Fixed all critical TypeScript compilation errors in CLI package
 - ✅ **COMPLETED:** Import path corrections (`@gemini-cli/` → `@gemini-cli-adapter/`)
-- ✅ **COMPLETED:** Added missing type exports (Icon, AuthType enums) to core-interface
+- ✅ **COMPLETED:** Added missing type exports (Icon, AuthType enums) to interface
 - ✅ **COMPLETED:** Fixed service property naming (`.chatService` → `.chat`, etc.)
 - ✅ **COMPLETED:** Updated GoogleAdapter with missing interface methods
 - **Target:** Complete removal of direct `@google/gemini-cli-core` imports ✅
@@ -187,7 +187,7 @@ CLI Frontend → CoreAdapter Interface → [GoogleAdapter|OpenAIAdapter|Anthropi
 - ✅ **Build System Completion**: All TypeScript compilation issues resolved
 - ✅ **Import Path Standardization**: All packages now use correct `@gemini-cli-adapter/` naming
 - ✅ **Service Interface Consistency**: All service properties use correct naming (chat, tools, settings, etc.)
-- ✅ **Type Export Coverage**: Missing types (Icon, AuthType) added to core-interface
+- ✅ **Type Export Coverage**: Missing types (Icon, AuthType) added to interface
 
 **Key Technical Challenges Remaining:**
 - **Performance Validation**: Ensure no regression vs original implementation  

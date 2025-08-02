@@ -76,7 +76,7 @@ docs: update adapter creation guide
 New adapters should implement the `CoreAdapter` interface:
 
 ```typescript
-import { CoreAdapter } from '@gemini-cli-adapter/core-interface';
+import { CoreAdapter } from '@open-cli/interface';
 
 export class MyAdapter implements CoreAdapter {
   readonly id = 'my-provider';
@@ -104,7 +104,7 @@ export class MyAdapter implements CoreAdapter {
 npm test
 
 # Run tests for specific package
-npm test -w packages/core-interface
+npm test -w packages/interface
 
 # Run tests in watch mode
 npm test -- --watch
