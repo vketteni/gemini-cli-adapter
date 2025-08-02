@@ -28,7 +28,7 @@ export async function checkForUpdates(): Promise<UpdateObject | null> {
     }
     const notifier = updateNotifier({
       pkg: {
-        name: '@open-cli/gemini-cli',
+        name: '@open-cli/open-cli',
         version: packageJson.version,
       },
       // check every time
