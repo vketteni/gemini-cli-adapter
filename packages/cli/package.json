@@ -10,7 +10,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "prebuild": "node ../../scripts/generate-git-commit-info.mjs",
+    "prebuild": "node ../../scripts/generate-git-commit-info.js",
     "start": "node dist/index.js",
     "debug": "node --inspect-brk dist/index.js",
     "lint": "eslint . --ext .ts,.tsx",
@@ -28,7 +28,7 @@
   "dependencies": {
     "@gemini-cli-adapter/core-interface": "*",
     "@gemini-cli-adapter/gemini-cli-core-shim": "*",
-    "@gemini-cli-adapter/core-copy": "file:../core_copy",
+    "@google/gemini-cli-core": "^0.1.13",
     
     "@google/genai": "1.9.0",
     "@iarna/toml": "^2.2.5",

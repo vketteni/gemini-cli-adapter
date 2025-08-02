@@ -4,8 +4,23 @@
   "description": "The refactored Gemini CLI, powered by a modular adapter interface.",
   "type": "module",
   "bin": {
+    "gemini-adapter": "./dist/index.js",
     "demo-cli": "./dist/index.js"
   },
+  "preferGlobal": true,
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "gemini",
+    "cli",
+    "adapter",
+    "ai",
+    "google",
+    "multi-provider"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
@@ -16,9 +31,18 @@
   "dependencies": {
     "@gemini-cli-adapter/core-interface": "*",
     "@gemini-cli-adapter/cli": "*",
-    "commander": "^11.1.0"
+    "commander": "^11.1.0",
+    "ink": "^6.0.1",
+    "ink-big-text": "^2.0.0",
+    "ink-gradient": "^3.0.0",
+    "ink-link": "^4.1.0",
+    "ink-select-input": "^6.2.0",
+    "ink-spinner": "^5.0.0",
+    "react": "^19.1.0"
   },
   "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
     "vitest": "^1.3.1"
