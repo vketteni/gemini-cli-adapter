@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ES2023", "ES2022.Intl"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "es2022",
+    "types": ["node"],
+    "typeRoots": ["./node_modules/@types", "./packages/*/node_modules/@types", "./apps/*/node_modules/@types"],
+  },
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
+}

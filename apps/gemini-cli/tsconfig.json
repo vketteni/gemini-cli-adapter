@@ -1,14 +1,14 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "composite": true
+    "rootDir": "./src"
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["dist", "node_modules"],
   "references": [
-    { "path": "../../packages/core-interface" },
     { "path": "../../packages/cli" },
+    { "path": "../../packages/core-interface" }
   ]
 }

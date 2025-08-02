@@ -1,25 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "dist",
-    "jsx": "react-jsx",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["node", "vitest/globals"]
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "react-jsx"
   },
-  "include": [
-    "index.ts",
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.json",
-    "./package.json"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/test-utils"
-  ],
-  "references": [{ "path": "../core-interface" }, { "path": "../core_copy" }]
+  "include": ["src"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
+  "references": [
+    { "path": "../core-interface" },
+    { "path": "../gemini-cli-core-shim" }
+  ]
 }
