@@ -27,7 +27,7 @@ export const Tips: React.FC<TipsProps> = ({ config }) => {
       {geminiMdFileCount === 0 && (
         <Text color={Colors.Foreground}>
           3. Create{' '}
-          <Text bold color={Colors.AccentPurple}>
+          <Text bold color={Colors.AccentGreen}>
             GEMINI.md
           </Text>{' '}
           files to customize your interactions with Gemini.
@@ -35,7 +35,7 @@ export const Tips: React.FC<TipsProps> = ({ config }) => {
       )}
       <Text color={Colors.Foreground}>
         {geminiMdFileCount === 0 ? '4.' : '3.'}{' '}
-        <Text bold color={Colors.AccentPurple}>
+        <Text bold color={Colors.AccentGreen}>
           /help
         </Text>{' '}
         for more information.
