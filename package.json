@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "typecheck": "npm run typecheck --workspaces",
     "clean": "npm run clean --workspaces && rm -rf node_modules",
-    "dev": "npm run dev -w apps/gemini-cli",
+    "dev": "npm run dev -w apps/open-cli",
     "demo": "node scripts/run-demo.js",
     "setup": "npm run build && npm run demo",
     "install-global": "./scripts/install-global.sh",
