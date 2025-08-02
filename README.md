@@ -2,7 +2,7 @@
 
 ## Overview
 
-An open-source CLI frontend extracted from Google's Gemini CLI, designed for builders of AI-powered core modules. Through clean interface abstraction, this project enables developers to integrate their own agentic systems, tools, and AI providers while leveraging a proven, feature-rich CLI experience.
+An open-source CLI frontend, designed for builders of AI-powered core modules. Through clean interface abstraction, this project enables developers to integrate their own agentic systems, tools, and AI providers while leveraging a proven, feature-rich CLI experience based on Google's Gemini CLI.
 
 ## Architecture
 
@@ -11,8 +11,8 @@ The project's architecture centers on a domain-driven **`CoreAdapter` interface*
 The original `@google/gemini-cli-core` is wrapped by a `GoogleAdapter`, serving as the reference implementation of the `CoreAdapter` interface.
 
 ```
-CLI Frontend ↔ CoreAdapter Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
-CLI Frontend ↔ CoreAdapter Interface ↔ CustomAdapter ↔ Your-Core-Module
+CLI Frontend ↔ OPENCLI Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
+CLI Frontend ↔ OPENCLI Interface ↔ CustomAdapter ↔ Your-Core-Module
 ```
 
 This architecture enables core module builders to implement a single, well-defined interface while bringing their own agentic systems, tooling, and AI capabilities to the proven CLI experience.
