@@ -1,5 +1,5 @@
 {
-  "name": "@gemini-cli-adapter/gemini-cli-core-shim",
+  "name": "@open-cli/gemini-cli-core-shim",
   "version": "0.1.0",
   "description": "Compatibility shim for @google/gemini-cli-core package",
   "type": "module",
@@ -11,7 +11,7 @@
     "prebuild": "npm run clean"
   },
   "dependencies": {
-    "@gemini-cli-adapter/core-interface": "^0.1.0",
+    "@open-cli/core-interface": "^0.1.0",
     "@google/gemini-cli-core": "^0.1.13",
     "google-auth-library": "^9.10.0"
   },
@@ -23,7 +23,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/vketteni/gemini-cli-adapter.git",
+    "url": "https://github.com/vketteni/open-cli.git",
     "directory": "packages/gemini-cli-core-shim"
   },
   "keywords": [

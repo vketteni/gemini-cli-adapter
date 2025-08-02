@@ -1,5 +1,5 @@
 {
-  "name": "@gemini-cli-adapter/core-interface",
+  "name": "@open-cli/core-interface",
   "version": "0.1.0",
   "description": "Core interface definitions for GEMINI CLI adapters",
   "type": "module",

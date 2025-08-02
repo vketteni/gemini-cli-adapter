@@ -1,5 +1,5 @@
 {
-  "name": "@gemini-cli-adapter/gemini-cli",
+  "name": "@open-cli/gemini-cli",
   "version": "0.1.0",
   "description": "The refactored Gemini CLI, powered by a modular adapter interface.",
   "type": "module",
@@ -29,8 +29,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@gemini-cli-adapter/core-interface": "*",
-    "@gemini-cli-adapter/cli": "*",
+    "@open-cli/core-interface": "*",
+    "@open-cli/cli": "*",
     "commander": "^11.1.0",
     "ink": "^6.0.1",
     "ink-big-text": "^2.0.0",
