@@ -11,7 +11,7 @@
     "prebuild": "npm run clean"
   },
   "dependencies": {
-    "@open-cli/core-interface": "^0.1.0",
+    "@open-cli/interface": "^0.1.0",
     "@google/gemini-cli-core": "^0.1.13",
     "google-auth-library": "^9.10.0"
   },
