@@ -1,36 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * DEMO CLI - Demo implementation for google gemini cli
+ * @license
+ * Copyright 2025 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Command } from 'commander';
+// @ts-ignore - TypeScript has issues with the relative import but runtime works
+import { main } from '../../../packages/cli/dist/gemini.js';
 
-const program = new Command();
-
-program
-  .name('demo-cli')
-  .description('Demo implementation for google gemini cli')
-  .version('0.1.0');
-
-program
-  .command('chat')
-  .description('Start an interactive chat session')
-  .option('-a, --adapter <adapter>', 'AI adapter to use', 'google')
-  .action(async (options) => {
-    console.log(`Starting chat with ${options.adapter} adapter...`);
-    
-    // TODO: Implement proper adapter initialization after architecture is finalized
-    console.log('Chat functionality coming soon!');
-  });
-
-program
-  .command('list-adapters')
-  .description('List available adapters')
-  .action(() => {
-    console.log('Available adapters:');
-    console.log('  google - Google Gemini adapter');
-    console.log('  More adapters coming soon!');
-  });
-
-program.parse();
+// --- Global Entry Point ---
+main().catch((error: Error) => {
+  console.error('An unexpected critical error occurred:');
+  if (error instanceof Error) {
+    console.error(error.stack);
+  } else {
+    console.error(String(error));
+  }
+  process.exit(1);
+});
