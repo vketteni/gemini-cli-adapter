@@ -8,6 +8,40 @@
  */
 
 // Type imports needed by the interfaces
+
+/**
+ * Setting scope enumeration for hierarchical settings management
+ */
+export enum SettingScope {
+  User = 'User',
+  Workspace = 'Workspace',
+  System = 'System',
+}
+
+/**
+ * Basic settings interface - defines common UI and behavior settings
+ */
+export interface Settings {
+  theme?: string;
+  selectedAuthType?: any;
+  hideTips?: boolean;
+  hideBanner?: boolean;
+  vimMode?: boolean;
+  hideWindowTitle?: boolean;
+  // Add other commonly used settings as needed
+}
+
+/**
+ * Loaded settings interface for hierarchical settings management
+ */
+export interface LoadedSettings {
+  readonly merged: Settings;
+  setValue<K extends keyof Settings>(
+    scope: SettingScope,
+    key: K,
+    value: Settings[K],
+  ): void;
+}
 export interface GeminiCLIExtension {
   name: string;
   version: string;
@@ -60,7 +94,7 @@ export interface ChatService {
   /**
    * Adds history to the chat session.
    */
-  addHistory(history: any[]): Promise<void>;
+  addHistory(content: any): Promise<void>;
 }
 
 /**
@@ -201,7 +235,7 @@ export interface MemoryService {
   /**
    * Loads the hierarchical memory from the workspace.
    */
-  loadHierarchicalMemory(): Promise<void>;
+  loadHierarchicalMemory(): Promise<{memoryContent: string; fileCount: number}>;
 
   /**
    * Gets the current user-defined memory content.
@@ -362,6 +396,48 @@ export interface SettingsService {
    * Gets the input question from CLI arguments.
    */
   getQuestion?(): string;
+
+  // --- UI Settings Methods ---
+
+  /**
+   * Gets whether the tips component should be hidden.
+   */
+  getHideTips(): boolean | undefined;
+
+  /**
+   * Sets whether the tips component should be hidden.
+   */
+  setHideTips(hide: boolean): void;
+
+  /**
+   * Gets whether the banner component should be hidden.
+   */
+  getHideBanner(): boolean | undefined;
+
+  /**
+   * Sets whether the banner component should be hidden.
+   */
+  setHideBanner(hide: boolean): void;
+
+  /**
+   * Gets whether vim mode is enabled.
+   */
+  getVimMode(): boolean | undefined;
+
+  /**
+   * Sets whether vim mode is enabled.
+   */
+  setVimMode(enabled: boolean): void;
+
+  /**
+   * Gets whether the window title should be hidden.
+   */
+  getHideWindowTitle(): boolean | undefined;
+
+  /**
+   * Sets whether the window title should be hidden.
+   */
+  setHideWindowTitle(hide: boolean): void;
 }
 
 // --- Core Adapter Interface ---
