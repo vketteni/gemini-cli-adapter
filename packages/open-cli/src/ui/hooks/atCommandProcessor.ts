@@ -12,7 +12,7 @@ import {
   isNodeError,
   unescapePath,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   HistoryItem,
   IndividualToolCallDisplay,
@@ -22,7 +22,7 @@ import { UseHistoryManagerReturn } from './useHistoryManager.js';
 
 interface HandleAtCommandParams {
   query: string;
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
   addItem: UseHistoryManagerReturn['addItem'];
   onDebugMessage: (message: string) => void;
   messageId: number;

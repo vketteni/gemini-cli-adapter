@@ -15,7 +15,7 @@ import {
   SETTINGS_DIRECTORY_NAME,
 } from '../config/settings.js';
 import { promisify } from 'util';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 const execAsync = promisify(exec);
 
@@ -181,7 +181,7 @@ function entrypoint(workdir: string): string[] {
 }
 
 export async function start_sandbox(
-  adapter: CoreAdapter,
+  adapter: CLIProvider,
   nodeArgs: string[] = [],
 ) {
   const config = adapter.settings.getSandboxConfig();

@@ -446,7 +446,7 @@ export interface SettingsService {
  * The primary interface that all core modules must implement. It serves as the
  * single point of interaction for the CLI frontend.
  */
-export interface CoreAdapter {
+export interface CLIProvider {
   /**
    * Checks if the telemetry SDK is initialized.
    */

@@ -9,7 +9,7 @@ import { CommandContext } from '../ui/commands/types.js';
 import { LoadedSettings } from '../config/settings.js';
 import { GitService } from '@google/gemini-cli-core';
 import { SessionStatsState } from '../ui/contexts/SessionContext.js';
-import { createMockCoreAdapter } from './mockCoreAdapter.js';
+import { createMockCLIProvider } from './mockCLIProvider.js';
 
 // A utility type to make all properties of an object, and its nested objects, partial.
 type DeepPartial<T> = T extends object
@@ -35,7 +35,7 @@ export const createMockCommandContext = (
       args: '',
     },
     services: {
-      adapter: createMockCoreAdapter(),
+      adapter: createMockCLIProvider(),
       settings: { merged: {} } as LoadedSettings,
       git: undefined as GitService | undefined,
       logger: {

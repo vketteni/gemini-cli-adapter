@@ -13,7 +13,7 @@ import {
   getProjectCommandsDir,
   getUserCommandsDir,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { ICommandLoader } from './types.js';
 import {
   CommandContext,
@@ -65,7 +65,7 @@ const TomlCommandDefSchema = z.object({
 export class FileCommandLoader implements ICommandLoader {
   private readonly projectRoot: string;
 
-  constructor(private readonly adapter: CoreAdapter | null) {
+  constructor(private readonly adapter: CLIProvider | null) {
     this.projectRoot = adapter?.workspace?.getProjectRoot() || process.cwd();
   }
 

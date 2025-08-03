@@ -5,7 +5,7 @@
  */
 
 import { vi } from 'vitest';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 // A utility type to make all properties of an object, and its nested objects, partial.
 type DeepPartial<T> = T extends object
@@ -15,16 +15,16 @@ type DeepPartial<T> = T extends object
   : T;
 
 /**
- * Creates a comprehensive mock of the CoreAdapter for use in tests.
+ * Creates a comprehensive mock of the CLIProvider for use in tests.
  * All methods are pre-mocked with `vi.fn()` and return reasonable defaults.
  *
  * @param overrides - A deep partial object to override any default mock values.
- * @returns A complete, mocked CoreAdapter object.
+ * @returns A complete, mocked CLIProvider object.
  */
-export const createMockCoreAdapter = (
-  overrides: DeepPartial<CoreAdapter> = {},
-): CoreAdapter => {
-  const defaultMocks: CoreAdapter = {
+export const createMockCLIProvider = (
+  overrides: DeepPartial<CLIProvider> = {},
+): CLIProvider => {
+  const defaultMocks: CLIProvider = {
     // Core lifecycle
     isTelemetryInitialized: vi.fn().mockReturnValue(false),
     shutdownTelemetry: vi.fn().mockResolvedValue(undefined),

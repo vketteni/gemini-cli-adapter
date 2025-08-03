@@ -73,12 +73,12 @@ docs: update adapter creation guide
 
 ### Adapter Structure
 
-New adapters should implement the `CoreAdapter` interface:
+New adapters should implement the `CLIProvider` interface:
 
 ```typescript
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
-export class MyAdapter implements CoreAdapter {
+export class MyAdapter implements CLIProvider {
   readonly id = 'my-provider';
   readonly name = 'My Provider';
   readonly version = '0.1.0';

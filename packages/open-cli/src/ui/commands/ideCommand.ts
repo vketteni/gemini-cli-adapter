@@ -6,7 +6,7 @@
 
 import { fileURLToPath } from 'url';
 import { IDEConnectionStatus } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   CommandContext,
   SlashCommand,
@@ -35,7 +35,7 @@ function isVSCodeInstalled(): boolean {
   }
 }
 
-export const ideCommand = (adapter: CoreAdapter | null): SlashCommand | null => {
+export const ideCommand = (adapter: CLIProvider | null): SlashCommand | null => {
   if (!adapter?.settings.getIdeMode()) {
     return null;
   }

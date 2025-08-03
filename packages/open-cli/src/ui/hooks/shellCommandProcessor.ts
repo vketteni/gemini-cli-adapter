@@ -15,7 +15,7 @@ import {
   ShellExecutionResult,
   ShellOutputEvent,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { type PartListUnion } from '@google/genai';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
 import { SHELL_COMMAND_NAME } from '../constants.js';
@@ -29,7 +29,7 @@ export const OUTPUT_UPDATE_INTERVAL_MS = 1000;
 const MAX_OUTPUT_LENGTH = 10000;
 
 async function addShellCommandToHistory(
-  adapter: CoreAdapter,
+  adapter: CLIProvider,
   rawQuery: string,
   resultText: string,
 ) {
@@ -69,7 +69,7 @@ export const useShellCommandProcessor = (
   >,
   onExec: (command: Promise<void>) => void,
   onDebugMessage: (message: string) => void,
-  adapter: CoreAdapter,
+  adapter: CLIProvider,
 ) => {
   const handleShellCommand = useCallback(
     (rawQuery: PartListUnion, abortSignal: AbortSignal): boolean => {

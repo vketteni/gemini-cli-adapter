@@ -8,11 +8,11 @@ import { Box, Newline, Text, useInput } from 'ink';
 import { RadioButtonSelect } from '../components/shared/RadioButtonSelect.js';
 import { usePrivacySettings } from '../hooks/usePrivacySettings.js';
 import { CloudPaidPrivacyNotice } from './CloudPaidPrivacyNotice.js';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { Colors } from '../colors.js';
 
 interface CloudFreePrivacyNoticeProps {
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
   onExit: () => void;
 }
 

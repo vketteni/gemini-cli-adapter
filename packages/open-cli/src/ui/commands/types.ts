@@ -8,7 +8,7 @@
 import { Content } from '@google/genai';
 import { HistoryItemWithoutId } from '../types.js';
 import { GitService, Logger } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { LoadedSettings } from '../../config/settings.js';
 import { UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
 import type { HistoryItem } from '../types.js';
@@ -28,7 +28,7 @@ export interface CommandContext {
   // Core services and configuration
   services: {
     // TODO(abhipatel12): Ensure that adapter is never null.
-    adapter: CoreAdapter | null;
+    adapter: CLIProvider | null;
     settings: LoadedSettings;
     git: GitService | undefined;
     logger: Logger;

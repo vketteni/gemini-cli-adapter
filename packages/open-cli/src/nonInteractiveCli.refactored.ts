@@ -1,6 +1,6 @@
 
 
-import { CoreAdapter } from "@open-cli/interface";
+import { CLIProvider } from "@open-cli/interface";
 import {
   Content,
   Part,
@@ -34,7 +34,7 @@ function getResponseText(response: GenerateContentResponse): string | null {
   return null;
 }
 
-export async function runNonInteractive(coreAdapter: CoreAdapter, input: string, prompt_id: string) {
+export async function runNonInteractive(CLIProvider: CLIProvider, input: string, prompt_id: string) {
   // Handle EPIPE errors when the output is piped to a command that closes early.
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EPIPE') {
@@ -51,8 +51,8 @@ export async function runNonInteractive(coreAdapter: CoreAdapter, input: string,
     while (true) {
       turnCount++;
       if (
-        coreAdapter.settings.getMaxSessionTurns() > 0 &&
-        turnCount > coreAdapter.settings.getMaxSessionTurns()
+        CLIProvider.settings.getMaxSessionTurns() > 0 &&
+        turnCount > CLIProvider.settings.getMaxSessionTurns()
       ) {
         console.error(
           '\n Reached max session turns for this session. Increase the number of turns by specifying maxSessionTurns in settings.json.',
@@ -61,13 +61,13 @@ export async function runNonInteractive(coreAdapter: CoreAdapter, input: string,
       }
       const functionCalls: FunctionCall[] = [];
 
-      const responseStream = await coreAdapter.chat.sendMessageStream(
+      const responseStream = await CLIProvider.chat.sendMessageStream(
         {
           message: currentMessages[0]?.parts || [], // Ensure parts are always provided
           config: {
             abortSignal: abortController.signal,
             tools: [
-              { functionDeclarations: await coreAdapter.tools.getFunctionDeclarations() },
+              { functionDeclarations: await CLIProvider.tools.getFunctionDeclarations() },
             ],
           },
         },
@@ -101,7 +101,7 @@ export async function runNonInteractive(coreAdapter: CoreAdapter, input: string,
             prompt_id,
           };
 
-          const toolResponse = await coreAdapter.tools.executeToolCall(requestInfo);
+          const toolResponse = await CLIProvider.tools.executeToolCall(requestInfo);
 
           if (toolResponse.error) {
             const isToolNotFound = toolResponse.error.message.includes(
@@ -138,13 +138,13 @@ export async function runNonInteractive(coreAdapter: CoreAdapter, input: string,
     console.error(
       parseAndFormatApiError(
         error,
-        coreAdapter.auth.getAuthType(),
+        CLIProvider.auth.getAuthType(),
       ),
     );
     process.exit(1);
   } finally {
-    if (coreAdapter.isTelemetryInitialized()) {
-      await coreAdapter.shutdownTelemetry();
+    if (CLIProvider.isTelemetryInitialized()) {
+      await CLIProvider.shutdownTelemetry();
     }
   }
 }

@@ -14,7 +14,7 @@ import {
   Logger,
   ToolConfirmationOutcome,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { useSessionStats } from '../contexts/SessionContext.js';
 import {
   Message,
@@ -34,7 +34,7 @@ import { McpPromptLoader } from '../../services/McpPromptLoader.js';
  * Hook to define and process slash commands (e.g., /help, /clear).
  */
 export const useSlashCommandProcessor = (
-  adapter: CoreAdapter | null,
+  adapter: CLIProvider | null,
   settings: LoadedSettings,
   addItem: UseHistoryManagerReturn['addItem'],
   clearItems: UseHistoryManagerReturn['clearItems'],
@@ -272,7 +272,7 @@ export const useSlashCommandProcessor = (
           const args = parts.slice(pathIndex).join(' ');
 
           if (commandToExecute.action) {
-            // TODO: Add logSlashCommand method to CoreAdapter interface if needed
+            // TODO: Add logSlashCommand method to CLIProvider interface if needed
 
             const fullCommandContext: CommandContext = {
               ...commandContext,

@@ -20,7 +20,7 @@ import {
   Status as CoreStatus,
   EditorType,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { useCallback, useState, useMemo } from 'react';
 import {
   HistoryItemToolGroup,
@@ -64,7 +64,7 @@ export type TrackedToolCall =
 
 export function useReactToolScheduler(
   onComplete: (tools: CompletedToolCall[]) => void,
-  adapter: CoreAdapter,
+  adapter: CLIProvider,
   setPendingHistoryItem: React.Dispatch<
     React.SetStateAction<HistoryItemWithoutId | null>
   >,

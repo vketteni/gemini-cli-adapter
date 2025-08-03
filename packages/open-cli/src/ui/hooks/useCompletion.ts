@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { glob } from 'glob';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   MAX_SUGGESTIONS_TO_SHOW,
   Suggestion,
@@ -39,7 +39,7 @@ export function useCompletion(
   cwd: string,
   slashCommands: readonly SlashCommand[],
   commandContext: CommandContext,
-  adapter?: CoreAdapter,
+  adapter?: CLIProvider,
 ): UseCompletionReturn {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeSuggestionIndex, setActiveSuggestionIndex] =

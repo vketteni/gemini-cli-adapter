@@ -18,7 +18,7 @@ import {
   ideContext,
 } from '@google/gemini-cli-core';
 import { LoadedSettings, SettingsFile, Settings } from '../config/settings.js';
-import { createMockCoreAdapter } from '../test-utils/mockCoreAdapter.js';
+import { createMockCLIProvider } from '../test-utils/mockCLIProvider.js';
 import process from 'node:process';
 import { useGeminiStream } from './hooks/useGeminiStream.js';
 import { useConsoleMessages } from './hooks/useConsoleMessages.js';
@@ -238,7 +238,7 @@ vi.mock('node:child_process');
 
 describe('App UI', () => {
   let mockConfig: MockServerConfig;
-  let mockAdapter: ReturnType<typeof createMockCoreAdapter>;
+  let mockAdapter: ReturnType<typeof createMockCLIProvider>;
   let mockSettings: LoadedSettings;
   let mockVersion: string;
   let currentUnmount: (() => void) | undefined;
@@ -286,7 +286,7 @@ describe('App UI', () => {
     }) as unknown as MockServerConfig;
     
     // Create mock adapter
-    mockAdapter = createMockCoreAdapter();
+    mockAdapter = createMockCLIProvider();
     
     mockVersion = '0.0.0-test';
 

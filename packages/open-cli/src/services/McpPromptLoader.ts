@@ -8,7 +8,7 @@ import {
   getErrorMessage,
   getMCPServerPrompts,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   CommandContext,
   CommandKind,
@@ -23,7 +23,7 @@ import { PromptArgument } from '@modelcontextprotocol/sdk/types.js';
  * Model-Context-Protocol (MCP) servers.
  */
 export class McpPromptLoader implements ICommandLoader {
-  constructor(private readonly adapter: CoreAdapter | null) {}
+  constructor(private readonly adapter: CLIProvider | null) {}
 
   /**
    * Loads all available prompts from all configured MCP servers and adapts
@@ -34,7 +34,7 @@ export class McpPromptLoader implements ICommandLoader {
    */
   loadCommands(_signal: AbortSignal): Promise<SlashCommand[]> {
     const promptCommands: SlashCommand[] = [];
-    // TODO: Add MCP support to CoreAdapter interface
+    // TODO: Add MCP support to CLIProvider interface
     const config = this.adapter && (this.adapter as any).config;
     if (!config) {
       return Promise.resolve([]);

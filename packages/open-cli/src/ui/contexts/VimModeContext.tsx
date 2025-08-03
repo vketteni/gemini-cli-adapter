@@ -11,7 +11,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { CoreAdapter, LoadedSettings, SettingScope } from '@open-cli/interface';
+import { CLIProvider, LoadedSettings, SettingScope } from '@open-cli/interface';
 
 export type VimMode = 'NORMAL' | 'INSERT';
 
@@ -29,7 +29,7 @@ export const VimModeProvider = ({
   adapter,
 }: {
   children: React.ReactNode;
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
 }) => {
   const initialVimEnabled = adapter.settings.getVimMode() ?? false;
   const [vimEnabled, setVimEnabled] = useState(initialVimEnabled);

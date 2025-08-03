@@ -6,21 +6,21 @@
 
 import { Box } from 'ink';
 import { AuthType } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { GeminiPrivacyNotice } from './GeminiPrivacyNotice.js';
 import { CloudPaidPrivacyNotice } from './CloudPaidPrivacyNotice.js';
 import { CloudFreePrivacyNotice } from './CloudFreePrivacyNotice.js';
 
 interface PrivacyNoticeProps {
   onExit: () => void;
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
 }
 
 const PrivacyNoticeText = ({
   adapter,
   onExit,
 }: {
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
   onExit: () => void;
 }) => {
   const authType = adapter.settings.getContentGeneratorConfig()?.authType;

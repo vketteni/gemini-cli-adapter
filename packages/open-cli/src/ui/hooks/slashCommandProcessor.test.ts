@@ -69,7 +69,7 @@ import { MessageType } from '../types.js';
 import { BuiltinCommandLoader } from '../../services/BuiltinCommandLoader.js';
 import { FileCommandLoader } from '../../services/FileCommandLoader.js';
 import { McpPromptLoader } from '../../services/McpPromptLoader.js';
-import { createMockCoreAdapter } from '../../test-utils/mockCoreAdapter.js';
+import { createMockCLIProvider } from '../../test-utils/mockCLIProvider.js';
 
 const createTestCommand = (
   overrides: Partial<SlashCommand>,
@@ -89,7 +89,7 @@ describe('useSlashCommandProcessor', () => {
   const mockOpenAuthDialog = vi.fn();
   const mockSetQuittingMessages = vi.fn();
 
-  const mockAdapter = createMockCoreAdapter({
+  const mockAdapter = createMockCLIProvider({
     workspace: {
       getProjectRoot: vi.fn().mockReturnValue('/mock/cwd'),
     },

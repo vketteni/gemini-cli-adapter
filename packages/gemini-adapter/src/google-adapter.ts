@@ -1,4 +1,4 @@
-import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService, LoadedSettings, SettingScope } from "@open-cli/interface";
+import { CLIProvider, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService, LoadedSettings, SettingScope } from "@open-cli/interface";
 import { CoreToolScheduler } from "@google/gemini-cli-core";
 import { GoogleAuth } from 'google-auth-library';
 import { 
@@ -533,7 +533,7 @@ class GoogleSettingsService implements SettingsService {
     }
 }
 
-export class GoogleAdapter implements CoreAdapter {
+export class GoogleAdapter implements CLIProvider {
   chat!: ChatService;
   tools!: ToolingService;
   workspace!: WorkspaceService;

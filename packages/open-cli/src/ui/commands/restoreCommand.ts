@@ -12,7 +12,7 @@ import {
   type SlashCommandActionReturn,
   CommandKind,
 } from './types.js';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 async function restoreAction(
   context: CommandContext,
@@ -141,7 +141,7 @@ async function completion(
   }
 }
 
-export const restoreCommand = (adapter: CoreAdapter | null): SlashCommand | null => {
+export const restoreCommand = (adapter: CLIProvider | null): SlashCommand | null => {
   if (!adapter?.settings.getCheckpointingEnabled()) {
     return null;
   }

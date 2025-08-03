@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import { AuthType } from '@google/gemini-cli-core';
 import { USER_SETTINGS_PATH } from './config/settings.js';
 import { validateAuthMethod } from './config/auth.js';
@@ -24,8 +24,8 @@ function getAuthTypeFromEnv(): AuthType | undefined {
 
 export async function validateNonInteractiveAuth(
   configuredAuthType: AuthType | undefined,
-  adapter: CoreAdapter,
-): Promise<CoreAdapter> {
+  adapter: CLIProvider,
+): Promise<CLIProvider> {
   const effectiveAuthType = configuredAuthType || getAuthTypeFromEnv();
 
   if (!effectiveAuthType) {

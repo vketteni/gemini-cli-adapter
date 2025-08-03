@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { CodeAssistServer, UserTierId } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 export interface PrivacyState {
   isLoading: boolean;
@@ -15,7 +15,7 @@ export interface PrivacyState {
   dataCollectionOptIn?: boolean;
 }
 
-export const usePrivacySettings = (adapter: CoreAdapter) => {
+export const usePrivacySettings = (adapter: CLIProvider) => {
   const [privacyState, setPrivacyState] = useState<PrivacyState>({
     isLoading: true,
   });

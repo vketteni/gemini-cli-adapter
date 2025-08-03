@@ -33,7 +33,7 @@ import { checkForUpdates } from './ui/utils/updateCheck.js';
 import { handleAutoUpdate } from './utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from './utils/events.js';
 import { createAdapterFromConfig } from './adapters/adapterFactory.js';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   Config,
   AuthType,
@@ -46,7 +46,7 @@ import {
   sessionId,
 } from '@google/gemini-cli-core';
 
-function getNodeMemoryArgs(adapter: CoreAdapter): string[] {
+function getNodeMemoryArgs(adapter: CLIProvider): string[] {
   const totalMemoryMB = os.totalmem() / (1024 * 1024);
   const heapStats = v8.getHeapStatistics();
   const currentMaxOldSpaceSizeMb = Math.floor(
@@ -317,7 +317,7 @@ function setWindowTitle(title: string, settings: LoadedSettings) {
 }
 
 async function loadNonInteractiveConfig(
-  adapter: CoreAdapter,
+  adapter: CLIProvider,
   config: Config,
   extensions: Extension[],
   settings: LoadedSettings,

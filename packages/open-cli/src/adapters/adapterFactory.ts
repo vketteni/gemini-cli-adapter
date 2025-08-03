@@ -1,7 +1,7 @@
 
 import { Config } from '@google/gemini-cli-core';
 import { GoogleAdapter } from '@open-cli/gemini-adapter';
-import { CoreAdapter, LoadedSettings } from '@open-cli/interface';
+import { CLIProvider, LoadedSettings } from '@open-cli/interface';
 
 /**
  * Supported adapter types for the CLI
@@ -14,7 +14,7 @@ export enum AdapterType {
 /**
  * Registry of available adapter *factories* (now async)
  */
-const ADAPTER_REGISTRY = new Map<AdapterType, (config: Config, settings: LoadedSettings) => Promise<CoreAdapter>>([
+const ADAPTER_REGISTRY = new Map<AdapterType, (config: Config, settings: LoadedSettings) => Promise<CLIProvider>>([
   [AdapterType.GOOGLE, (config: Config, settings: LoadedSettings) => GoogleAdapter.create(config, settings)],
   // Future adapters can be registered here
   // [AdapterType.OPENAI, (config: Config, settings: LoadedSettings) => OpenAIAdapter.create(config, settings)],
@@ -33,10 +33,10 @@ function getAdapterType(): AdapterType {
 }
 
 /**
- * Factory function to create a CoreAdapter instance from a Config object and LoadedSettings.
+ * Factory function to create a CLIProvider instance from a Config object and LoadedSettings.
  * This is now async to support adapters that require async setup.
  */
-export async function createAdapterFromConfig(config: Config, settings: LoadedSettings): Promise<CoreAdapter> {
+export async function createAdapterFromConfig(config: Config, settings: LoadedSettings): Promise<CLIProvider> {
   const adapterType = getAdapterType();
   const adapterFactory = ADAPTER_REGISTRY.get(adapterType);
 
@@ -59,7 +59,7 @@ export async function createGoogleAdapter(config: Config, settings: LoadedSettin
  */
 export function registerAdapter(
   type: AdapterType,
-  constructor: (config: Config, settings: LoadedSettings) => Promise<CoreAdapter>
+  constructor: (config: Config, settings: LoadedSettings) => Promise<CLIProvider>
 ): void {
   ADAPTER_REGISTRY.set(type, constructor);
 }

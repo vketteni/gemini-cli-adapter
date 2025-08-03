@@ -5,12 +5,12 @@
  */
 
 import { useState, useEffect } from 'react';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 /**
- * Hook to manage the logger instance using CoreAdapter.
+ * Hook to manage the logger instance using CLIProvider.
  */
-export const useLogger = (adapter: CoreAdapter) => {
+export const useLogger = (adapter: CLIProvider) => {
   const [logger, setLogger] = useState<any | null>(null);
 
   useEffect(() => {

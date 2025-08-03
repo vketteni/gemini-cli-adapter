@@ -8,19 +8,19 @@ An open-source CLI frontend, designed for builders of AI-powered core modules. T
 
 ## Architecture
 
-The project's architecture centers on a domain-driven **`CoreAdapter` interface** that provides a clean, modern contract for integrating AI-powered agentic core modules with the CLI frontend.
+The project's architecture centers on a domain-driven **`CLIProvider` interface** that provides a clean, modern contract for integrating AI-powered agentic core modules with the CLI frontend.
 
-Serving as the reference implementation the original `@google/gemini-cli-core` is wrapped by a `GoogleAdapter`.
+The `GoogleAdapter` serves as the reference implementation, wrapping the original `@google/gemini-cli-core` to provide a `CLIProvider` interface.
 
 ```
-CLI Frontend ↔ OPENCLI Interface ↔ GoogleAdapter ↔ @google/gemini-cli-core
-CLI Frontend ↔ OPENCLI Interface ↔ CustomAdapter ↔ Your-Core-Module
+CLI Frontend ↔ GoogleAdapter (CLIProvider) ↔ @google/gemini-cli-core
+CLI Frontend ↔ CustomAdapter (CLIProvider) ↔ Your-AI-Core
 ```
 
 ## Key Features & Goals
 
 *   **Decoupled Architecture:** Clean separation between CLI frontend and core module implementations
-*   **Friendly Interface:** Simple, well-defined contract for integrating custom core modules
+*   **Friendly Interface:** `CLIProvider` contract for integrating custom core modules
 *   **Production-Ready:** Extracted from Google's Gemini CLI with full feature parity
 *   **Extensible Design:** Support for diverse agentic systems, tools, and AI capabilities through unified interface
 
@@ -47,8 +47,8 @@ To set up the project locally:
 ## Project Structure
 
 *   `packages/open-cli`: The main CLI frontend module, extracted and refactored from Gemini CLI
-*   `packages/interface`: Defines the domain-driven `CoreAdapter` interface for core module integration
-*   `packages/gemini-adapter`: GoogleAdapter implementation wrapping Google's Gemini CLI core
+*   `packages/interface`: Defines the domain-driven `CLIProvider` interface for core module integration
+*   `packages/gemini-adapter`: GoogleAdapter implementation providing `CLIProvider` interface for Google's Gemini CLI core
 *   `apps/open-cli`: The CLI application entry point
 *   `docs/`: Project documentation and architectural guides
 

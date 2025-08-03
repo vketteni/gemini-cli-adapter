@@ -25,7 +25,7 @@ import {
   ApprovalMode,
   Icon,
 } from '@google/gemini-cli-core';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   HistoryItemWithoutId,
   ToolCallStatus,
@@ -45,7 +45,7 @@ const mockToolRegistry = {
   getTool: vi.fn(),
 };
 
-const mockAdapter: CoreAdapter = {
+const mockAdapter: CLIProvider = {
   initialize: vi.fn(),
   isTelemetryInitialized: vi.fn(() => false),
   shutdownTelemetry: vi.fn(),

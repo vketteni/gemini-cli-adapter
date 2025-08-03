@@ -89,12 +89,12 @@ import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
 import { setUpdateHandler } from '../utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from '../utils/events.js';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
 interface AppProps {
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
   config: Config;  // Keep config for now during transition
   settings: LoadedSettings;
   startupWarnings?: string[];

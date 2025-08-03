@@ -16,7 +16,7 @@ import {
   FunctionCall,
   GenerateContentResponse,
 } from '@google/genai';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 
 import { parseAndFormatApiError } from './ui/utils/errorParsing.js';
 
@@ -43,7 +43,7 @@ function getResponseText(response: GenerateContentResponse): string | null {
 }
 
 export async function runNonInteractive(
-  adapter: CoreAdapter,
+  adapter: CLIProvider,
   input: string,
   prompt_id: string,
 ): Promise<void> {

@@ -17,7 +17,7 @@ import { useShellHistory } from '../hooks/useShellHistory.js';
 import { useCompletion } from '../hooks/useCompletion.js';
 import { useKeypress, Key } from '../hooks/useKeypress.js';
 import { CommandContext, SlashCommand } from '../commands/types.js';
-import { CoreAdapter } from '@open-cli/interface';
+import { CLIProvider } from '@open-cli/interface';
 import {
   clipboardHasImage,
   saveClipboardImage,
@@ -30,7 +30,7 @@ export interface InputPromptProps {
   onSubmit: (value: string) => void;
   userMessages: readonly string[];
   onClearScreen: () => void;
-  adapter: CoreAdapter;
+  adapter: CLIProvider;
   slashCommands: readonly SlashCommand[];
   commandContext: CommandContext;
   placeholder?: string;
