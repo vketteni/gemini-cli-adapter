@@ -8,3 +8,6 @@
 
 import './dist/gemini.js';
 export { main } from './dist/gemini.js';
+
+// Export settings types and utilities for external packages
+export { LoadedSettings, SettingScope, Settings } from './dist/config/settings.js';
