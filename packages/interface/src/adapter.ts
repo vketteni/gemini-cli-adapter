@@ -1,9 +1,9 @@
 
 /**
- * @fileoverview Defines the core adapter interface for the Gemini CLI.
+ * @fileoverview Defines the core adapter interface for the OPEN CLI.
  *
  * This file specifies the contract that all backend core modules must implement
- * to be compatible with the Gemini CLI frontend. It is designed to be
+ * to be compatible with the OPEN CLI frontend. It is designed to be
  * domain-driven, separating concerns into logical services.
  */
 

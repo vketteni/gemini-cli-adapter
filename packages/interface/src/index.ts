@@ -1,5 +1,5 @@
 /**
- * Core interface definitions for GEMINI CLI adapters
+ * Core interface definitions for OPEN CLI adapters
  */
 
 export * from './adapter.js';

@@ -1,7 +1,7 @@
 {
   "name": "@open-cli/interface",
   "version": "0.1.0",
-  "description": "Core interface definitions for GEMINI CLI adapters",
+  "description": "Core interface definitions for OPEN CLI adapters",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
