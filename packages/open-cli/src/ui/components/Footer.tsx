@@ -70,7 +70,7 @@ export const Footer: React.FC<FooterProps> = ({
       </Box>
 
       {/* Middle Section: Centered Sandbox Info */}
-      <Box
+      {/* <Box
         flexGrow={1}
         alignItems="center"
         justifyContent="center"
@@ -90,7 +90,7 @@ export const Footer: React.FC<FooterProps> = ({
             no sandbox <Text color={Colors.Gray}>(see /docs)</Text>
           </Text>
         )}
-      </Box>
+      </Box> */}
 
       {/* Right Section: Gemini Label and Console Summary */}
       <Box alignItems="center">

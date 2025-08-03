@@ -59,7 +59,7 @@ export const darkTheme: ColorsTheme = {
   Foreground: '#CDD6F4',
   LightBlue: '#ADD8E6',
   AccentBlue: '#89B4FA',
-  AccentPurple: '#CBA6F7',
+  AccentPurple: '#3b82f6', // TODO: Color evaluates to emerald green
   AccentCyan: '#89DCEB',
   AccentGreen: '#A6E3A1',
   AccentYellow: '#F9E2AF',
