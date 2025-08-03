@@ -1,4 +1,4 @@
-import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService } from "@open-cli/interface";
+import { CoreAdapter, ChatService, ToolingService, WorkspaceService, AuthService, MemoryService, SettingsService, LoadedSettings, SettingScope } from "@open-cli/interface";
 import { CoreToolScheduler } from "@google/gemini-cli-core";
 import { GoogleAuth } from 'google-auth-library';
 import { 
@@ -51,10 +51,30 @@ class GoogleChatService implements ChatService {
     }
 
     async *sendMessageStream(request: any, prompt_id: string): AsyncIterable<any> {
-        const chat = this.ensureChat();
-        const stream = await chat.sendMessageStream(request, prompt_id);
-        for await (const chunk of stream) {
-            yield chunk;
+        if (!this.geminiClient) {
+            throw new Error('GoogleChatService: GeminiClient is undefined');
+        }
+        
+        // Determine if this is interactive or non-interactive mode
+        if (request && typeof request === 'object' && ('message' in request || 'config' in request)) {
+            // Non-interactive mode: use GeminiChat.sendMessageStream with structured request
+            const chat = this.ensureChat();
+            const stream = await chat.sendMessageStream(request, prompt_id);
+            for await (const chunk of stream) {
+                yield chunk;
+            }
+        } else {
+            // Interactive mode: use GeminiClient.sendMessageStream with PartListUnion
+            // This returns ServerGeminiStreamEvent which is what the UI expects
+            const abortController = new AbortController();
+            const stream = this.geminiClient.sendMessageStream(
+                request, 
+                abortController.signal, 
+                prompt_id
+            );
+            for await (const chunk of stream) {
+                yield chunk;
+            }
         }
     }
 
@@ -89,11 +109,12 @@ class GoogleChatService implements ChatService {
         await this.geminiClient.setTools();
     }
 
-    async addHistory(history: any[]): Promise<void> {
-        const chat = this.ensureChat();
-        // Fallback to setHistory with current + new history
-        const currentHistory = await this.getHistory();
-        chat.setHistory([...currentHistory, ...history]);
+    async addHistory(content: any): Promise<void> {
+        if (!this.geminiClient) {
+            throw new Error('GoogleChatService: GeminiClient is undefined');
+        }
+        // Use GeminiClient.addHistory which takes a single Content object
+        await this.geminiClient.addHistory(content);
     }
 }
 
@@ -132,7 +153,8 @@ class GoogleToolingService implements ToolingService {
         return this.config.getToolRegistry();
     }
 
-    getShellExecutionService(): any {
+    getShellExecutionService(): typeof ShellExecutionService {
+        // Return the class itself since all methods are static
         return ShellExecutionService;
     }
 
@@ -265,12 +287,14 @@ class GoogleMemoryService implements MemoryService {
         this.config = config;
     }
 
-    async loadHierarchicalMemory(): Promise<void> {
-        await loadServerHierarchicalMemory(
+    async loadHierarchicalMemory(): Promise<{memoryContent: string; fileCount: number}> {
+        return await loadServerHierarchicalMemory(
             this.config.getProjectRoot(),
             this.config.getDebugMode(),
             this.config.getFileService(),
-            []
+            this.config.getExtensionContextFilePaths(), // Use actual config value instead of []
+            this.config.getFileFilteringOptions(), // Add missing parameter
+            undefined // Let maxDirs use default
         );
     }
 
@@ -293,9 +317,11 @@ class GoogleMemoryService implements MemoryService {
 
 class GoogleSettingsService implements SettingsService {
     private config: Config;
+    private loadedSettings: LoadedSettings;
 
-    constructor(config: Config) {
+    constructor(config: Config, loadedSettings: LoadedSettings) {
         this.config = config;
+        this.loadedSettings = loadedSettings;
     }
 
     getApprovalMode(): 'yolo' | 'auto_edit' | 'default' {
@@ -363,9 +389,9 @@ class GoogleSettingsService implements SettingsService {
     }
 
     loadEnvironment(): void {
-        // Import and call the loadEnvironment function from settings
-        // For now, we'll delegate this to a utility function if needed
-        // This might require importing from the config/settings module
+        // No-op: loadEnvironment doesn't exist in the Gemini core module
+        // Environment loading is handled during Config initialization
+        return;
     }
 
     getMcpServers(): any {
@@ -416,6 +442,40 @@ class GoogleSettingsService implements SettingsService {
     getQuestion?(): string {
         return this.config.getQuestion?.() ?? '';
     }
+
+    // --- UI Settings Methods ---
+
+    getHideTips(): boolean | undefined {
+        return this.loadedSettings.merged.hideTips;
+    }
+
+    setHideTips(hide: boolean): void {
+        this.loadedSettings.setValue(SettingScope.User, 'hideTips', hide);
+    }
+
+    getHideBanner(): boolean | undefined {
+        return this.loadedSettings.merged.hideBanner;
+    }
+
+    setHideBanner(hide: boolean): void {
+        this.loadedSettings.setValue(SettingScope.User, 'hideBanner', hide);
+    }
+
+    getVimMode(): boolean | undefined {
+        return this.loadedSettings.merged.vimMode;
+    }
+
+    setVimMode(enabled: boolean): void {
+        this.loadedSettings.setValue(SettingScope.User, 'vimMode', enabled);
+    }
+
+    getHideWindowTitle(): boolean | undefined {
+        return this.loadedSettings.merged.hideWindowTitle;
+    }
+
+    setHideWindowTitle(hide: boolean): void {
+        this.loadedSettings.setValue(SettingScope.User, 'hideWindowTitle', hide);
+    }
 }
 
 export class GoogleAdapter implements CoreAdapter {
@@ -426,14 +486,14 @@ export class GoogleAdapter implements CoreAdapter {
   memory!: MemoryService;
   settings!: SettingsService;
 
-  private constructor(private config: Config) {
+  private constructor(private config: Config, private loadedSettings: LoadedSettings) {
     // Services will be initialized in static create() method
   }
 
   /**
    * Asynchronously creates a fully-initialized GoogleAdapter.
    */
-  static async create(config: Config): Promise<GoogleAdapter> {
+  static async create(config: Config, loadedSettings: LoadedSettings): Promise<GoogleAdapter> {
     await config.initialize(); // Ensure all config-dependent resources are ready
 
     // Check if GeminiClient is available after initialization
@@ -469,14 +529,17 @@ export class GoogleAdapter implements CoreAdapter {
       }
     }
 
-    const adapter = new GoogleAdapter(config);
+    const adapter = new GoogleAdapter(config, loadedSettings);
 
     adapter.chat = new GoogleChatService(config);
     adapter.tools = new GoogleToolingService(config);
     adapter.workspace = new GoogleWorkspaceService(config);
     adapter.auth = new GoogleAuthService(config);
     adapter.memory = new GoogleMemoryService(config);
-    adapter.settings = new GoogleSettingsService(config);
+    adapter.settings = new GoogleSettingsService(config, loadedSettings);
+
+    // Configure default UI settings for Google implementation
+    adapter.settings.setHideTips(true);
 
     return adapter;
   }
