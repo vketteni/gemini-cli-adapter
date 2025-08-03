@@ -1,6 +1,6 @@
-# Contributing to GEMINI CLI Adapter
+# Contributing to OPEN CLI
 
-Thank you for your interest in contributing to GEMINI CLI Adapter! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to OPEN CLI! This document provides guidelines and information for contributors.
 
 ## 🌟 Ways to Contribute
 
@@ -153,8 +153,8 @@ When reporting issues, please include:
 
 ## 📄 License
 
-By contributing to GEMINI CLI Adapter, you agree that your contributions will be licensed under the MIT License.
+By contributing to OPEN CLI, you agree that your contributions will be licensed under the MIT License.
 
 ## 🎉 Recognition
 
-Contributors will be recognized in our README and release notes. Thank you for helping make GEMINI CLI Adapter better!
+Contributors will be recognized in our README and release notes. Thank you for helping make OPEN CLI better!
