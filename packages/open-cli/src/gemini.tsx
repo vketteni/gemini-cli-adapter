@@ -141,8 +141,8 @@ export async function main() {
     argv,
   );
 
-  // Create the core adapter from the config
-  const adapter = await createAdapterFromConfig(config);
+  // Create the core adapter from the config and settings
+  const adapter = await createAdapterFromConfig(config, settings);
 
   if (argv.promptInteractive && !process.stdin.isTTY) {
     console.error(
@@ -348,7 +348,7 @@ async function loadNonInteractiveConfig(
       argv,
     );
     await restrictedConfig.initialize();
-    finalAdapter = await createAdapterFromConfig(restrictedConfig);
+    finalAdapter = await createAdapterFromConfig(restrictedConfig, settings);
   }
 
   return await validateNonInteractiveAuth(

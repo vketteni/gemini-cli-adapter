@@ -1,7 +1,7 @@
 
 import { Config } from '@google/gemini-cli-core';
 import { GoogleAdapter } from '@open-cli/gemini-cli-core-shim';
-import { CoreAdapter } from '@open-cli/interface';
+import { CoreAdapter, LoadedSettings } from '@open-cli/interface';
 
 /**
  * Supported adapter types for the CLI
@@ -14,10 +14,10 @@ export enum AdapterType {
 /**
  * Registry of available adapter *factories* (now async)
  */
-const ADAPTER_REGISTRY = new Map<AdapterType, (config: Config) => Promise<CoreAdapter>>([
-  [AdapterType.GOOGLE, (config: Config) => GoogleAdapter.create(config)],
+const ADAPTER_REGISTRY = new Map<AdapterType, (config: Config, settings: LoadedSettings) => Promise<CoreAdapter>>([
+  [AdapterType.GOOGLE, (config: Config, settings: LoadedSettings) => GoogleAdapter.create(config, settings)],
   // Future adapters can be registered here
-  // [AdapterType.OPENAI, (config: Config) => OpenAIAdapter.create(config)],
+  // [AdapterType.OPENAI, (config: Config, settings: LoadedSettings) => OpenAIAdapter.create(config, settings)],
 ]);
 
 /**
@@ -33,10 +33,10 @@ function getAdapterType(): AdapterType {
 }
 
 /**
- * Factory function to create a CoreAdapter instance from a Config object.
+ * Factory function to create a CoreAdapter instance from a Config object and LoadedSettings.
  * This is now async to support adapters that require async setup.
  */
-export async function createAdapterFromConfig(config: Config): Promise<CoreAdapter> {
+export async function createAdapterFromConfig(config: Config, settings: LoadedSettings): Promise<CoreAdapter> {
   const adapterType = getAdapterType();
   const adapterFactory = ADAPTER_REGISTRY.get(adapterType);
 
@@ -44,14 +44,14 @@ export async function createAdapterFromConfig(config: Config): Promise<CoreAdapt
     throw new Error(`Unsupported adapter type: ${adapterType}. Available types: ${Array.from(ADAPTER_REGISTRY.keys()).join(', ')}`);
   }
 
-  return await adapterFactory(config);
+  return await adapterFactory(config, settings);
 }
 
 /**
  * Creates the default Google adapter for the CLI.
  */
-export async function createGoogleAdapter(config: Config): Promise<GoogleAdapter> {
-  return await GoogleAdapter.create(config);
+export async function createGoogleAdapter(config: Config, settings: LoadedSettings): Promise<GoogleAdapter> {
+  return await GoogleAdapter.create(config, settings);
 }
 
 /**
@@ -59,7 +59,7 @@ export async function createGoogleAdapter(config: Config): Promise<GoogleAdapter
  */
 export function registerAdapter(
   type: AdapterType,
-  constructor: (config: Config) => Promise<CoreAdapter>
+  constructor: (config: Config, settings: LoadedSettings) => Promise<CoreAdapter>
 ): void {
   ADAPTER_REGISTRY.set(type, constructor);
 }
