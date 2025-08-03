@@ -103,7 +103,7 @@ interface AppProps {
 
 export const AppWrapper = (props: AppProps) => (
   <SessionStatsProvider>
-    <VimModeProvider settings={props.settings}>
+    <VimModeProvider adapter={props.adapter}>
       <App {...props} />
     </VimModeProvider>
   </SessionStatsProvider>
@@ -774,14 +774,14 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
           key={staticKey}
           items={[
             <Box flexDirection="column" key="header">
-              {!settings.merged.hideBanner && (
+              {!adapter.settings.getHideBanner() && (
                 <Header
                   terminalWidth={terminalWidth}
                   version={version}
                   nightly={nightly}
                 />
               )}
-              {!settings.merged.hideTips && <Tips config={config} />}
+              {!adapter.settings.getHideTips() && <Tips config={config} />}
             </Box>,
             ...history.map((h) => (
               <HistoryItemDisplay
