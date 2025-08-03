@@ -215,7 +215,7 @@ export interface AuthService {
   /**
    * Gets the code assist server instance.
    */
-  getCodeAssistServer(): any;
+  getCodeAssistServer(): Promise<any>;
 
   /**
    * Checks if MCP server requires OAuth.

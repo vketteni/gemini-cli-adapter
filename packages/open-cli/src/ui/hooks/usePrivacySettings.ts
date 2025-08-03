@@ -26,7 +26,7 @@ export const usePrivacySettings = (adapter: CoreAdapter) => {
         isLoading: true,
       });
       try {
-        const server = adapter.auth.getCodeAssistServer();
+        const server = await adapter.auth.getCodeAssistServer();
         const tier = await getTier(server);
         if (tier !== UserTierId.FREE) {
           // We don't need to fetch opt-out info since non-free tier
@@ -57,7 +57,7 @@ export const usePrivacySettings = (adapter: CoreAdapter) => {
   const updateDataCollectionOptIn = useCallback(
     async (optIn: boolean) => {
       try {
-        const server = adapter.auth.getCodeAssistServer();
+        const server = await adapter.auth.getCodeAssistServer();
         const updatedOptIn = await setRemoteDataCollectionOptIn(server, optIn);
         setPrivacyState({
           isLoading: false,

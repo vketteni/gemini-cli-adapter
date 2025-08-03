@@ -27,21 +27,53 @@ import { isGitRepository } from "@google/gemini-cli-core/dist/src/utils/gitUtils
 
 class GoogleChatService implements ChatService {
     private config: Config;
-    private geminiClient: GeminiClient;
+    private geminiClient?: GeminiClient;
 
     constructor(config: Config) {
         this.config = config;
-        this.geminiClient = config.getGeminiClient();
-        
-        // Add defensive programming - check if GeminiClient was properly initialized
+        // Note: We no longer eagerly get the GeminiClient here.
+        // It will be lazily initialized when first needed.
+    }
+
+    private async ensureAuthenticated(): Promise<void> {
         if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined. Config may not be properly initialized. Make sure to call config.initialize() before creating the adapter.');
+            // Check if GeminiClient is already available
+            this.geminiClient = this.config.getGeminiClient();
+            
+            if (!this.geminiClient) {
+                // GeminiClient is not initialized yet. Initialize authentication lazily.
+                const contentGeneratorConfig = this.config.getContentGeneratorConfig();
+                let authType = contentGeneratorConfig?.authType;
+                
+                if (!authType) {
+                    // Determine the appropriate auth type based on environment
+                    if (process.env.CLOUD_SHELL === 'true') {
+                        authType = AuthType.CLOUD_SHELL;
+                    } else if (process.env.GEMINI_API_KEY) {
+                        authType = AuthType.USE_GEMINI;
+                    } else if (process.env.GOOGLE_CLOUD_PROJECT && process.env.GOOGLE_CLOUD_LOCATION) {
+                        authType = AuthType.USE_VERTEX_AI;
+                    } else {
+                        authType = AuthType.LOGIN_WITH_GOOGLE;
+                    }
+                }
+
+                // Initialize the GeminiClient with the determined auth type
+                await this.config.refreshAuth(authType);
+                
+                // Get the initialized client
+                this.geminiClient = this.config.getGeminiClient();
+                if (!this.geminiClient) {
+                    throw new Error(`GoogleChatService: Failed to initialize GeminiClient with authType: ${authType}`);
+                }
+            }
         }
     }
 
-    private ensureChat() {
+    private async ensureChat() {
+        await this.ensureAuthenticated();
         if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined');
+            throw new Error('GoogleChatService: GeminiClient is undefined after authentication');
         }
         const chat = this.geminiClient.getChat();
         if (!chat) {
@@ -51,14 +83,12 @@ class GoogleChatService implements ChatService {
     }
 
     async *sendMessageStream(request: any, prompt_id: string): AsyncIterable<any> {
-        if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined');
-        }
+        await this.ensureAuthenticated();
         
         // Determine if this is interactive or non-interactive mode
         if (request && typeof request === 'object' && ('message' in request || 'config' in request)) {
             // Non-interactive mode: use GeminiChat.sendMessageStream with structured request
-            const chat = this.ensureChat();
+            const chat = await this.ensureChat();
             const stream = await chat.sendMessageStream(request, prompt_id);
             for await (const chunk of stream) {
                 yield chunk;
@@ -67,7 +97,7 @@ class GoogleChatService implements ChatService {
             // Interactive mode: use GeminiClient.sendMessageStream with PartListUnion
             // This returns ServerGeminiStreamEvent which is what the UI expects
             const abortController = new AbortController();
-            const stream = this.geminiClient.sendMessageStream(
+            const stream = this.geminiClient!.sendMessageStream(
                 request, 
                 abortController.signal, 
                 prompt_id
@@ -79,42 +109,34 @@ class GoogleChatService implements ChatService {
     }
 
     async getHistory(): Promise<any[]> {
-        const chat = this.ensureChat();
+        const chat = await this.ensureChat();
         return chat.getHistory();
     }
 
     async setHistory(history: any[]): Promise<void> {
-        const chat = this.ensureChat();
+        const chat = await this.ensureChat();
         chat.setHistory(history);
     }
 
     async resetChat(): Promise<void> {
-        if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined');
-        }
-        await this.geminiClient.resetChat();
+        await this.ensureAuthenticated();
+        await this.geminiClient!.resetChat();
     }
 
     async tryCompressChat(promptId?: string, forceCompress?: boolean): Promise<any> {
-        if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined');
-        }
-        return this.geminiClient.tryCompressChat(promptId || '', forceCompress);
+        await this.ensureAuthenticated();
+        return this.geminiClient!.tryCompressChat(promptId || '', forceCompress);
     }
 
     async setTools(): Promise<void> {
-        if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined');
-        }
-        await this.geminiClient.setTools();
+        await this.ensureAuthenticated();
+        await this.geminiClient!.setTools();
     }
 
     async addHistory(content: any): Promise<void> {
-        if (!this.geminiClient) {
-            throw new Error('GoogleChatService: GeminiClient is undefined');
-        }
+        await this.ensureAuthenticated();
         // Use GeminiClient.addHistory which takes a single Content object
-        await this.geminiClient.addHistory(content);
+        await this.geminiClient!.addHistory(content);
     }
 }
 
@@ -210,6 +232,38 @@ class GoogleAuthService implements AuthService {
         this.config = config;
     }
 
+    private async ensureAuthenticated(): Promise<void> {
+        let geminiClient = this.config.getGeminiClient();
+        
+        if (!geminiClient) {
+            // GeminiClient is not initialized yet. Initialize authentication lazily.
+            const contentGeneratorConfig = this.config.getContentGeneratorConfig();
+            let authType = contentGeneratorConfig?.authType;
+            
+            if (!authType) {
+                // Determine the appropriate auth type based on environment
+                if (process.env.CLOUD_SHELL === 'true') {
+                    authType = AuthType.CLOUD_SHELL;
+                } else if (process.env.GEMINI_API_KEY) {
+                    authType = AuthType.USE_GEMINI;
+                } else if (process.env.GOOGLE_CLOUD_PROJECT && process.env.GOOGLE_CLOUD_LOCATION) {
+                    authType = AuthType.USE_VERTEX_AI;
+                } else {
+                    authType = AuthType.LOGIN_WITH_GOOGLE;
+                }
+            }
+
+            // Initialize the GeminiClient with the determined auth type
+            await this.config.refreshAuth(authType);
+            
+            // Verify the GeminiClient is now available
+            geminiClient = this.config.getGeminiClient();
+            if (!geminiClient) {
+                throw new Error(`GoogleAuthService: Failed to initialize GeminiClient with authType: ${authType}`);
+            }
+        }
+    }
+
     async refreshAuth(authType: any): Promise<void> {
         await this.config.refreshAuth(authType);
     }
@@ -261,7 +315,8 @@ class GoogleAuthService implements AuthService {
         return 'Invalid auth method selected.';
     }
 
-    getCodeAssistServer(): any {
+    async getCodeAssistServer(): Promise<any> {
+        await this.ensureAuthenticated();
         const server = this.config.getGeminiClient().getContentGenerator();
         if (!(server instanceof CodeAssistServer)) {
             throw new Error('OAuth not being used');
@@ -495,39 +550,9 @@ export class GoogleAdapter implements CoreAdapter {
    */
   static async create(config: Config, loadedSettings: LoadedSettings): Promise<GoogleAdapter> {
     await config.initialize(); // Ensure all config-dependent resources are ready
-
-    // Check if GeminiClient is available after initialization
-    let geminiClient = config.getGeminiClient();
-    if (!geminiClient) {
-      // GeminiClient is not initialized yet. This happens because the GeminiClient
-      // is only created during refreshAuth(). We need to initialize it with a default auth type.
-      
-      // Get the auth type from content generator config or use a default
-      const contentGeneratorConfig = config.getContentGeneratorConfig();
-      let authType = contentGeneratorConfig?.authType;
-      
-      if (!authType) {
-        // Determine the appropriate auth type based on environment
-        if (process.env.CLOUD_SHELL === 'true') {
-          authType = AuthType.CLOUD_SHELL;
-        } else if (process.env.GEMINI_API_KEY) {
-          authType = AuthType.USE_GEMINI;
-        } else if (process.env.GOOGLE_CLOUD_PROJECT && process.env.GOOGLE_CLOUD_LOCATION) {
-          authType = AuthType.USE_VERTEX_AI;
-        } else {
-          authType = AuthType.LOGIN_WITH_GOOGLE;
-        }
-      }
-
-      // Initialize the GeminiClient with the determined auth type
-      await config.refreshAuth(authType);
-      
-      // Verify the GeminiClient is now available
-      geminiClient = config.getGeminiClient();
-      if (!geminiClient) {
-        throw new Error(`GoogleAdapter.create(): Failed to initialize GeminiClient even after refreshAuth with authType: ${authType}`);
-      }
-    }
+    
+    // Note: We no longer eagerly initialize authentication here.
+    // Authentication will be lazily initialized when first needed by services.
 
     const adapter = new GoogleAdapter(config, loadedSettings);
 
