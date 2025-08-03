@@ -153,6 +153,16 @@ export const createMockCoreAdapter = (
       getListExtensions: vi.fn().mockReturnValue(false),
       getExperimentalAcp: vi.fn().mockReturnValue(false),
       getQuestion: vi.fn().mockReturnValue(''),
+      
+      // UI Settings Methods
+      getHideTips: vi.fn().mockReturnValue(false),
+      setHideTips: vi.fn().mockResolvedValue(undefined),
+      getHideBanner: vi.fn().mockReturnValue(false),
+      setHideBanner: vi.fn().mockResolvedValue(undefined),
+      getVimMode: vi.fn().mockReturnValue(false),
+      setVimMode: vi.fn().mockResolvedValue(undefined),
+      getHideWindowTitle: vi.fn().mockReturnValue(false),
+      setHideWindowTitle: vi.fn().mockResolvedValue(undefined),
     },
   };
 
