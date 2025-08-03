@@ -10,6 +10,6 @@
   "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
   "references": [
     { "path": "../interface" },
-    { "path": "../gemini-cli-core-shim" }
+    { "path": "../gemini-adapter" }
   ]
 }

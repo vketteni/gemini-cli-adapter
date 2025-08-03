@@ -1,7 +1,7 @@
 {
-  "name": "@open-cli/gemini-cli-core-shim",
+  "name": "@open-cli/gemini-adapter",
   "version": "0.1.0",
-  "description": "Compatibility shim for @google/gemini-cli-core package",
+  "description": "Gemini CLI core adapter implementation for Open CLI",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,14 +24,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/vketteni/open-cli.git",
-    "directory": "packages/gemini-cli-core-shim"
+    "directory": "packages/gemini-adapter"
   },
   "keywords": [
     "gemini",
     "cli",
     "adapter",
-    "compatibility",
-    "shim"
+    "core-adapter"
   ],
   "author": "Your Name",
   "license": "MIT"

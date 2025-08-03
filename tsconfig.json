@@ -3,7 +3,7 @@
   "include": [],
   "references": [
     { "path": "./packages/interface" },
-    { "path": "./packages/gemini-cli-core-shim" },
+    { "path": "./packages/gemini-adapter" },
     { "path": "./packages/open-cli" },
     { "path": "./apps/open-cli" }
   ]

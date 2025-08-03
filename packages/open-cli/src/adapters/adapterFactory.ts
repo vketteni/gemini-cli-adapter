@@ -1,6 +1,6 @@
 
 import { Config } from '@google/gemini-cli-core';
-import { GoogleAdapter } from '@open-cli/gemini-cli-core-shim';
+import { GoogleAdapter } from '@open-cli/gemini-adapter';
 import { CoreAdapter, LoadedSettings } from '@open-cli/interface';
 
 /**

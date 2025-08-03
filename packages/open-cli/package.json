@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@open-cli/interface": "*",
-    "@open-cli/gemini-cli-core-shim": "*",
+    "@open-cli/gemini-adapter": "*",
     "@google/gemini-cli-core": "^0.1.13",
     
     "@google/genai": "1.9.0",
