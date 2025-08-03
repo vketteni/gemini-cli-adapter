@@ -1,10 +1,22 @@
-# Open CLI
+<div align="center">
+
+# 🚀 Open CLI
+
+*The modular AI CLI that adapts to **your** intelligence*
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://choosealicense.com/licenses/mit/)
 
 ![Open CLI Demo](demo1.png)
 
+</div>
+
+> **Tired of being locked into one AI provider?** Open CLI is the first **truly modular** AI CLI that lets you plug in **any** AI core while keeping the polished experience you love.
+
 ## Overview
 
-An open-source CLI frontend, designed for builders of AI-powered core modules. Through clean interface abstraction, this project enables developers to integrate their own agentic systems, tools, and AI providers while leveraging a proven, feature-rich CLI experience based on Google's Gemini CLI.
+Designed for builders of AI-powered core modules, an open-source CLI frontend that enables anyone to integrate their own agentic systems, tools, and AI providers while leveraging a proven, feature-rich CLI experience based on Google's Gemini CLI.
 
 ## Architecture
 
