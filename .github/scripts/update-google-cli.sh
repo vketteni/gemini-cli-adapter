@@ -1,53 +1,62 @@
 #!/bin/bash
 
-# Script to update Google's CLI frontend from upstream
-# This maintains the ability to automatically sync with Google's changes
+# Script to facilitate updating the refactored open-cli module from Google's original CLI.
+# This script implements the "Upstream-Diff" workflow.
 
 set -e
 
-echo "🔄 Updating Google CLI frontend from upstream..."
+UPSTREAM_REMOTE="upstream"
+UPSTREAM_BRANCH="main"
+UPSTREAM_PATH="packages/cli"
 
-# Fetch latest from Google's repository
-git fetch google-cli main
+LOCAL_PATH="packages/open-cli"
+TEMP_COMPARISON_DIR="tmp/upstream-cli"
 
-# Create a temporary directory to extract just the CLI package
-TEMP_DIR=$(mktemp -d)
-echo "📁 Using temporary directory: $TEMP_DIR"
+echo "🔄 Starting the 'Upstream-Diff' workflow to update from Google's Gemini CLI..."
 
-# Clone Google's repo to temp location
-git clone --depth 1 https://github.com/google-gemini/gemini-cli.git "$TEMP_DIR/google-cli"
+# 1. Fetch latest from the upstream repository
+echo "📡 Fetching latest changes from $UPSTREAM_REMOTE..."
+git fetch $UPSTREAM_REMOTE $UPSTREAM_BRANCH
 
-# Get the current commit hash for attribution
-GOOGLE_COMMIT=$(cd "$TEMP_DIR/google-cli" && git rev-parse HEAD)
-echo "📝 Google CLI commit: $GOOGLE_COMMIT"
+# 2. Create a clean, temporary directory for comparison
+echo "📁 Clearing and creating temporary comparison directory: $TEMP_COMPARISON_DIR"
+rm -rf $TEMP_COMPARISON_DIR
+mkdir -p $TEMP_COMPARISON_DIR
 
-# Remove existing CLI frontend (except our modifications)
-# TODO: Add logic to preserve adapter-specific modifications
-rm -rf packages/cli-frontend
-mkdir -p packages/cli-frontend
+# 3. Checkout the original Google CLI source into the temporary directory
+echo "🔍 Checking out the contents of '$UPSTREAM_PATH' from '$UPSTREAM_REMOTE/$UPSTREAM_BRANCH'...
+"
+git checkout $UPSTREAM_REMOTE/$UPSTREAM_BRANCH -- $UPSTREAM_PATH
 
-# Copy the CLI package
-cp -r "$TEMP_DIR/google-cli/packages/cli/"* packages/cli-frontend/
+# Move the checked-out files to the clean temporary directory
+mv $UPSTREAM_PATH/* $TEMP_COMPARISON_DIR
 
-# Clean up
-rm -rf "$TEMP_DIR"
+# Restore the state of the local repository (git checkout modifies the index)
+git restore $UPSTREAM_PATH
 
-# Stage the changes
-git add packages/cli-frontend
+echo "✅ The latest upstream code is now available in: $TEMP_COMPARISON_DIR"
 
-# Create commit with proper attribution
-git commit -m "feat: update Google CLI frontend to commit $GOOGLE_COMMIT
+# 4. Provide clear instructions for the manual merge
+echo "
+---
 
-Synced with upstream Google Gemini CLI
-Source: https://github.com/google-gemini/gemini-cli/tree/$GOOGLE_COMMIT/packages/cli
+##  actionable-instruction
 
-Changes:
-- Updated all UI components and themes  
-- Latest command implementations
-- Bug fixes and improvements from Google team
+**Next Steps: Manual Merge Required**
 
-Next step: Re-apply adapter interface modifications"
+The automated part of the update is complete. Now, you must manually merge the changes.
 
-echo "✅ Google CLI frontend updated successfully!"
-echo "⚠️  Remember to re-apply adapter interface modifications"
-echo "🔧 Run: npm run adapt-cli-for-adapters"
+1.  **Use a Diff Tool:**
+    Open your preferred visual diffing tool to compare the following two directories:
+    - **Your local module:** `$LOCAL_PATH`
+    - **The upstream code:** `$TEMP_COMPARISON_DIR`
+
+    *Suggestion: In VS Code, right-click on the first folder, select 'Select for Compare', then right-click on the second folder and select 'Compare with Selected'.*
+
+2.  **Port Relevant Changes:**
+    Carefully review the differences and manually port the necessary updates from the upstream code into your local module. Remember to adapt the changes to the refactored architecture of Open CLI.
+
+3.  **Commit Your Changes:**
+    Once you have integrated the changes, commit them to your repository.
+
+---
