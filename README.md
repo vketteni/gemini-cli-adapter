@@ -21,15 +21,9 @@
 
 ## 📋 **Table of Contents**
 
-- [🔥 The Problem We're Solving](#-the-problem-were-solving)
-- [✨ The Open CLI Solution](#-the-open-cli-solution)
-- [🚀 Join the Movement](#-join-the-movement)
 - [🔌 Build Your Adapter](#-build-your-adapter)
-- [🌟 Current Ecosystem](#-current-ecosystem)
 - [⚡ Quick Start](#-quick-start)
-- [🏗️ Architecture Deep Dive](#️-architecture-deep-dive)
 - [🗺️ Community Roadmap](#️-community-roadmap)
-- [📁 Project Structure](#-project-structure)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 
@@ -133,7 +127,7 @@ export class YourAdapter implements CLIProvider {
 1. 🍴 **Fork** the repository
 2. 📁 **Create** `packages/your-adapter`
 3. 🔨 **Implement** the `CLIProvider` interface
-4. ✅ **Test** with our comprehensive test suite
+4. ✅ **Test** with our comprehensive test suite // TODO: Needs migration/implementation 
 5. 📖 **Document** your adapter's capabilities
 6. 🚀 **Submit** a pull request
 
@@ -161,7 +155,7 @@ export class YourAdapter implements CLIProvider {
 
 ## ⚡ **Quick Start**
 
-### 🚀 **For Users**
+### 🚀 **For Users // TODO: Still needs npm release** 
 
 ```bash
 # Install Open CLI
