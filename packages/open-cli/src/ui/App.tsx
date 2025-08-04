@@ -929,7 +929,7 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
               />
 
               <Box
-                marginTop={1}
+                // marginTop={1}
                 display="flex"
                 justifyContent="space-between"
                 width="100%"
