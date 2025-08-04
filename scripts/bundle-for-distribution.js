@@ -54,7 +54,7 @@ async function main() {
 
   // 4. Create tarball
   console.log('📦 Creating tarball...');
-  executeCommand('npm pack apps/open-cli', { cwd: PROJECT_ROOT });
+  executeCommand('npm pack', { cwd: join(PROJECT_ROOT, 'apps/open-cli') });
 
   // 5. Create installation instructions
   const installInstructions = `# ${rootPackage.name} Installation

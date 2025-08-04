@@ -8,7 +8,9 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"No tests yet\""
   },
   "dependencies": {
     "@open-cli/interface": "^0.1.0",
@@ -32,6 +34,6 @@
     "adapter",
     "core-adapter"
   ],
-  "author": "Your Name",
-  "license": "MIT"
+  "author": "vketteni",
+  "license": "Apache-2.0"
 }

@@ -4,8 +4,9 @@
   "description": "A modular frontend for AI command-line tools, extracted from Google's Gemini CLI.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vketteni/open-cli.git"
+    "url": "https://github.com/vketteni/open-cli.git"
   },
+  "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

@@ -22,20 +22,37 @@
     "setup": "npm run build && npm run demo",
     "install-global": "./scripts/install-global.sh",
     "bundle": "node scripts/bundle-for-distribution.js",
-    "prepare-release": "npm run build && npm run bundle"
+    "prepare-release": "npm run build && npm run bundle",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run",
+    "version:patch": "npm version patch --no-git-tag-version --workspaces && npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version --workspaces && npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version --workspaces && npm version major --no-git-tag-version",
+    "tag:release": "git tag v$(node -p \"require('./package.json').version\")",
+    "changelog:update": "conventional-changelog -p angular -i CHANGELOG.md -s"
   },
   "dependencies": {
     "@google/gemini-cli-core": "^0.1.13"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.0",
+    "@semantic-release/npm": "^12.0.1",
+    "@semantic-release/release-notes-generator": "^14.0.1",
+    "@eslint/js": "^9.0.0",
     "@types/lowlight": "^0.0.7",
     "@types/mime-types": "^3.0.1",
     "@types/node": "^20.11.24",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "conventional-changelog-cli": "^5.0.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.2.5",
+    "semantic-release": "^24.0.0",
     "typescript": "^5.3.3",
     "vitest": "^1.3.1"
   },
@@ -47,5 +64,5 @@
     "type": "git",
     "url": "https://github.com/vketteni/open-cli.git"
   },
-  "license": "MIT"
+  "license": "Apache-2.0"
 }

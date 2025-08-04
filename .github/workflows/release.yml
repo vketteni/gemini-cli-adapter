@@ -2,36 +2,115 @@ name: Release
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'skip ci')"
-    
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build
-      run: npm run build
-    
-    - name: Test
-      run: npm test
-    
-    - name: Release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      run: npx semantic-release
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run typecheck
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update package versions
+        run: |
+          npm version ${{ steps.get_version.outputs.VERSION }} --no-git-tag-version --workspaces
+          npm version ${{ steps.get_version.outputs.VERSION }} --no-git-tag-version
+
+      - name: Bundle for distribution
+        run: npm run prepare-release
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            # Extract the latest version's changelog
+            awk '/## \[.*\].*- 2025-/{flag=1; next} /## \[.*\]/{flag=0} flag' CHANGELOG.md > release_notes.txt
+            if [ ! -s release_notes.txt ]; then
+              echo "### Changes" > release_notes.txt
+              echo "See CHANGELOG.md for details." >> release_notes.txt
+            fi
+          else
+            echo "### Release v${{ steps.get_version.outputs.VERSION }}" > release_notes.txt
+            echo "See commit history for changes." >> release_notes.txt
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          body_path: release_notes.txt
+          draft: false
+          prerelease: ${{ contains(steps.get_version.outputs.VERSION, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: npm publish --access public --workspaces
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  post-release:
+    needs: release
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create post-release issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Post-release tasks for ${release.tag_name}`,
+              body: `## Post-release checklist for ${release.tag_name}
+              
+              - [ ] Update documentation if needed
+              - [ ] Announce release in community channels
+              - [ ] Update any dependent projects
+              - [ ] Monitor for issues in the first 24-48 hours
+              
+              Release: ${release.html_url}`,
+              labels: ['release', 'maintenance']
+            });
