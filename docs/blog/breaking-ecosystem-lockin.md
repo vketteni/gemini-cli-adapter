@@ -1,16 +1,16 @@
-# Breaking Ecosystem Lock-in in Google's Gemini CLI
+# Extracting Reusable CLI Infrastructure from Google's Gemini CLI
 
-*Lessons learned from turning a tightly-coupled tool into a community-driven platform*
+*Technical lessons from turning a tightly-coupled tool into modular, reusable foundations*
 
 ---
 
-## The Challenge: Liberating Battle-Tested Code
+## The Challenge: Preserving Battle-Tested Code While Enabling Reuse
 
-Google's Gemini CLI is exceptional. It's fast, feature-rich, and has been battle-tested by thousands of users. But it's also architecturally coupled to Google's ecosystem - from authentication flows to API integrations, making it challenging to use with other AI providers. What if we could preserve everything that makes it great while opening it up to the entire AI landscape?
+Google's Gemini CLI is exceptional. It's fast, feature-rich, and has been battle-tested by thousands of users. But it's also architecturally coupled to Google's ecosystem - from authentication flows to API integrations, making it challenging to reuse its proven patterns with other AI providers. What if we could preserve everything that makes it great while making it reusable for other agentic CLI projects?
 
-That's the challenge I tackled with **open-cli**: extracting the best parts of this tightly-coupled tool and rebuilding them as a modular, community-driven platform.
+That's the technical challenge I tackled with **open-cli**: extracting the best parts of this tightly-coupled tool and rebuilding them as modular, reusable infrastructure.
 
-This isn't just another rewrite. It's a surgical extraction that preserves production-quality code while creating space for innovation.
+This isn't just another rewrite. It's a surgical extraction that preserves production-quality code while creating clean service interfaces for reuse.
 
 ## The Extraction Strategy: Identify, Isolate, Abstract
 
@@ -84,7 +84,7 @@ This wrapper pattern gave me several advantages:
 
 ## Architectural Decisions: Learning from the Original
 
-### What I Kept: The Good Parts
+### What I Kept: The Proven Parts
 
 **1. React + Ink Terminal UI**
 The original's terminal interface was exceptional. Rich interactions, streaming responses, and complex state management—all in a terminal. I extracted this entire layer unchanged:
@@ -229,7 +229,7 @@ Maintaining TypeScript type safety while supporting multiple adapters required c
 ### Pitfall Avoided: Over-Abstraction
 I resisted the urge to create overly generic abstractions. Instead, I stayed close to the original interfaces and let patterns emerge naturally.
 
-## Results: A Modular Foundation
+## Results: Reusable Infrastructure
 
 ### Code Quality Improvements
 - **Type safety**: Strong typing throughout the interface layer
@@ -237,10 +237,10 @@ I resisted the urge to create overly generic abstractions. Instead, I stayed clo
 - **Build system**: Incremental compilation with TypeScript project references
 - **Interface contracts**: Well-defined service boundaries for testability
 
-### User Experience
-- **Feature parity**: 100% compatibility with original functionality
+### Reusability Benefits
+- **Feature preservation**: 100% compatibility with original functionality
 - **Performance**: Identical to original (zero abstraction overhead)
-- **Extensibility**: New adapters can be added without touching core code
+- **Extensibility**: New integrations can be added without touching core code
 
 ### Developer Experience
 - **Clear boundaries**: Package structure makes contribution points obvious
@@ -248,9 +248,9 @@ I resisted the urge to create overly generic abstractions. Instead, I stayed clo
 - **Test isolation**: Each adapter can be tested independently
 - **Documentation**: Interface comments serve as implementation guides
 
-## The Broader Impact: From Extraction to Ecosystem
+## The Broader Impact: From Extraction to Foundation
 
-This extraction wasn't just about making one tool more flexible. It's about creating a pattern for liberating excellent proprietary tools.
+This extraction demonstrates a pattern for creating reusable infrastructure from excellent monolithic tools.
 
 ### For Other Projects
 The techniques I used—interface extraction, wrapper patterns, incremental migration—can be applied to other monolithic tools. The pattern is:
@@ -261,12 +261,12 @@ The techniques I used—interface extraction, wrapper patterns, incremental migr
 4. **Extract incrementally** to keep the system working
 5. **Modularize gradually** as patterns become clear
 
-### For the Community
+### For the Developer Community
 By extracting and open-sourcing this codebase, I've created:
 - **A working reference implementation** for complex CLI architecture
 - **Reusable UI components** for terminal applications
 - **Proven patterns** for async initialization and service composition
-- **A foundation** for community-driven innovation
+- **Foundational infrastructure** for building similar tools
 
 ## The Technical Details: Dive Deeper
 
@@ -279,20 +279,20 @@ Want to see exactly how the extraction worked? The complete codebase is availabl
 
 Each major component includes documentation explaining the extraction decisions and trade-offs.
 
-## Join the Effort
+## Contributing to the Foundation
 
-This modular foundation works, but there's so much more it could become with community input.
+This modular infrastructure works, but there's potential to make it even more useful with contributor input.
 
-**If this approach resonates with you:**
-- **Try it out**: Test the current implementation and share your experience
-- **Help build the core**: We're creating vendor-agnostic tools that work across all AI platforms
-- **Improve something**: Every interface, component, and pattern can be made better
-- **Share feedback**: What works? What doesn't? What's missing?
+**If this technical approach interests you:**
+- **Examine the codebase**: Study the interfaces and implementation patterns
+- **Improve the foundation**: Better TypeScript types, testing helpers, documentation
+- **Build integrations**: OpenAI, Claude, or local model implementations
+- **Share technical feedback**: What patterns work well? What could be improved?
 
-The concept is proven, but the real value will come from contributors who see possibilities I haven't thought of.
+The extraction proves the concept works, but the real value comes from developers who see ways to strengthen the foundation.
 
-**Interested in helping?** Check out the [contributor guide](https://github.com/vketteni/open-cli/blob/main/CONTRIBUTING.md) - fresh perspectives are always welcome.
+**Interested in contributing?** Check out the [technical architecture docs](https://github.com/vketteni/open-cli/blob/main/CONTRIBUTING.md) and interface definitions.
 
 ---
 
-*Follow the [open-cli project](https://github.com/vketteni/open-cli) for updates and community discussions about building vendor-agnostic AI tooling. Built by [@vketteni](https://github.com/vketteni).*
+*Follow the [open-cli project](https://github.com/vketteni/open-cli) for technical updates and discussions about reusable CLI infrastructure patterns. Built by [@vketteni](https://github.com/vketteni).*
