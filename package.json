@@ -18,18 +18,9 @@
     "typecheck": "npm run typecheck --workspaces",
     "clean": "npm run clean --workspaces && rm -rf node_modules",
     "dev": "npm run dev -w apps/open-cli",
-    "demo": "node scripts/run-demo.js",
-    "setup": "npm run build && npm run demo",
-    "install-global": "./scripts/install-global.sh",
+    "install": "./scripts/install.sh",
     "bundle": "node scripts/bundle-for-distribution.js",
-    "prepare-release": "npm run build && npm run bundle",
-    "release": "semantic-release",
-    "release:dry": "semantic-release --dry-run",
-    "version:patch": "npm version patch --no-git-tag-version --workspaces && npm version patch --no-git-tag-version",
-    "version:minor": "npm version minor --no-git-tag-version --workspaces && npm version minor --no-git-tag-version",
-    "version:major": "npm version major --no-git-tag-version --workspaces && npm version major --no-git-tag-version",
-    "tag:release": "git tag v$(node -p \"require('./package.json').version\")",
-    "changelog:update": "conventional-changelog -p angular -i CHANGELOG.md -s"
+    "prepare-release": "npm run build && npm run bundle"
   },
   "dependencies": {
     "@google/gemini-cli-core": "^0.1.13"
