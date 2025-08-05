@@ -41,3 +41,14 @@ logs/
 .npm
 .eslintcache
 .cache/
+
+# Temporary files and artifacts
+temp/
+*.tgz
+*.tar.gz
+draft*.log
+install-*.log
+Priority.log
+
+# Build artifacts in root
+/dist
