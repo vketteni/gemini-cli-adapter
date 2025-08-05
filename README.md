@@ -4,7 +4,7 @@
 
 **The Open Source Agentic CLI Platform**
 
-*Reusable UI for agentic CLI tools • Service interfaces*
+*Reusable UI for agentic CLI tools • Service interfaces • Open core development*
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -37,7 +37,7 @@ Open CLI provides **reusable infrastructure** for building agentic CLI tools.
 
 > 🎯 **Solve the hard problems once. Build on proven foundations.**
 
-We've extracted the CLI architecture from Google's Gemini CLI and created a clean `CLIProvider` interface that separates concerns:
+I've extracted the CLI architecture from Google's Gemini CLI and created a clean `CLIProvider` interface that separates concerns:
 
 - 🏗️ **Proven foundations** - Battle-tested CLI frontend with React + Ink
 - 🔌 **Clean abstractions** - Well-defined service interfaces for common needs
@@ -174,7 +174,7 @@ export class YourAdapter implements CLIProvider {
 **Option 3: Improve the CLI Frontend**
 Enhance the React + Ink interface, add new commands, improve themes, or extend the UI components.
 
-### 🛠️ **Integration Ideas We'd Love to See**
+### 🛠️ **Integration Ideas I'd Love to See**
 
 - 🤖 **OpenAI Integration** - GPT-4, GPT-3.5 support
 - 🧠 **Claude Integration** - Anthropic's Claude models
@@ -243,7 +243,7 @@ Enhance the React + Ink interface, add new commands, improve themes, or extend t
 
 ## 🤝 **Contributing**
 
-We welcome contributions of all kinds! Whether you're:
+Welcome contributions of all kinds! Whether you're:
 
 - 🐛 **Reporting bugs** or requesting features
 - 💻 **Writing code** for new adapters or CLI enhancements  
@@ -270,7 +270,7 @@ Thanks to these amazing people who are helping build better agentic CLI experien
 
 ## 📄 **License**
 
-Open CLI is released under the [Apache 2.0 License](LICENSE) - the same license as the original Gemini CLI. We believe in **open, permissive licensing** that encourages innovation and adoption while providing patent protection for contributors and users.
+Open CLI is released under the [Apache 2.0 License](LICENSE) - the same license as the original Gemini CLI. I believe in **open, permissive licensing** that encourages innovation and adoption while providing patent protection for contributors and users.
 
 ---
 
