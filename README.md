@@ -4,7 +4,7 @@
 
 **The Open Source Agentic CLI Platform**
 
-*Breaking the chains of vendor lock-in • Building the future of AI tooling together*
+*Reusable infrastructure for agentic CLI tools • Service interfaces + React terminal UI*
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
