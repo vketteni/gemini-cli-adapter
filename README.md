@@ -2,7 +2,7 @@
 
 # 🌐 Open CLI
 
-**The Community-Driven Agentic CLI Platform**
+**The Open Source Agentic CLI Platform**
 
 *Breaking the chains of vendor lock-in • Building the future of AI tooling together*
 
@@ -13,270 +13,231 @@
 
 ![Open CLI Demo](demo1.png)
 
-### 🤝 [**Join the Movement**](#-join-the-movement) • 🔌 [**Build an Adapter**](#-build-your-adapter) • 🚀 [**Get Started**](#-quick-start)
+### 🌟 [**Current State**](#-current-state) • 📁 [**Architecture**](#-project-architecture) • ⚡ [**Quick Start**](#-quick-start) • 🚀 [**Get Involved**](#-get-involved) • 🔌 [**Contribute**](#-contribute-to-the-foundation)
 
 </div>
 
 ---
 
-## 📋 **Table of Contents**
+## 🔥 **The Challenge**
 
-- [🔌 Build Your Adapter](#-build-your-adapter)
-- [⚡ Quick Start](#-quick-start)
-- [🗺️ Community Roadmap](#️-community-roadmap)
-- [🤝 Contributing](#-contributing)
-- [📄 License](#-license)
+Building agentic CLI tools requires solving the same problems repeatedly:
 
----
+- 🔄 **Reimplementing common patterns** (auth, streaming, tool execution, UI components)
+- 🧩 **Integrating multiple services** (chat, tools, workspace, memory management)
+- 🎨 **Building polished terminal interfaces** from scratch
+- 🔗 **Managing complex state** across different agentic providers
+- 🛠️ **Creating consistent user experiences** while supporting diverse backends
 
-## 🔥 **The Problem We're Solving**
+**Every new agentic CLI starts from zero, rebuilding proven patterns.**
 
-The agentic CLI landscape is **fragmented and closed**. Developers are forced to:
+## ✨ **The Open CLI Approach**
 
-- 🔒 **Get locked into single providers** (OpenAI CLI, Claude CLI, Gemini CLI...)
-- 🧩 **Learn different interfaces** for each agentic tool
-- 💸 **Lose investment** when switching providers
-- 🚫 **Can't customize** the core experience
-- 🏗️ **Rebuild everything** for new agentic integrations
+Open CLI provides **reusable infrastructure** for building agentic CLI tools.
 
-**What if there was a better way?**
+> 🎯 **Solve the hard problems once. Build on proven foundations.**
 
-## ✨ **The Open CLI Solution**
+We've extracted the CLI architecture from Google's Gemini CLI and created a clean `CLIProvider` interface that separates concerns:
 
-Open CLI is the **first truly decentralized agentic CLI platform** that breaks vendor lock-in forever.
-
-> 🎯 **One interface. Any AI. Infinite possibilities.**
-
-Built on the battle-tested foundation of Google's Gemini CLI, we've **decoupled the CLI frontend from agentic cores** through a clean `CLIProvider` interface. This means:
-
-- ✅ **Freedom to choose** your AI provider
-- ✅ **Consistent experience** across all models  
-- ✅ **Community-driven innovation** in both UI and AI cores
-- ✅ **Production-ready** from day one
-- ✅ **Your contributions** shape the future of agentic tooling
+- 🏗️ **Proven foundations** - Battle-tested CLI frontend with React + Ink
+- 🔌 **Clean abstractions** - Well-defined service interfaces for common needs
+- 🎨 **Rich components** - Terminal UI, themes, commands, and interaction patterns
+- 🧪 **Testable architecture** - Mock implementations and comprehensive testing support
+- 🔄 **Extensible design** - Add new capabilities without breaking existing integrations
 
 ```
-🌍 Community CLI Frontend ↔ 🔌 Your Adapter ↔ 🤖 Any Agentic Core
+🖥️ Rich CLI Frontend ↔ 🔌 Service Interface ↔ 🤖 Your Agentic System
 ```
 
----
-
-## 🚀 **Join the Movement**
-
-### 🎯 **Why This Matters**
-
-Open CLI isn't just another CLI tool—it's a **movement toward decentralized agentic tooling**. We believe:
-
-- **Developers deserve choice**, not vendor lock-in
-- **Innovation thrives** in open, collaborative environments  
-- **The best tools** emerge from diverse community contributions
-- **Agentic CLI experiences** should be as unique as the teams using them
-
-### 🤝 **How You Can Contribute**
-
-| 🎨 **Frontend Developers** | 🧠 **Agentic Engineers** | 📚 **Technical Writers** |
-|---|---|---|
-| Enhance the CLI experience with new themes, commands, and UI components | Build adapters for Claude, OpenAI, local models, or your custom agentic cores | Create guides, tutorials, and documentation that help others join the ecosystem |
-
-| 🔧 **DevTools Builders** | 🌟 **Community Leaders** | 💡 **Visionaries** |
-|---|---|---|
-| Integrate with IDEs, add new tool capabilities, improve performance | Help grow the community, organize events, mentor newcomers | Share ideas for the future of agentic CLI tooling and help guide our roadmap |
-
-### 🎉 **Recognition**
-
-Every contributor gets:
-- 🏆 **Recognition** in our README and release notes
-- 🎯 **Direct impact** on the future of agentic CLI tooling
-- 🌟 **Showcase** for your adapter/contribution in our ecosystem
-- 🤝 **Community** of like-minded builders and innovators
+Instead of building everything from scratch, implement the interface and get a polished CLI experience.
 
 ---
 
-## 🔌 **Build Your Adapter**
+## 🌟 **Current State**
 
-### 🎯 **The 15-Minute Adapter Challenge**
+### 🎯 **What's Working Today**
 
-Think you can't build an agentic adapter? **Think again.** Our `CLIProvider` interface makes it surprisingly simple:
+| Component | Status | Description | 
+|-----------|---------|-------------|
+| **CLIProvider Interface** | ✅ Stable | Complete service interface with 6 core areas |
+| **GoogleAdapter** | ✅ Working | Reference implementation wrapping Gemini CLI |
+| **CLI Frontend** | ✅ Feature-rich | React + Ink interface with themes, commands, UI components |
+| **Adapter Factory** | ✅ Ready | Registration system for multiple providers |
 
-```typescript
-import { CLIProvider } from '@open-cli/interface';
+### 🚧 **Integration Opportunities**
 
-export class YourAdapter implements CLIProvider {
-  readonly id = 'your-ai-provider';
-  readonly name = 'Your AI Provider';
-  readonly version = '1.0.0';
-  
-  // Just implement these methods:
-  async chat(message: string): Promise<string> { /* Your agentic magic here */ }
-  async configure(): Promise<void> { /* Setup your agentic connection */ }
-  // ... a few more simple methods
-}
+These are areas where contributors could make immediate impact:
+
+- 🤖 **OpenAI Integration** - Well-documented API, good first integration project
+- 🧠 **Claude Integration** - Anthropic's API, similar patterns to Google adapter  
+- 🏠 **Local Model Integration** - Ollama, LLaMA, etc. for offline usage
+- 🔧 **Interface Improvements** - Better TypeScript definitions, validation helpers
+
+**Interested in building an integration?** [Start a discussion!](https://github.com/vketteni/open-cli/discussions)
+
+---
+
+## 📁 **Project Architecture**
+
+```
+open-cli/
+├── packages/
+│   ├── interface/          # 🏗️ Service contracts and TypeScript definitions
+│   ├── open-cli/          # 🎨 CLI frontend with React + Ink components
+│   └── gemini-adapter/    # 🔌 Reference integration for Google's API
+├── apps/
+│   └── open-cli/          # 🚀 Binary application and build configuration
+├── docs/                  # 📖 Integration guides and API documentation
+└── scripts/               # ⚙️  Development and build automation
 ```
 
-### 🛠️ **Adapter Ideas We'd Love to See**
+### 🎯 **Core Components**
 
-- 🤖 **OpenAI Adapter** - GPT-4, GPT-3.5 support
-- 🧠 **Claude Adapter** - Anthropic's Claude integration
-- 🏠 **Local Model Adapter** - Ollama, LLaMA, etc.
-- ⚡ **Multi-Provider Adapter** - Route to best model for each task
-- 🎨 **Custom Agentic Cores** - Your proprietary agentic systems
-- 🔗 **API Gateway Adapter** - Enterprise agentic infrastructure
-
-### 📋 **Adapter Development Process**
-
-1. 🍴 **Fork** the repository
-2. 📁 **Create** `packages/your-adapter`
-3. 🔨 **Implement** the `CLIProvider` interface
-4. ✅ **Test** with our comprehensive test suite // TODO: Needs migration/implementation 
-5. 📖 **Document** your adapter's capabilities
-6. 🚀 **Submit** a pull request
-
-**Need help?** Check our [Adapter Development Guide](docs/adapters/creating-adapters.md) or ask in [GitHub Discussions](https://github.com/vketteni/open-cli/discussions).
-
----
-
-## 🌟 **Current Ecosystem**
-
-### 🎯 **Production-Ready Adapters**
-
-| Adapter | Status | Capabilities | Maintainer |
-|---------|---------|-------------|------------|
-| **GoogleAdapter** | ✅ Production | Full Gemini API support, streaming, tools | [@vketteni](https://github.com/vketteni) |
-
-### 🚧 **Coming Soon**
-
-- 🤖 **OpenAI Adapter** - *Looking for maintainer!*
-- 🧠 **Claude Adapter** - *In development*
-- 🏠 **Ollama Adapter** - *Community requested*
-
-**Want to maintain an adapter?** [Let us know!](https://github.com/vketteni/open-cli/discussions/new?category=adapters)
+- **`@open-cli/interface`**: Foundation layer - service contracts that define how agentic systems integrate
+- **`@open-cli/open-cli`**: Frontend layer - rich terminal interface with themes, commands, and UI components  
+- **`@open-cli/gemini-adapter`**: Integration layer - working example that implements the service contracts
+- **`open-cli` binary**: Application layer - packaged CLI tool ready for distribution
 
 ---
 
 ## ⚡ **Quick Start**
 
-### 🚀 **For Users // TODO: Still needs npm release** 
-
 ```bash
-# Install Open CLI
-npm install -g @open-cli/open-cli
-
-# Start with Google's Gemini (default)
-open-cli auth
-
-# Begin your agentic CLI journey
-open-cli "Help me set up a new TypeScript project"
-```
-
-### 👩‍💻 **For Developers**
-
-```bash
-# Clone and set up the development environment
 git clone https://github.com/vketteni/open-cli.git
 cd open-cli
-npm install
-npm run build
-
-# Start developing
-npm run dev
+npm install && npm run build && npm run dev
 ```
 
 ---
 
-## 🏗️ **Architecture Deep Dive**
+## 🚀 **Get Involved**
+
+### 🎯 **Why Contribute**
+
+Open CLI addresses real technical challenges that every agentic CLI builder faces:
+
+- **Reduce duplication** - Stop rebuilding the same patterns repeatedly
+- **Accelerate development** - Build on proven, tested foundations  
+- **Share knowledge** - Learn from and improve established patterns
+- **Shape infrastructure** - Help define how agentic CLI tools should work
+
+### 🤝 **How You Can Contribute**
+
+| 🏗️ **Interface Architects** | 🎨 **Frontend Engineers** | 🔌 **Integration Builders** |
+|---|---|---|
+| Improve the `CLIProvider` service definitions, add TypeScript documentation, create validation helpers | Enhance the React + Ink interface, add CLI themes, improve terminal components | Build integrations for OpenAI, Claude, local models, or custom agentic systems |
+
+| 🧪 **Infrastructure Engineers** | 📚 **Documentation Writers** | 🛠️ **DevTools Contributors** |
+|---|---|---|
+| Add testing frameworks, improve build systems, enhance development tooling | Create integration guides, API documentation, and contributor onboarding materials | Add IDE integrations, debugging tools, or development utilities |
+
+### 🎉 **Recognition**
+
+Every contributor gets:
+- 🏆 **Recognition** in our README and release notes
+- 🎯 **Direct impact** on the project's direction and capabilities
+- 🌟 **Showcase** for your contributions in the project
+- 🤝 **Collaboration** with other contributors and maintainers
+
+---
+
+## 🔌 **Contribute to the Foundation**
+
+### 🎯 **Multiple Ways to Contribute**
+
+The project needs contributors across different areas - from improving the core interface to building new integrations:
+
+**Option 1: Enhance the Core Interface**
+Improve the `CLIProvider` contract, add new service capabilities, or strengthen the foundational architecture.
+
+**Option 2: Build New Integrations** 
+Implement the `CLIProvider` interface for different agentic systems:
+
+```typescript
+import { CLIProvider, ChatService, ToolingService, /* ... */ } from '@open-cli/interface';
+
+export class YourAdapter implements CLIProvider {
+  // Implement the six service interfaces:
+  chat: ChatService;
+  tools: ToolingService; 
+  workspace: WorkspaceService;
+  auth: AuthService;
+  memory: MemoryService;
+  settings: SettingsService;
+  
+  // Plus telemetry methods
+  isTelemetryInitialized(): boolean { /* ... */ }
+  shutdownTelemetry(): Promise<void> { /* ... */ }
+}
+```
+
+**Option 3: Improve the CLI Frontend**
+Enhance the React + Ink interface, add new commands, improve themes, or extend the UI components.
+
+### 🛠️ **Integration Ideas We'd Love to See**
+
+- 🤖 **OpenAI Integration** - GPT-4, GPT-3.5 support
+- 🧠 **Claude Integration** - Anthropic's Claude models
+- 🏠 **Local Model Integration** - Ollama, LLaMA, etc.
+- 🎨 **Custom Agentic Systems** - Your proprietary tools
+- 🔗 **Enterprise Integrations** - API gateways, corporate AI systems
+
+### 🚀 **Good First Contributions**
 
 <details>
-<summary>🔍 <strong>Click to explore the modular architecture that makes Open CLI possible</strong></summary>
+<summary><b>🏗️ Interface/Architecture</b> - Strengthen the foundation</summary>
 
-<br>
-
-Open CLI's power comes from its **modular, decoupled architecture**:
-
-```
-┌─────────────────────────────────────┐
-│          CLI Frontend               │
-│   (React + Ink Terminal UI)        │
-├─────────────────────────────────────┤
-│         CLIProvider Interface       │
-│    (Clean, Typed Adapter Contract)  │
-├─────────────────────────────────────┤
-│              Adapters               │
-│  GoogleAdapter │ YourAdapter │ ...  │
-├─────────────────────────────────────┤
-│           Agentic Cores             │
-│  Gemini CLI   │  Your Agent │ ...   │
-└─────────────────────────────────────┘
-```
-
-### 🎯 **Key Design Principles**
-
-- **🔌 Pluggable**: Any agentic core can integrate via the `CLIProvider` interface
-- **🛡️ Type-Safe**: Full TypeScript support across all packages
-- **⚡ Performance**: Zero overhead abstraction - same performance as native implementations
-- **🧪 Testable**: Comprehensive test suite with mock providers
-- **📦 Modular**: Each package serves a specific, well-defined purpose
-
-### 🔄 **How It Works**
-
-1. **CLI Frontend** provides the rich terminal experience (themes, commands, UI)
-2. **CLIProvider Interface** defines the contract all adapters must implement
-3. **Adapters** translate between the interface and specific agentic cores
-4. **Agentic Cores** handle the actual AI/ML processing and tool execution
-
-This separation means you can:
-- ✅ **Swap adapters** without changing the CLI experience
-- ✅ **Extend the interface** for new capabilities
-- ✅ **Test everything** in isolation
-- ✅ **Contribute** to any layer independently
+- **📝 Add method documentation** to the `CLIProvider` service interfaces
+- **🧪 Create mock implementations** for testing the interface design  
+- **🛡️ Improve TypeScript types** to make the interface more robust
+- **✅ Add validation helpers** for service implementations
 
 </details>
 
+<details>
+<summary><b>🔌 Integration Building</b> - Connect new systems</summary>
+
+- **🏠 Create a minimal adapter** for a local LLM (great learning project)
+- **🤖 Add OpenAI ChatService implementation** (well-documented API)
+- **🔐 Build configuration helpers** for new authentication methods
+
+</details>
+
+<details>
+<summary><b>🎨 Frontend Enhancement</b> - Improve the user experience</summary>
+
+- **🎨 Add new CLI themes** to the existing theme system
+- **📖 Improve command documentation** and help text
+- **🧩 Create new UI components** for displaying different data types
+- **♿ Enhance accessibility** in the terminal interface
+
+</details>
+
+**Need help?** Check our [contributing guide](CONTRIBUTING.md) or ask in [GitHub Discussions](https://github.com/vketteni/open-cli/discussions).
+
 ---
 
-## 🗺️ **Community Roadmap**
+## 🗺️ **Development Roadmap**
 
 ### 🎯 **Phase 1: Foundation** (Current)
 - ✅ Modular architecture with `CLIProvider` interface
 - ✅ Production-ready Google Gemini adapter
 - ✅ Comprehensive CLI frontend extracted from Gemini CLI
-- 🔄 Community building and contributor onboarding
+- 🔄 Community building and contributor onboarding (ongoing)
 
-### 🚀 **Phase 2: Ecosystem Growth** (Next 3 months)
+### 🚀 **Phase 2: Ecosystem Growth** (Timeline depends on community involvement)
 - 🎯 OpenAI and Claude adapters
 - 🎯 Local model support (Ollama, LLaMA)
 - 🎯 Plugin system for CLI commands
 - 🎯 IDE integrations (VS Code, JetBrains)
 
-### 🌟 **Phase 3: Innovation** (6+ months)
+### 🌟 **Phase 3: Innovation** (Long-term goals)
 - 🎯 Multi-provider routing and load balancing
 - 🎯 Advanced tool integrations
 - 🎯 Enterprise features and governance
 - 🎯 Community-driven feature development
 
 **Have ideas?** [Share them in our roadmap discussions!](https://github.com/vketteni/open-cli/discussions/categories/roadmap)
-
----
-
-## 📁 **Project Structure**
-
-```
-open-cli/
-├── packages/
-│   ├── interface/          # 🎯 CLIProvider interface definitions
-│   ├── open-cli/          # 🖥️  Main CLI frontend (React + Ink)
-│   └── gemini-adapter/    # 🤖 Google Gemini adapter implementation
-├── apps/
-│   └── open-cli/          # 📦 CLI application entry point
-├── docs/                  # 📚 Documentation and guides
-└── scripts/               # 🛠️  Build and utility scripts
-```
-
-### 🎯 **Package Details**
-
-- **`@open-cli/interface`**: Core interface definitions (zero dependencies)
-- **`@open-cli/cli`**: Rich terminal UI with React + Ink (production-ready)
-- **`@open-cli/gemini-adapter`**: Reference implementation wrapping `@google/gemini-cli-core`
-- **`@open-cli/open-cli`**: CLI application with binary distribution
 
 ---
 
@@ -301,7 +262,7 @@ We welcome contributions of all kinds! Whether you're:
 
 ### 🏆 **Current Contributors**
 
-Thanks to these amazing people who are building the future of agentic CLI tooling:
+Thanks to these amazing people who are helping build better agentic CLI experiences:
 
 <!-- Contributors will be auto-generated -->
 
@@ -315,14 +276,14 @@ Open CLI is released under the [Apache 2.0 License](LICENSE) - the same license 
 
 <div align="center">
 
-## 🌟 **Ready to Shape the Future of Agentic CLI?**
+## 🚀 **Ready to Contribute?**
 
-### The future starts with **your** contribution
+### Help us build better agentic CLI infrastructure
 
 [![Join the Community](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github)](https://github.com/vketteni/open-cli/discussions)
-[![Build an Adapter](https://img.shields.io/badge/Build-Adapter-FF6B6B?style=for-the-badge&logo=pluggy)](docs/adapters/creating-adapters.md)
+[![Build Integration](https://img.shields.io/badge/Build-Integration-FF6B6B?style=for-the-badge&logo=pluggy)](docs/adapters/creating-adapters.md)
 [![Star the Project](https://img.shields.io/github/stars/vketteni/open-cli?style=for-the-badge&logo=starship&color=yellow)](https://github.com/vketteni/open-cli)
 
-**Together, we're building the agentic CLI platform the community deserves.**
+**Join us in building better foundational tools for agentic CLI development.**
 
 </div>
