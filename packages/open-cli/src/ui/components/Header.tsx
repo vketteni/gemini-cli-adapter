@@ -42,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
       width={artWidth}
       flexShrink={0}
       flexDirection="column"
+      paddingY={1}
     >
       {Colors.GradientColors ? (
         <Gradient colors={Colors.GradientColors}>
