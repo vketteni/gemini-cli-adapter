@@ -19,19 +19,13 @@
 
 ---
 
-## 🔥 **The Challenge**
+## 🔥 **PSA <<**
 
-Building agentic CLI tools requires solving the same problems repeatedly:
+> **The blueprints for the next generation of agentic developer tools haven't been written yet. We're in the early, exciting phase of defining the core patterns and architecture.**
+>
+> **The mission is to create a modular, open ecosystem where the best components can be shared and integrated. I believe only the community can develop and test the most effective agentic utilities and push open-source AI space forward.**
 
-- 🔄 **Reimplementing common patterns** (auth, streaming, tool execution, UI components)
-- 🧩 **Integrating multiple services** (chat, tools, workspace, memory management)
-- 🎨 **Building polished terminal interfaces** from scratch
-- 🔗 **Managing complex state** across different agentic providers
-- 🛠️ **Creating consistent user experiences** while supporting diverse backends
-
-**Every new agentic CLI starts from zero, rebuilding proven patterns.**
-
-## ✨ **The Open CLI Approach**
+## ✨ **Open CLI Approach**
 
 Open CLI provides **reusable infrastructure** for building agentic CLI tools.
 
@@ -39,9 +33,9 @@ Open CLI provides **reusable infrastructure** for building agentic CLI tools.
 
 The project has three main components that work together:
 
-- 🏗️ **Provider-agnostic core** - Complete CLI engine that works with any AI service (Google, OpenAI, Claude, local models)
-- 🔌 **Clean service interfaces** - Well-defined contracts for chat, tools, auth, memory, and workspace operations
-- 🎨 **Production-ready frontend** - React + Ink interface extracted from Google's Gemini CLI
+- 🎨 **CLI Frontend** - React + Ink interface adopted from Google's Gemini CLI
+- 🏗️ **Provider-Agnostic Core** - Agentic engine that works with any AI service (Google, OpenAI, Claude, local models)
+- 🔌 **Clean Service Interfaces** - Standardized contracts for chat, tools, auth, and more.
 
 ```
 🖥️ Rich CLI Frontend ↔ 🔌 Service Interface ↔ 🏗️ Provider-Agnostic Core ↔ 🤖 Any AI Provider
@@ -67,11 +61,11 @@ npm install && npm run build && npm run dev
 
 | Component | Status | Description | 
 |-----------|---------|-------------|
-| **CLIProvider Interface** | ✅ Stable | Complete service interface with 6 core areas |
-| **AIProvider Interface** | ✅ Stable | Standardized content generation, streaming, and token counting |
-| **AuthProvider Interface** | ✅ Stable | Authentication abstraction for API keys, OAuth, service accounts |
-| **Open CLI Frontend** | ✅ Production | React + Ink interface with themes, commands, UI components |
-| **Open Core Backend** | ✅ Complete | Full CLI engine supporting Google, OpenAI, Claude, and local models |
+| **CLIProvider Interface** | ✅ Defined | Service interface with 6 core areas |
+| **AIProvider Interface** | ✅ Defined | Standardized content generation, streaming, and token counting |
+| **AuthProvider Interface** | ✅ Defined | Authentication abstraction for API keys, OAuth, service accounts |
+| **Open CLI Frontend** | 🧪 Experimental | React + Ink interface with themes, commands, UI components |
+| **Open Core Backend** | 🧪 Experimental | Agentic engine supporting Google, OpenAI, Claude, and local models |
 
 ### 📁 **Project Architecture**
 
