@@ -256,27 +256,27 @@ This core implements battle-tested patterns from OpenCode:
 - **Caching optimization** - Max 2 system messages for provider caching efficiency  
 - **Dynamic prompts** - Environment context, custom instructions, mode-specific behavior
 
-## Integration with Existing Open CLI
+## Integration with Open CLI
 
-The core is designed for gradual adoption:
+The core serves as the primary interface for all agentic interactions:
 
 ```typescript
-// Existing Open CLI code continues to work
-import { CLIProvider } from '@open-cli/interface';
+// Direct core usage - no adapters needed
+import { Core } from '@open-cli/core';
 
-// Enhanced core provides backward compatibility
-class EnhancedCLIProvider implements CLIProvider {
-  constructor(private core: Core) {}
-  
-  async sendMessage(message: string): Promise<any> {
-    const response = await this.core.chat({
-      sessionID: 'legacy-session',
-      parts: [{ type: 'text', text: message }],
-      providerID: this.core.getDefaultProvider(),
-      modelID: 'auto'
-    });
-    return this.convertToLegacyFormat(response);
-  }
+// Initialize and use directly
+const core = new Core();
+
+const response = await core.chat({
+  sessionID: 'main-session',
+  parts: [{ type: 'text', text: 'Help me with my code' }],
+  providerID: core.getDefaultProvider(),
+  modelID: 'auto'
+});
+
+// Stream for real-time updates
+for await (const event of await core.chatStream(input)) {
+  // Handle streaming events
 }
 ```
 
