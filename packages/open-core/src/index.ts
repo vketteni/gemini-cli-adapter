@@ -18,7 +18,9 @@ import { SessionStateManager } from './state/SessionStateManager.js';
 import { StreamEventProcessor } from './streaming/StreamEventProcessor.js';
 import { SystemPromptAssembler } from './prompts/SystemPromptAssembler.js';
 import { DynamicToolRegistry } from './tools/DynamicToolRegistry.js';
+import { ToolRegistry } from './tools/ToolRegistry.js';
 import { ProviderTransformRegistry } from './providers/ProviderTransformRegistry.js';
+import { mergeDeep } from './util/merge.js';
 
 /**
  * Core - OpenCode-inspired central orchestration engine
@@ -36,24 +38,30 @@ import { ProviderTransformRegistry } from './providers/ProviderTransformRegistry
  * - Comprehensive state management with revert capabilities
  */
 export class Core {
-  private orchestrator: SessionOrchestrator;
-  private config: CoreConfig;
+  private orchestrator: Promise<SessionOrchestrator>;
+  private config: Promise<CoreConfig.Info>;
 
-  constructor(config?: CoreConfig) {
-    this.config = config || CoreConfig.fromEnvironment();
+  constructor(config?: CoreConfig.Info | Promise<CoreConfig.Info>) {
+    this.config = Promise.resolve( config ?? CoreConfig.get());
     
-    // Initialize all core components
+    // Initialize all core components asynchronously
+    this.orchestrator = this.initializeOrchestrator();
+  }
+
+  private async initializeOrchestrator(): Promise<SessionOrchestrator> {
+    const config = await this.config;
+    
     const sessionState = new SessionStateManager();
     const streamProcessor = new StreamEventProcessor(sessionState);
-    const promptAssembler = new SystemPromptAssembler(this.config);
+    const promptAssembler = new SystemPromptAssembler(config);
     const providerTransforms = new ProviderTransformRegistry();
     
-    // Create mock base registry for now - would integrate with existing Open CLI registry
-    const baseRegistry = new MockToolRegistry();
-    const toolRegistry = new DynamicToolRegistry(baseRegistry, this.config, providerTransforms);
+    // Create concrete tool registry with all our implemented tools
+    const baseRegistry = new ToolRegistry();
+    const toolRegistry = new DynamicToolRegistry(baseRegistry, config, providerTransforms);
     
-    this.orchestrator = new SessionOrchestrator(
-      this.config,
+    return new SessionOrchestrator(
+      config,
       sessionState,
       streamProcessor,
       promptAssembler,
@@ -69,7 +77,8 @@ export class Core {
    * conversation flow from input processing to response generation.
    */
   async chat(input: ChatInput): Promise<ChatResponse> {
-    return this.orchestrator.chat(input);
+    const orchestrator = await this.orchestrator;
+    return orchestrator.chat(input);
   }
 
   /**
@@ -79,7 +88,8 @@ export class Core {
    * in real-time for UI updates and intermediate processing.
    */
   async chatStream(input: ChatInput): Promise<AsyncIterable<StreamEvent>> {
-    return this.orchestrator.chatStream(input);
+    const orchestrator = await this.orchestrator;
+    return orchestrator.chatStream(input);
   }
 
   // Session Management Methods
@@ -88,7 +98,8 @@ export class Core {
    * Get session information
    */
   async getSession(sessionId: string): Promise<SessionInfo> {
-    return this.orchestrator.getSession(sessionId);
+    const orchestrator = await this.orchestrator;
+    return orchestrator.getSession(sessionId);
   }
 
   /**
@@ -98,7 +109,8 @@ export class Core {
    * file system rollback and conversation state management.
    */
   async revertSession(sessionId: string, messageId: string, partId?: string): Promise<void> {
-    return this.orchestrator.revert(sessionId, messageId, partId);
+    const orchestrator = await this.orchestrator;
+    return orchestrator.revert(sessionId, messageId, partId);
   }
 
   /**
@@ -108,7 +120,8 @@ export class Core {
    * preserving important information and recent conversation context.
    */
   async compressSession(sessionId: string): Promise<void> {
-    return this.orchestrator.compress(sessionId);
+    const orchestrator = await this.orchestrator;
+    return orchestrator.compress(sessionId);
   }
 
   // Provider Management Methods
@@ -116,8 +129,9 @@ export class Core {
   /**
    * Get list of available providers
    */
-  getAvailableProviders(): string[] {
-    return this.config.providers.listProviders();
+  async getAvailableProviders(): Promise<string[]> {
+    const config = await this.config;
+    return Array.from(config.providers.providers.keys());
   }
 
   /**
@@ -131,12 +145,12 @@ export class Core {
   /**
    * Get default provider configuration
    */
-  getDefaultProvider(): string {
-    try {
-      return this.config.providers.getDefaultProvider().name;
-    } catch {
+  async getDefaultProvider(): Promise<string> {
+    const config = await this.config;
+    if (!config.providers.defaultProvider) {
       throw new Error('No default provider configured. Please set up at least one provider.');
     }
+    return config.providers.defaultProvider;
   }
 
   // Tool Management Methods
@@ -148,22 +162,27 @@ export class Core {
    * and transformed for provider-specific requirements.
    */
   async getAvailableTools(providerId: string, modelId: string): Promise<ProviderTool[]> {
-    return this.orchestrator.getTools(providerId, modelId);
+    const orchestrator = await this.orchestrator;
+    return orchestrator.getTools(providerId, modelId);
   }
 
   /**
    * Get tool recommendations for optimal performance
    */
-  getToolRecommendations(providerId: string, modelId: string) {
-    const toolRegistry = new DynamicToolRegistry(new MockToolRegistry(), this.config);
+  async getToolRecommendations(providerId: string, modelId: string) {
+    const config = await this.config;
+    const baseRegistry = new ToolRegistry();
+    const toolRegistry = new DynamicToolRegistry(baseRegistry, config);
     return toolRegistry.getToolRecommendations(providerId, modelId);
   }
 
   /**
    * Validate tool compatibility
    */
-  validateToolCompatibility(toolName: string, providerId: string, modelId: string) {
-    const toolRegistry = new DynamicToolRegistry(new MockToolRegistry(), this.config);
+  async validateToolCompatibility(toolName: string, providerId: string, modelId: string) {
+    const config = await this.config;
+    const baseRegistry = new ToolRegistry();
+    const toolRegistry = new DynamicToolRegistry(baseRegistry, config);
     return toolRegistry.validateToolCompatibility(toolName, providerId, modelId);
   }
 
@@ -172,14 +191,14 @@ export class Core {
   /**
    * Get current configuration
    */
-  getConfig(): CoreConfig {
+  async getConfig(): Promise<CoreConfig.Info> {
     return this.config;
   }
 
   /**
    * Update configuration
    */
-  updateConfig(updates: Partial<any>): void {
+  updateConfig(updates: Partial<CoreConfig.Info>): void {
     // Would implement configuration updates
     console.log('Configuration update not yet implemented:', updates);
   }
@@ -189,10 +208,10 @@ export class Core {
   /**
    * Check if core is properly initialized
    */
-  isReady(): boolean {
+  async isReady(): Promise<boolean> {
     try {
-      this.config.providers.getDefaultProvider();
-      return true;
+      const config = await this.config;
+      return config.providers.defaultProvider !== undefined;
     } catch {
       return false;
     }
@@ -201,25 +220,29 @@ export class Core {
   /**
    * Get initialization errors or warnings
    */
-  getInitializationStatus(): {
+  async getInitializationStatus(): Promise<{
     ready: boolean;
     errors: string[];
     warnings: string[];
-  } {
+  }> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
     try {
-      this.config.providers.getDefaultProvider();
-    } catch (error) {
-      errors.push('No default provider configured');
-    }
+      const config = await this.config;
+      
+      if (!config.providers.defaultProvider) {
+        errors.push('No default provider configured');
+      }
 
-    const providers = this.config.providers.listProviders();
-    if (providers.length === 0) {
-      errors.push('No providers available');
-    } else if (providers.length === 1) {
-      warnings.push('Only one provider available - consider adding more for redundancy');
+      const providers = Array.from(config.providers.providers.keys());
+      if (providers.length === 0) {
+        errors.push('No providers available');
+      } else if (providers.length === 1) {
+        warnings.push('Only one provider available - consider adding more for redundancy');
+      }
+    } catch (error) {
+      errors.push('Failed to load configuration');
     }
 
     return {
@@ -236,72 +259,42 @@ export class Core {
     // Clean up resources
     console.log('Core disposal not yet implemented');
   }
-}
 
-// Mock tool registry for development - replace with actual Open CLI registry integration
-class MockToolRegistry {
-  private tools = [
-    {
-      name: 'edit',
-      description: 'Edit files using find-and-replace operations',
-      schema: {
-        name: 'edit',
-        description: 'Edit files using find-and-replace operations',
-        parameters: {
-          type: 'object',
-          properties: {
-            file_path: { type: 'string', description: 'Path to the file to edit' },
-            old_string: { type: 'string', description: 'String to replace' },
-            new_string: { type: 'string', description: 'Replacement string' }
-          },
-          required: ['file_path', 'old_string', 'new_string']
-        }
-      },
-      execute: async () => ({ output: 'Mock edit result' })
-    },
-    {
-      name: 'read_file',
-      description: 'Read file contents',
-      schema: {
-        name: 'read_file',
-        description: 'Read file contents',
-        parameters: {
-          type: 'object',
-          properties: {
-            file_path: { type: 'string', description: 'Path to the file to read' }
-          },
-          required: ['file_path']
-        }
-      },
-      execute: async () => ({ output: 'Mock file content' })
-    },
-    {
-      name: 'write_file',
-      description: 'Write content to a file',
-      schema: {
-        name: 'write_file',
-        description: 'Write content to a file',
-        parameters: {
-          type: 'object',
-          properties: {
-            file_path: { type: 'string', description: 'Path to the file to write' },
-            content: { type: 'string', description: 'Content to write' }
-          },
-          required: ['file_path', 'content']
-        }
-      },
-      execute: async () => ({ output: 'File written successfully' })
-    }
-  ];
+  // Static Factory Methods (OpenCode-inspired)
 
-  async getAllTools() {
-    return this.tools;
+  /**
+   * Create a Core instance with default configuration
+   */
+  static async create(): Promise<Core> {
+    return new Core();
   }
 
-  async getTool(name: string) {
-    return this.tools.find(t => t.name === name);
+  /**
+   * Create a Core instance optimized for CLI usage
+   */
+  static async forCLI(): Promise<Core> {
+    const config = await CoreConfig.forCLI();
+    return new Core(config);
+  }
+
+  /**
+   * Create a Core instance optimized for extension usage
+   */
+  static async forExtension(): Promise<Core> {
+    const config = await CoreConfig.forExtension();
+    return new Core(config);
+  }
+
+  /**
+   * Create a Core instance with custom configuration
+   */
+  static async withConfig(config: Partial<CoreConfig.Info>): Promise<Core> {
+    const baseConfig = await CoreConfig.get();
+    const mergedConfig = mergeDeep(baseConfig, config);
+    return new Core(mergedConfig);
   }
 }
+
 
 // Export everything needed for external use
 export * from './types/index.js';

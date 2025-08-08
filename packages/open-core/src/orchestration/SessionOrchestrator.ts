@@ -14,7 +14,8 @@ import type {
   StoredMessage,
   ModelMessage,
   StreamEvent,
-  ProviderTool
+  ProviderTool,
+  ModelMessagePart
 } from '../types/index.js';
 import type { CoreConfig } from '../config/CoreConfig.js';
 import { SessionStateManager } from '../state/SessionStateManager.js';
@@ -43,7 +44,7 @@ export class SessionOrchestrator {
   private providerTransforms: ProviderTransformRegistry;
 
   constructor(
-    private config: CoreConfig,
+    private config: CoreConfig.Info,
     sessionState: SessionStateManager,
     streamProcessor: StreamEventProcessor,
     promptAssembler: SystemPromptAssembler,
@@ -303,16 +304,15 @@ export class SessionOrchestrator {
   private convertToModelMessages(messages: StoredMessage[]): ModelMessage[] {
     return messages.map(msg => {
       if (msg.info.role === 'user') {
-        const content = msg.parts
-          .filter(p => p.type === 'text' || p.type === 'file')
-          .map(p => {
+        const content = msg.parts.flatMap(p => {
             if (p.type === 'text') {
-              return { type: 'text' as const, text: p.text };
+              return [{ type: 'text' as const, text: p.text } as ModelMessagePart];
             } else if (p.type === 'file') {
-              return { type: 'image' as const, image: p.url };
+              return [{ type: 'image' as const, image: p.url } as ModelMessagePart];
             }
-          })
-          .filter(Boolean);
+			return [];
+          });
+          
 
         return {
           role: 'user' as const,

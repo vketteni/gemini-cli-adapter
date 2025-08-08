@@ -303,6 +303,11 @@ for await (const event of await core.chatStream(input)) {
 - Performance optimizations
 - Comprehensive test suite
 
+## Attribution
+
+Tool system design patterns inspired by [OpenCode](https://github.com/sst/opencode) (MIT licensed). 
+Our implementation is independently written and adapted for Open CLI's provider-agnostic architecture.
+
 ## Contributing
 
 This core represents a sophisticated orchestration engine inspired by OpenCode's proven patterns. Contributions should focus on:

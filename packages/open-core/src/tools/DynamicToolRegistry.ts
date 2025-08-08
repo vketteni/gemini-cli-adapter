@@ -290,8 +290,8 @@ export class DynamicToolRegistry {
   }
 }
 
-// Interfaces
-interface ToolRegistryInterface {
+// Interfaces  
+export interface ToolRegistryInterface {
   getAllTools(): Promise<Tool[]>;
   getTool(name: string): Promise<Tool | undefined>;
   refresh?(): Promise<void>;

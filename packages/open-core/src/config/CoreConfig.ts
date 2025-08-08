@@ -4,142 +4,143 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { z } from 'zod';
+import path from 'path';
+import os from 'os';
+import { createState } from '../util/state.js';
+import { mergeDeep } from '../util/merge.js';
 import type { ProviderInstance, ToolPermissions } from '../types/index.js';
 
-export interface CoreConfigParams {
-  session?: Partial<SessionConfigParams>;
-  providers?: Partial<ProviderConfigParams>;
-  tools?: Partial<ToolConfigParams>;
-  workspace?: Partial<WorkspaceConfigParams>;
-  telemetry?: Partial<TelemetryConfigParams>;
-}
+/**
+ * Core configuration namespace following OpenCode's state-based pattern
+ * Provides lazy initialization, hierarchical loading, and environment variable interpolation
+ */
+export namespace CoreConfig {
+  // --- Schema Definitions ---
 
-export class CoreConfig {
-  readonly session: SessionConfig;
-  readonly providers: ProviderConfig;
-  readonly tools: ToolConfig;
-  readonly workspace: WorkspaceConfig;
-  readonly telemetry: TelemetryConfig;
+  export const SessionConfig = z.object({
+    compressionThreshold: z.number().min(0).max(1).default(0.9),
+    preserveThreshold: z.number().min(0).max(1).default(0.3),
+    maxTurns: z.number().int().positive().default(100),
+    outputReserve: z.number().int().positive().default(4096),
+    enableLocking: z.boolean().default(true),
+    enableQueuing: z.boolean().default(true),
+    enableRevert: z.boolean().default(true),
+  });
 
-  constructor(params: CoreConfigParams = {}) {
-    this.session = new SessionConfig(params.session);
-    this.providers = new ProviderConfig(params.providers);
-    this.tools = new ToolConfig(params.tools);
-    this.workspace = new WorkspaceConfig(params.workspace);
-    this.telemetry = new TelemetryConfig(params.telemetry);
+  export const ProviderConfig = z.object({
+    providers: z.map(z.string(), z.custom<ProviderInstance>()).default(new Map()),
+    defaultProvider: z.string().optional(),
+  });
+
+  export const ToolConfig = z.object({
+    permissions: z.object({
+      edit: z.boolean().default(true),
+      shell: z.boolean().default(true),
+      network: z.boolean().default(true),
+      filesystem: z.boolean().default(true),
+    }).default({}),
+    coreTools: z.array(z.string()).optional(),
+    excludeTools: z.array(z.string()).optional(),
+    mcpServers: z.record(z.string(), z.any()).optional(),
+  });
+
+  export const WorkspaceConfig = z.object({
+    projectRoot: z.string().default(() => process.cwd()),
+    gitEnabled: z.boolean().default(true),
+    customInstructionPaths: z.array(z.string()).default(['CLAUDE.md', 'AGENTS.md', 'CONTEXT.md']),
+  });
+
+  export const TelemetryConfig = z.object({
+    enabled: z.boolean().default(false),
+    endpoint: z.string().optional(),
+    logLevel: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  });
+
+  export const Config = z.object({
+    session: SessionConfig,
+    providers: ProviderConfig,
+    tools: ToolConfig,
+    workspace: WorkspaceConfig,
+    telemetry: TelemetryConfig,
+  });
+
+  export type Info = z.infer<typeof Config>;
+
+  // --- State Management ---
+
+  /**
+   * Main configuration state with lazy initialization
+   * Follows OpenCode's App.state() pattern
+   */
+  export const state = createState('core-config', async (): Promise<Info> => {
+    let result: Partial<Info> = {};
+
+    // Load environment-based configuration first
+    result = mergeDeep(result, await loadFromEnvironment());
+
+    // Load project-based configuration (opencode.json, opencode.jsonc)
+    result = mergeDeep(result, await loadFromProject());
+
+    // Load custom config if specified
+    const customConfigPath = process.env.OPENCODE_CONFIG;
+    if (customConfigPath) {
+      result = mergeDeep(result, await loadFromFile(customConfigPath));
+    }
+
+    // Validate and return parsed configuration
+    return Config.parse(result);
+  });
+
+  /**
+   * Get the current configuration
+   */
+  export async function get(): Promise<Info> {
+    return state();
   }
 
-  static fromEnvironment(): CoreConfig {
-    return new CoreConfig({
-      providers: ProviderConfig.fromEnvironment(),
-      workspace: WorkspaceConfig.fromEnvironment(),
-      telemetry: TelemetryConfig.fromEnvironment()
-    });
-  }
-
-  static forCLI(overrides: Partial<CoreConfigParams> = {}): CoreConfig {
-    const envConfig = this.fromEnvironment();
-    return new CoreConfig({
-      ...envConfig,
+  /**
+   * Create CLI-optimized configuration
+   */
+  export async function forCLI(overrides: Partial<Info> = {}): Promise<Info> {
+    const baseConfig = await state();
+    return mergeDeep(baseConfig, {
+      tools: {
+        permissions: {
+          edit: true,
+          shell: true,
+          network: true,
+          filesystem: true,
+        },
+      },
       ...overrides,
-      session: { ...envConfig.session, ...overrides.session },
-      tools: { 
-        ...envConfig.tools, 
-        permissions: { edit: true, shell: true, network: true, filesystem: true }, 
-        ...overrides.tools 
-      }
     });
   }
 
-  static forExtension(overrides: Partial<CoreConfigParams> = {}): CoreConfig {
-    const envConfig = this.fromEnvironment();
-    return new CoreConfig({
-      ...envConfig,
+  /**
+   * Create extension-optimized configuration (restricted permissions)
+   */
+  export async function forExtension(overrides: Partial<Info> = {}): Promise<Info> {
+    const baseConfig = await state();
+    return mergeDeep(baseConfig, {
+      tools: {
+        permissions: {
+          edit: false,
+          shell: false,
+          network: false,
+          filesystem: true,
+        },
+      },
       ...overrides,
-      tools: { 
-        ...envConfig.tools, 
-        permissions: { edit: false, shell: false, network: false, filesystem: true }, 
-        ...overrides.tools 
-      }
     });
   }
-}
 
-// Session Configuration
-export interface SessionConfigParams {
-  compressionThreshold?: number;
-  preserveThreshold?: number;
-  maxTurns?: number;
-  outputReserve?: number;
-  enableLocking?: boolean;
-  enableQueuing?: boolean;
-  enableRevert?: boolean;
-}
+  // --- Configuration Loading ---
 
-export class SessionConfig {
-  readonly compressionThreshold: number;
-  readonly preserveThreshold: number;
-  readonly maxTurns: number;
-  readonly outputReserve: number;
-  readonly enableLocking: boolean;
-  readonly enableQueuing: boolean;
-  readonly enableRevert: boolean;
-
-  constructor(params: SessionConfigParams = {}) {
-    this.compressionThreshold = params.compressionThreshold ?? 0.9;
-    this.preserveThreshold = params.preserveThreshold ?? 0.3;
-    this.maxTurns = params.maxTurns ?? 100;
-    this.outputReserve = params.outputReserve ?? 4096;
-    this.enableLocking = params.enableLocking ?? true;
-    this.enableQueuing = params.enableQueuing ?? true;
-    this.enableRevert = params.enableRevert ?? true;
-  }
-}
-
-// Provider Configuration
-export interface ProviderConfigParams {
-  providers?: Map<string, ProviderInstance>;
-  defaultProvider?: string;
-}
-
-export class ProviderConfig {
-  private providers = new Map<string, ProviderInstance>();
-  private defaultProvider?: string;
-
-  constructor(params: ProviderConfigParams = {}) {
-    if (params.providers) {
-      this.providers = new Map(params.providers);
-    }
-    this.defaultProvider = params.defaultProvider;
-  }
-
-  registerProvider(name: string, provider: ProviderInstance): void {
-    this.providers.set(name, provider);
-    if (!this.defaultProvider) {
-      this.defaultProvider = name;
-    }
-  }
-
-  getProvider(name: string): ProviderInstance {
-    const provider = this.providers.get(name);
-    if (!provider) {
-      throw new Error(`Provider '${name}' not found`);
-    }
-    return provider;
-  }
-
-  getDefaultProvider(): ProviderInstance {
-    if (!this.defaultProvider) {
-      throw new Error('No default provider configured');
-    }
-    return this.getProvider(this.defaultProvider);
-  }
-
-  listProviders(): string[] {
-    return Array.from(this.providers.keys());
-  }
-
-  static fromEnvironment(): ProviderConfigParams {
+  /**
+   * Load configuration from environment variables
+   */
+  async function loadFromEnvironment(): Promise<Partial<Info>> {
     const providers = new Map<string, ProviderInstance>();
     let defaultProvider: string | undefined;
 
@@ -149,7 +150,7 @@ export class ProviderConfig {
         name: 'openai',
         model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
         apiKey: process.env.OPENAI_API_KEY,
-        baseUrl: process.env.OPENAI_BASE_URL
+        baseUrl: process.env.OPENAI_BASE_URL,
       });
       if (!defaultProvider) defaultProvider = 'openai';
     }
@@ -160,97 +161,123 @@ export class ProviderConfig {
         name: 'anthropic',
         model: process.env.ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
         apiKey: process.env.ANTHROPIC_API_KEY,
-        baseUrl: process.env.ANTHROPIC_BASE_URL
+        baseUrl: process.env.ANTHROPIC_BASE_URL,
       });
       if (!defaultProvider) defaultProvider = 'anthropic';
     }
 
-    // Check for Google
+    // Check for Google/Gemini
     if (process.env.GEMINI_API_KEY) {
       providers.set('google', {
         name: 'google',
         model: process.env.GEMINI_MODEL || 'gemini-1.5-pro',
-        apiKey: process.env.GEMINI_API_KEY
+        apiKey: process.env.GEMINI_API_KEY,
       });
       if (!defaultProvider) defaultProvider = 'google';
     }
 
-    return { providers, defaultProvider };
-  }
-}
-
-// Tool Configuration
-export interface ToolConfigParams {
-  permissions?: ToolPermissions;
-  coreTools?: string[];
-  excludeTools?: string[];
-  mcpServers?: Record<string, any>;
-}
-
-export class ToolConfig {
-  readonly permissions: ToolPermissions;
-  readonly coreTools?: string[];
-  readonly excludeTools?: string[];
-  readonly mcpServers?: Record<string, any>;
-
-  constructor(params: ToolConfigParams = {}) {
-    this.permissions = params.permissions ?? { edit: true, shell: true, network: true, filesystem: true };
-    this.coreTools = params.coreTools;
-    this.excludeTools = params.excludeTools;
-    this.mcpServers = params.mcpServers;
-  }
-}
-
-// Workspace Configuration
-export interface WorkspaceConfigParams {
-  projectRoot?: string;
-  gitEnabled?: boolean;
-  customInstructionPaths?: string[];
-}
-
-export class WorkspaceConfig {
-  readonly projectRoot: string;
-  readonly gitEnabled: boolean;
-  readonly customInstructionPaths: string[];
-
-  constructor(params: WorkspaceConfigParams = {}) {
-    this.projectRoot = params.projectRoot ?? process.cwd();
-    this.gitEnabled = params.gitEnabled ?? true;
-    this.customInstructionPaths = params.customInstructionPaths ?? ['CLAUDE.md', 'AGENTS.md', 'CONTEXT.md'];
-  }
-
-  static fromEnvironment(): WorkspaceConfigParams {
     return {
-      projectRoot: process.cwd(),
-      gitEnabled: true,
-      customInstructionPaths: ['CLAUDE.md', 'AGENTS.md', 'CONTEXT.md']
+      providers: {
+        providers,
+        defaultProvider,
+      },
+      workspace: {
+        projectRoot: process.cwd(),
+        gitEnabled: true,
+        customInstructionPaths: ['CLAUDE.md', 'AGENTS.md', 'CONTEXT.md'],
+      },
+      telemetry: {
+        enabled: process.env.TELEMETRY_ENABLED === 'true',
+        endpoint: process.env.TELEMETRY_ENDPOINT,
+        logLevel: (process.env.LOG_LEVEL as any) || 'info',
+      },
     };
   }
-}
 
-// Telemetry Configuration
-export interface TelemetryConfigParams {
-  enabled?: boolean;
-  endpoint?: string;
-  logLevel?: 'debug' | 'info' | 'warn' | 'error';
-}
+  /**
+   * Load configuration from project files
+   */
+  async function loadFromProject(): Promise<Partial<Info>> {
+    const cwd = process.cwd();
+    let result: Partial<Info> = {};
 
-export class TelemetryConfig {
-  readonly enabled: boolean;
-  readonly endpoint?: string;
-  readonly logLevel: 'debug' | 'info' | 'warn' | 'error';
+    // Look for configuration files
+    const configFiles = ['opencode.jsonc', 'opencode.json', '.opencode/config.json'];
+    
+    for (const file of configFiles) {
+      const configPath = await findUp(file, cwd);
+      if (configPath) {
+        result = mergeDeep(result, await loadFromFile(configPath));
+      }
+    }
 
-  constructor(params: TelemetryConfigParams = {}) {
-    this.enabled = params.enabled ?? false;
-    this.endpoint = params.endpoint;
-    this.logLevel = params.logLevel ?? 'info';
+    return result;
   }
 
-  static fromEnvironment(): TelemetryConfigParams {
-    return {
-      enabled: process.env.TELEMETRY_ENABLED === 'true',
-      endpoint: process.env.TELEMETRY_ENDPOINT,
-      logLevel: (process.env.LOG_LEVEL as any) ?? 'info'
-    };
+  /**
+   * Load configuration from a specific file
+   */
+  async function loadFromFile(filepath: string): Promise<Partial<Info>> {
+    try {
+      // Read file
+      const fs = await import('fs/promises');
+      let content = await fs.readFile(filepath, 'utf-8');
+
+      // Environment variable interpolation (OpenCode pattern)
+      content = content.replace(/\{env:([^}]+)\}/g, (_, varName) => {
+        return process.env[varName] || '';
+      });
+
+      // File interpolation (OpenCode pattern)
+      const fileMatches = content.match(/\{file:[^}]+\}/g);
+      if (fileMatches) {
+        const configDir = path.dirname(filepath);
+        for (const match of fileMatches) {
+          let filePath = match.replace(/^\{file:/, '').replace(/\}$/, '');
+          if (filePath.startsWith('~/')) {
+            filePath = path.join(os.homedir(), filePath.slice(2));
+          }
+          const resolvedPath = path.isAbsolute(filePath) 
+            ? filePath 
+            : path.resolve(configDir, filePath);
+          
+          try {
+            const fileContent = await fs.readFile(resolvedPath, 'utf-8');
+            content = content.replace(match, JSON.stringify(fileContent).slice(1, -1));
+          } catch {
+            // Ignore file read errors
+          }
+        }
+      }
+
+      // Parse JSON (with comments support)
+      return JSON.parse(content);
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Find a file by walking up the directory tree
+   */
+  async function findUp(filename: string, startDir: string): Promise<string | null> {
+    const fs = await import('fs/promises');
+    let currentDir = startDir;
+    
+    while (true) {
+      const filePath = path.join(currentDir, filename);
+      try {
+        await fs.access(filePath);
+        return filePath;
+      } catch {
+        const parentDir = path.dirname(currentDir);
+        if (parentDir === currentDir) {
+          break; // Reached root
+        }
+        currentDir = parentDir;
+      }
+    }
+    
+    return null;
   }
 }

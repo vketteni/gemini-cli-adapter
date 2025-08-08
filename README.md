@@ -233,6 +233,12 @@ Thanks to these amazing people who are helping build better agentic CLI experien
 
 ---
 
+## 🙏 **Acknowledgments**
+
+Tool system design inspired by [OpenCode](https://github.com/sst/opencode) - thanks to the OpenCode team for pioneering excellent agentic tool patterns that have influenced our implementation.
+
+---
+
 ## 📄 **License**
 
 Open CLI is released under the [Apache 2.0 License](LICENSE) - the same license as the original Gemini CLI. I believe in **open, permissive licensing** that encourages innovation and adoption while providing patent protection for contributors and users.
