@@ -1,7 +1,7 @@
 {
   "name": "@open-cli/core",
-  "version": "0.1.0",
-  "description": "Provider-agnostic core module for Open CLI - forked from Google's Gemini CLI Core",
+  "version": "1.0.0",
+  "description": "OpenCode-inspired central orchestration engine for Open CLI - fresh rewrite with sophisticated session management, streaming, and provider optimization",
   "repository": {
     "type": "git",
     "url": "https://github.com/vketteni/open-cli.git",
