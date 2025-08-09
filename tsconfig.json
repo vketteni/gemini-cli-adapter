@@ -2,8 +2,6 @@
   "files": [],
   "include": [],
   "references": [
-    { "path": "./packages/interface" },
-    { "path": "./packages/gemini-adapter" },
     { "path": "./packages/open-cli" },
     { "path": "./packages/open-core" },
     { "path": "./apps/open-cli" }

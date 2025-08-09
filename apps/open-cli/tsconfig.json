@@ -8,7 +8,6 @@
   "include": ["src"],
   "exclude": ["dist", "node_modules"],
   "references": [
-    { "path": "../../packages/open-cli" },
-    { "path": "../../packages/interface" }
+    { "path": "../../packages/open-cli" }
   ]
 }
