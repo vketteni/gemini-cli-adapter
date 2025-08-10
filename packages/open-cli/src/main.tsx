@@ -7,7 +7,7 @@
 import React from 'react';
 import { render } from 'ink';
 import { AppWrapper } from './ui/App.js';
-import { loadCliConfig, parseArguments, CliArgs } from './config/config.js';
+import { parseArguments, CliArgs, createCoreConfig } from './config/config.js';
 import { readStdin } from './utils/readStdin.js';
 import { basename } from 'node:path';
 import v8 from 'node:v8';
@@ -32,21 +32,9 @@ import { validateNonInteractiveAuth } from './validateNonInterActiveAuth.js';
 import { checkForUpdates } from './ui/utils/updateCheck.js';
 import { handleAutoUpdate } from './utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from './utils/events.js';
-import { createAdapterFromConfig } from './adapters/adapterFactory.js';
-import { CLIProvider } from '@open-cli/interface';
-import {
-  Config,
-  AuthType,
-  ApprovalMode,
-  ShellTool,
-  EditTool,
-  WriteFileTool,
-  logUserPrompt,
-  getOauthClient,
-  sessionId,
-} from '@google/gemini-cli-core';
+import { Core, CoreConfig, type ChatInput } from '@open-cli/core';
 
-function getNodeMemoryArgs(adapter: CLIProvider): string[] {
+function getNodeMemoryArgs(settings: LoadedSettings): string[] {
   const totalMemoryMB = os.totalmem() / (1024 * 1024);
   const heapStats = v8.getHeapStatistics();
   const currentMaxOldSpaceSizeMb = Math.floor(
@@ -55,14 +43,14 @@ function getNodeMemoryArgs(adapter: CLIProvider): string[] {
 
   // Set target to 50% of total memory
   const targetMaxOldSpaceSizeInMB = Math.floor(totalMemoryMB * 0.5);
-  const debugMode = adapter.settings.getDebugMode();
+  const debugMode = settings.merged.debug;
   if (debugMode) {
     console.debug(
       `Current heap size ${currentMaxOldSpaceSizeMb.toFixed(2)} MB`,
     );
   }
 
-  if (process.env.GEMINI_CLI_NO_RELAUNCH) {
+  if (process.env.CLI_NO_RELAUNCH) {
     return [];
   }
 
@@ -134,15 +122,11 @@ export async function main() {
 
   const argv = await parseArguments();
   const extensions = loadExtensions(workspaceRoot);
-  const config = await loadCliConfig(
-    settings.merged,
-    extensions,
-    sessionId,
-    argv,
-  );
-
-  // Create the core adapter from the config and settings
-  const adapter = await createAdapterFromConfig(config, settings);
+  
+  // Create Core configuration
+  const coreConfigInfo = await createCoreConfig(argv, settings);
+  const coreConfig = await CoreConfig.forCLI(coreConfigInfo);
+  const core = new Core(coreConfig);
 
   if (argv.promptInteractive && !process.stdin.isTTY) {
     console.error(
@@ -151,7 +135,7 @@ export async function main() {
     process.exit(1);
   }
 
-  if (adapter.settings.getListExtensions && adapter.settings.getListExtensions()) {
+  if (settings.merged.listExtensions) {
     console.log('Installed extensions:');
     for (const extension of extensions) {
       console.log(`- ${extension.config.name}`);
@@ -159,18 +143,10 @@ export async function main() {
     process.exit(0);
   }
 
-  // Set a default auth type if one isn't set.
-  if (!settings.merged.selectedAuthType) {
-    if (process.env.CLOUD_SHELL === 'true') {
-      settings.setValue(
-        SettingScope.User,
-        'selectedAuthType',
-        AuthType.CLOUD_SHELL,
-      );
-    }
-  }
+  // Provider-based authentication is handled by Core internally
+  // API keys are configured via environment variables
 
-  setMaxSizedBoxDebugging(adapter.settings.getDebugMode());
+  setMaxSizedBoxDebugging(settings.merged.debug);
 
 
   // Load custom themes from settings
@@ -187,24 +163,12 @@ export async function main() {
   // hop into sandbox if we are outside and sandboxing is enabled
   if (!process.env.SANDBOX) {
     const memoryArgs = settings.merged.autoConfigureMaxOldSpaceSize
-      ? getNodeMemoryArgs(adapter)
+      ? getNodeMemoryArgs(settings)
       : [];
-    const sandboxConfig = adapter.settings.getSandboxConfig();
+    const sandboxConfig = settings.merged.sandboxConfig;
     if (sandboxConfig) {
-      if (settings.merged.selectedAuthType) {
-        // Validate authentication here because the sandbox will interfere with the Oauth2 web redirect.
-        try {
-          const err = validateAuthMethod(adapter, settings.merged.selectedAuthType);
-          if (err) {
-            throw new Error(err);
-          }
-          await adapter.auth.refreshAuth(settings.merged.selectedAuthType);
-        } catch (err) {
-          console.error('Error authenticating:', err);
-          process.exit(1);
-        }
-      }
-      await start_sandbox(adapter, memoryArgs);
+      // Authentication is handled by Core via API keys
+      await start_sandbox(core, memoryArgs);
       process.exit(0);
     } else {
       // Not in a sandbox and not entering one, so relaunch with additional
@@ -216,19 +180,13 @@ export async function main() {
     }
   }
 
-  if (
-    settings.merged.selectedAuthType === AuthType.LOGIN_WITH_GOOGLE &&
-    adapter.auth.isBrowserLaunchSuppressed()
-  ) {
-    // Do oauth before app renders to make copying the link possible.
-    await getOauthClient(settings.merged.selectedAuthType, config);
+  // OAuth is handled internally by Core for supported providers
+
+  if (settings.merged.experimentalAcp) {
+    return runAcpPeer(core, settings);
   }
 
-  if (adapter.settings.getExperimentalAcp && adapter.settings.getExperimentalAcp()) {
-    return runAcpPeer(config, settings);
-  }
-
-  let input = adapter.settings.getQuestion && adapter.settings.getQuestion();
+  let input = settings.merged.question;
   const startupWarnings = [
     ...(await getStartupWarnings()),
     ...(await getUserStartupWarnings(workspaceRoot)),
@@ -244,8 +202,7 @@ export async function main() {
     const instance = render(
       <React.StrictMode>
         <AppWrapper
-          adapter={adapter}
-          config={config}
+          core={core}
           settings={settings}
           startupWarnings={startupWarnings}
           version={version}
@@ -256,11 +213,11 @@ export async function main() {
 
     checkForUpdates()
       .then((info) => {
-        handleAutoUpdate(info, settings, adapter.settings.getProjectRoot());
+        handleAutoUpdate(info, settings, process.cwd());
       })
       .catch((err) => {
         // Silently ignore update check errors.
-        if (adapter.settings.getDebugMode()) {
+        if (settings.merged.debug) {
           console.error('Update check failed:', err);
         }
       });
@@ -279,25 +236,18 @@ export async function main() {
   }
 
   const prompt_id = Math.random().toString(16).slice(2);
-  logUserPrompt(config, {
-    'event.name': 'user_prompt',
-    'event.timestamp': new Date().toISOString(),
-    prompt: input,
-    prompt_id,
-    auth_type: adapter.settings.getAuthType(),
-    prompt_length: input.length,
-  });
+  // User prompt logging is handled by Core internally
 
-  // Create restricted adapter (read-only tools only) for non-interactive mode
-  const nonInteractiveAdapter = await loadNonInteractiveConfig(
-    adapter,
-    config,
+  // Create restricted Core for non-interactive mode (read-only tools only)
+  const nonInteractiveCore = await loadNonInteractiveConfig(
+    core,
+    coreConfigInfo,
     extensions,
     settings,
     argv,
   );
 
-  await runNonInteractive(nonInteractiveAdapter, input, prompt_id);
+  await runNonInteractive(nonInteractiveCore, input, prompt_id);
   process.exit(0);
 }
 
@@ -317,42 +267,31 @@ function setWindowTitle(title: string, settings: LoadedSettings) {
 }
 
 async function loadNonInteractiveConfig(
-  adapter: CLIProvider,
-  config: Config,
+  core: Core,
+  coreConfigInfo: CoreConfig.Info,
   extensions: Extension[],
   settings: LoadedSettings,
   argv: CliArgs,
 ) {
-  let finalAdapter = adapter;
-  if (adapter.settings.getApprovalMode() !== ApprovalMode.YOLO) {
+  let finalCore = core;
+  if (settings.merged.approvalMode !== 'yolo') {
     // Everything is not allowed, ensure that only read-only tools are configured.
-    const existingExcludeTools = settings.merged.excludeTools || [];
-    const interactiveTools = [
-      ShellTool.Name,
-      EditTool.Name,
-      WriteFileTool.Name,
-    ];
-
-    const newExcludeTools = [
-      ...new Set([...existingExcludeTools, ...interactiveTools]),
-    ];
-
-    const nonInteractiveSettings = {
-      ...settings.merged,
-      excludeTools: newExcludeTools,
+    const restrictedConfigInfo = {
+      ...coreConfigInfo,
+      tools: {
+        ...coreConfigInfo.tools,
+        permissions: {
+          ...coreConfigInfo.tools?.permissions,
+          edit: false,
+          shell: false,
+          filesystem: false, // Restrict write access
+        }
+      }
     };
-    const restrictedConfig = await loadCliConfig(
-      nonInteractiveSettings,
-      extensions,
-      sessionId,
-      argv,
-    );
-    await restrictedConfig.initialize();
-    finalAdapter = await createAdapterFromConfig(restrictedConfig, settings);
+    
+    const restrictedConfig = await CoreConfig.forCLI(restrictedConfigInfo);
+    finalCore = new Core(restrictedConfig);
   }
 
-  return await validateNonInteractiveAuth(
-    settings.merged.selectedAuthType,
-    finalAdapter,
-  );
+  return finalCore;
 }

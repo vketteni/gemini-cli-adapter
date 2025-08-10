@@ -121,7 +121,7 @@ export abstract class BaseTool<TSchema extends z.ZodTypeAny = z.ZodTypeAny> impl
   /**
    * Check if a path is contained within a directory (OpenCode security pattern)
    */
-  private isPathContained(parentDir: string, childPath: string): boolean {
+  protected isPathContained(parentDir: string, childPath: string): boolean {
     const path = require('path');
     const relative = path.relative(parentDir, childPath);
     return relative && !relative.startsWith('..') && !path.isAbsolute(relative);

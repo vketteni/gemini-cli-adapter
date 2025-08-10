@@ -14,7 +14,11 @@ import type {
   ChatResponse,
   StoredMessage,
   ProviderTool,
-  EventBus
+  EventBus,
+  StreamToolEvent,
+  StreamTextEvent,
+  StreamStepEvent,
+  StreamFinishEvent
 } from '../types/index.js';
 import { SessionStateManager } from '../state/SessionStateManager.js';
 import { generateId } from '../utils/identifiers.js';
@@ -154,7 +158,7 @@ export class StreamEventProcessor {
   }
 
   private async handleTextDelta(
-    event: { type: 'text-delta'; text?: string },
+    event: StreamTextEvent,
     currentTextPart: TextPart | undefined,
     assistantMessage: MessageInfo,
     parts: MessagePart[]
@@ -175,7 +179,7 @@ export class StreamEventProcessor {
   }
 
   private async handleToolCall(
-    event: { type: 'tool-call'; toolCallId: string; toolName?: string; input?: any },
+    event: StreamToolEvent,
     toolCalls: Map<string, ToolPart>,
     assistantMessage: MessageInfo
   ): Promise<void> {
@@ -197,7 +201,7 @@ export class StreamEventProcessor {
   }
 
   private async handleToolResult(
-    event: { type: 'tool-result'; toolCallId: string; output?: any; metadata?: any },
+    event: StreamToolEvent,
     toolCalls: Map<string, ToolPart>,
     parts: MessagePart[]
   ): Promise<void> {
@@ -219,7 +223,7 @@ export class StreamEventProcessor {
   }
 
   private async handleToolError(
-    event: { type: 'tool-error'; toolCallId: string; error?: Error },
+    event: StreamToolEvent,
     toolCalls: Map<string, ToolPart>,
     parts: MessagePart[]
   ): Promise<void> {
@@ -252,7 +256,7 @@ export class StreamEventProcessor {
   }
 
   private async handleFinishStep(
-    event: { type: 'finish-step'; usage?: any; metadata?: any },
+    event: StreamStepEvent,
     assistantMessage: MessageInfo,
     parts: MessagePart[]
   ): Promise<void> {
@@ -275,7 +279,7 @@ export class StreamEventProcessor {
   }
 
   private async handleFinish(
-    event: { type: 'finish'; usage?: any; finishReason?: string },
+    event: StreamFinishEvent,
     assistantMessage: MessageInfo
   ): Promise<void> {
     // Final usage update

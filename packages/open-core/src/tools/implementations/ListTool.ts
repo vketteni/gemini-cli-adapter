@@ -5,7 +5,8 @@
  */
 
 import { z } from 'zod';
-import { readdir, stat, Stats } from 'fs/promises';
+import { readdir, stat } from 'fs/promises';
+import { Stats } from 'fs';
 import { join, relative, extname, basename } from 'path';
 import { BaseTool } from '../BaseTool.js';
 import type { ToolExecutionContext, ToolResult } from '../../types/index.js';
@@ -339,4 +340,4 @@ const ListToolSchema = z.object({
 });
 
 // Export the tool instance
-export const ListTool = new ListTool();
+// export const ListTool = new ListTool();

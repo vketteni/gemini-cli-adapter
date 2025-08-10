@@ -87,4 +87,4 @@ const TaskToolSchema = z.object({
 });
 
 // Export the tool instance
-export const TaskTool = new TaskTool();
+// export const TaskTool = new TaskTool();''

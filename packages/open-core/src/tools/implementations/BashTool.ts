@@ -198,11 +198,6 @@ export class BashTool extends BaseTool<typeof BashToolSchema> {
     }
   }
 
-  private isPathContained(parentDir: string, childPath: string): boolean {
-    const { relative, isAbsolute } = require('path');
-    const relativePath = relative(parentDir, childPath);
-    return relativePath && !relativePath.startsWith('..') && !isAbsolute(relativePath);
-  }
 
   private async executeCommand(
     command: string,
@@ -358,4 +353,4 @@ const BashToolSchema = z.object({
 });
 
 // Export the tool instance
-export const BashTool = new BashTool();
+// export const BashTool = new BashTool();

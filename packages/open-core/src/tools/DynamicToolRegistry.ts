@@ -23,7 +23,7 @@ import { ProviderTransformRegistry } from '../providers/ProviderTransformRegistr
 export class DynamicToolRegistry {
   constructor(
     private baseRegistry: ToolRegistryInterface,
-    private config: CoreConfig,
+    private config: CoreConfig.Info,
     private providerTransforms: ProviderTransformRegistry = new ProviderTransformRegistry()
   ) {}
 

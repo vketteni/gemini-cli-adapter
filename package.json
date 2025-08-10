@@ -5,9 +5,7 @@
   "type": "module",
   "private": true,
   "workspaces": [
-    "packages/interface",
     "packages/open-cli",
-    "packages/gemini-adapter",
     "packages/open-core",
     "apps/*"
   ],
@@ -17,9 +15,8 @@
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write .",
     "typecheck": "npm run typecheck --workspaces",
-    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "clean": "find . -name '*.d.ts' -not -path '*/node_modules/*' -not -path '*/@types/*' -delete && find . -name '*.js.map' -not -path '*/node_modules/*' -delete && rm -rf dist/ build/ lib/ packages/*/dist apps/*/dist && npm run clean --workspaces --if-present",
     "dev": "npm run dev -w apps/open-cli",
-    "install": "./scripts/install.sh",
     "bundle": "node scripts/bundle-for-distribution.js",
     "prepare-release": "npm run build && npm run bundle"
   },

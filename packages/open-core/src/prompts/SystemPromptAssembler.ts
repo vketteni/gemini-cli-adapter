@@ -30,7 +30,7 @@ export interface GitInfo {
  */
 export class SystemPromptAssembler {
   constructor(
-    private config: CoreConfig,
+    private config: CoreConfig.Info,
     private fileSystem?: FileSystemService
   ) {}
 

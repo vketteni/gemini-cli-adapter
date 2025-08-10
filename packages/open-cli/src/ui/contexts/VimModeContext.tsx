@@ -11,7 +11,8 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { CLIProvider, LoadedSettings, SettingScope } from '@open-cli/interface';
+import { Core } from '@open-cli/core';
+import { LoadedSettings } from '../../config/settings.js';
 
 export type VimMode = 'NORMAL' | 'INSERT';
 
@@ -26,26 +27,19 @@ const VimModeContext = createContext<VimModeContextType | undefined>(undefined);
 
 export const VimModeProvider = ({
   children,
-  adapter,
+  core,
 }: {
   children: React.ReactNode;
-  adapter: CLIProvider;
+  core: Core;
 }) => {
-  const initialVimEnabled = adapter.settings.getVimMode() ?? false;
-  const [vimEnabled, setVimEnabled] = useState(initialVimEnabled);
-  const [vimMode, setVimMode] = useState<VimMode>(
-    initialVimEnabled ? 'NORMAL' : 'INSERT',
-  );
+  // For now, default vim mode to false until we integrate settings with Core
+  const [vimEnabled, setVimEnabled] = useState(false);
+  const [vimMode, setVimMode] = useState<VimMode>('INSERT');
 
   useEffect(() => {
-    // Initialize vimEnabled from settings on mount
-    const enabled = adapter.settings.getVimMode() ?? false;
-    setVimEnabled(enabled);
-    // When vim mode is enabled, always start in NORMAL mode
-    if (enabled) {
-      setVimMode('NORMAL');
-    }
-  }, [adapter.settings.getVimMode()]);
+    // TODO: Initialize vimEnabled from Core settings when implemented
+    // For now, use default false value
+  }, [core]);
 
   const toggleVimEnabled = useCallback(async () => {
     const newValue = !vimEnabled;
@@ -54,9 +48,9 @@ export const VimModeProvider = ({
     if (newValue) {
       setVimMode('NORMAL');
     }
-    adapter.settings.setVimMode(newValue);
+    // TODO: Save vim mode setting to Core when settings integration is complete
     return newValue;
-  }, [vimEnabled, adapter]);
+  }, [vimEnabled, core]);
 
   const value = {
     vimEnabled,

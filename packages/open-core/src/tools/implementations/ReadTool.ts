@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { readFile, stat, Stats } from 'fs/promises';
-import { existsSync, readdirSync } from 'fs';
+import { readFile, stat } from 'fs/promises';
+import { existsSync, readdirSync, Stats } from 'fs';
 import { join, isAbsolute, dirname, basename, relative, extname } from 'path';
 import { BaseTool, ToolSecurityError } from '../BaseTool.js';
 import type { ToolExecutionContext, ToolResult } from '../../types/index.js';
@@ -245,4 +245,4 @@ const ReadToolSchema = z.object({
 });
 
 // Export the tool instance
-export const ReadTool = new ReadTool();
+// export const ReadTool = new ReadTool();

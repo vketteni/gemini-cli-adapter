@@ -18,12 +18,12 @@ import {
 } from 'ink';
 import { StreamingState, type HistoryItem, MessageType } from './types.js';
 import { useTerminalSize } from './hooks/useTerminalSize.js';
-import { useGeminiStream } from './hooks/useGeminiStream.js';
+import { useCoreStream } from './hooks/useCoreStream.js';
 import { useLoadingIndicator } from './hooks/useLoadingIndicator.js';
 import { useThemeCommand } from './hooks/useThemeCommand.js';
-import { useAuthCommand } from './hooks/useAuthCommand.js';
+import { useCoreAuthCommand } from './hooks/useCoreAuthCommand.js';
 import { useEditorSettings } from './hooks/useEditorSettings.js';
-import { useSlashCommandProcessor } from './hooks/slashCommandProcessor.js';
+import { useCoreSlashCommandProcessor } from './hooks/coreSlashCommandProcessor.js';
 import { useAutoAcceptIndicator } from './hooks/useAutoAcceptIndicator.js';
 import { useConsoleMessages } from './hooks/useConsoleMessages.js';
 import { Header } from './components/Header.js';
@@ -62,7 +62,7 @@ import {
   AuthType,
   ideContext,
 } from '@google/gemini-cli-core';
-import { validateAuthMethod } from '../config/auth.js';
+// validateAuthMethod removed - Core handles auth internally
 import { useLogger } from './hooks/useLogger.js';
 import { StreamingContext } from './contexts/StreamingContext.js';
 import {
@@ -89,27 +89,26 @@ import { ShowMoreLines } from './components/ShowMoreLines.js';
 import { PrivacyNotice } from './privacy/PrivacyNotice.js';
 import { setUpdateHandler } from '../utils/handleAutoUpdate.js';
 import { appEvents, AppEvent } from '../utils/events.js';
-import { CLIProvider } from '@open-cli/interface';
+import { Core } from '@open-cli/core';
 
 const CTRL_EXIT_PROMPT_DURATION_MS = 1000;
 
 interface AppProps {
-  adapter: CLIProvider;
-  config: Config;  // Keep config for now during transition
+  core: Core;
   settings: LoadedSettings;
   startupWarnings?: string[];
   version: string;
 }
 
 export const AppWrapper = (props: AppProps) => (
-  <SessionStatsProvider>
-    <VimModeProvider adapter={props.adapter}>
+  <SessionStatsProvider core={props.core}>
+    <VimModeProvider core={props.core}>
       <App {...props} />
     </VimModeProvider>
   </SessionStatsProvider>
 );
 
-const App = ({ adapter, config, settings, startupWarnings = [], version }: AppProps) => {
+const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
   const isFocused = useFocus();
   useBracketedPaste();
   const [updateInfo, setUpdateInfo] = useState<UpdateObject | null>(null);
@@ -131,11 +130,11 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
   useEffect(() => {
     const consolePatcher = new ConsolePatcher({
       onNewMessage: handleNewMessage,
-      debugMode: config.getDebugMode(),
+      debugMode: settings.merged.debug || false,
     });
     consolePatcher.patch();
     registerCleanup(consolePatcher.cleanup);
-  }, [handleNewMessage, config]);
+  }, [handleNewMessage, settings.merged.debug]);
 
   const { stats: sessionStats } = useSessionStats();
   const [staticNeedsRefresh, setStaticNeedsRefresh] = useState(false);
@@ -153,7 +152,8 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
   const [editorError, setEditorError] = useState<string | null>(null);
   const [footerHeight, setFooterHeight] = useState<number>(0);
   const [corgiMode, setCorgiMode] = useState(false);
-  const [currentModel, setCurrentModel] = useState(config.getModel());
+  const [currentModel, setCurrentModel] = useState('claude-3-5-sonnet-20241022'); // Default model
+  const [selectedProvider, setSelectedProvider] = useState<string>('anthropic'); // Default provider
   const [shellModeActive, setShellModeActive] = useState(false);
   const [showErrorDetails, setShowErrorDetails] = useState<boolean>(false);
   const [showToolDescriptions, setShowToolDescriptions] =
@@ -232,17 +232,9 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
     handleAuthSelect,
     isAuthenticating,
     cancelAuthentication,
-  } = useAuthCommand(settings, setAuthError, adapter);
+  } = useCoreAuthCommand(core, settings, setAuthError);
 
-  useEffect(() => {
-    if (settings.merged.selectedAuthType) {
-      const error = validateAuthMethod(adapter, settings.merged.selectedAuthType);
-      if (error) {
-        setAuthError(error);
-        openAuthDialog();
-      }
-    }
-  }, [settings.merged.selectedAuthType, openAuthDialog, setAuthError]);
+  // Authentication validation is now handled by useCoreAuthCommand
 
   // Sync user tier from config when authentication changes
   useEffect(() => {
@@ -461,12 +453,13 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
     pendingHistoryItems: pendingSlashCommandHistoryItems,
     commandContext,
     shellConfirmationRequest,
-  } = useSlashCommandProcessor(
-    adapter,
+  } = useCoreSlashCommandProcessor(
+    core,
     settings,
+    selectedProvider,
+    selectedModel,
     addItem,
     clearItems,
-    loadHistory,
     refreshStatic,
     setShowHelp,
     setDebugMessage,
@@ -486,19 +479,14 @@ const App = ({ adapter, config, settings, startupWarnings = [], version }: AppPr
     initError,
     pendingHistoryItems: pendingGeminiHistoryItems,
     thought,
-  } = useGeminiStream(
-    adapter,
+  } = useCoreStream(
+    core,
     history,
     addItem,
-    setShowHelp,
+    selectedProvider,
+    selectedModel,
     setDebugMessage,
     handleSlashCommand,
-    shellModeActive,
-    getPreferredEditor,
-    onAuthError,
-    performMemoryRefresh,
-    modelSwitchedFromQuotaError,
-    setModelSwitchedFromQuotaError,
   );
 
   // Input handling

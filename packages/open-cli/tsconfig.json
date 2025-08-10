@@ -9,7 +9,6 @@
   "include": ["src"],
   "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"],
   "references": [
-    { "path": "../interface" },
-    { "path": "../gemini-adapter" }
+    { "path": "../open-core" }
   ]
 }

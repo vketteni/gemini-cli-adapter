@@ -388,4 +388,4 @@ const GlobToolSchema = z.object({
 });
 
 // Export the tool instance
-export const GlobTool = new GlobTool();
+// export const GlobTool = new GlobTool();

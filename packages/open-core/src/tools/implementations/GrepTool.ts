@@ -409,4 +409,4 @@ const GrepToolSchema = z.object({
 });
 
 // Export the tool instance
-export const GrepTool = new GrepTool();
+// export const GrepTool = new GrepTool();

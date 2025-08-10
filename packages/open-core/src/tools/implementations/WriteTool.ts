@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { writeFile, stat, Stats } from 'fs/promises';
-import { existsSync } from 'fs';
+import { writeFile, stat } from 'fs/promises';
+import { existsSync, Stats } from 'fs';
 import { dirname, relative } from 'path';
 import { BaseTool, ToolSecurityError } from '../BaseTool.js';
 import type { ToolExecutionContext, ToolResult } from '../../types/index.js';
@@ -187,4 +187,4 @@ const WriteToolSchema = z.object({
 });
 
 // Export the tool instance
-export const WriteTool = new WriteTool();
+// export const WriteTool = new WriteTool();

@@ -129,7 +129,7 @@ export class SessionStateManager {
         // For now, we'll reject with a message to implement proper callback
         nextRequest.reject(new Error('Queue processing not implemented - need orchestrator callback'));
       } catch (error) {
-        nextRequest.reject(error);
+        nextRequest.reject(error instanceof Error ? error: new Error(String(error)));
       }
     });
   }

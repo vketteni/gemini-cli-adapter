@@ -13,15 +13,24 @@ import React, {
   useEffect,
 } from 'react';
 
-import {
-  uiTelemetryService,
-  SessionMetrics,
-  ModelMetrics,
-} from '@google/gemini-cli-core';
+import { Core } from '@open-cli/core';
+
+// Simplified metrics interfaces for Core integration
+export interface SessionMetrics {
+  totalRequests: number;
+  totalTokens: number;
+  totalTime: number;
+  errorCount: number;
+}
+
+export interface ModelMetrics {
+  modelName: string;
+  requestCount: number;
+  tokenCount: number;
+  avgResponseTime: number;
+}
 
 // --- Interface Definitions ---
-
-export type { SessionMetrics, ModelMetrics };
 
 export interface SessionStatsState {
   sessionStartTime: Date;
@@ -60,42 +69,31 @@ const SessionStatsContext = createContext<SessionStatsContextValue | undefined>(
 
 // --- Provider Component ---
 
-export const SessionStatsProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const SessionStatsProvider: React.FC<{ 
+  children: React.ReactNode;
+  core?: Core;
+}> = ({ children, core }) => {
   const [stats, setStats] = useState<SessionStatsState>({
     sessionStartTime: new Date(),
-    metrics: uiTelemetryService.getMetrics(),
+    metrics: {
+      totalRequests: 0,
+      totalTokens: 0,
+      totalTime: 0,
+      errorCount: 0,
+    },
     lastPromptTokenCount: 0,
     promptCount: 0,
   });
 
   useEffect(() => {
-    const handleUpdate = ({
-      metrics,
-      lastPromptTokenCount,
-    }: {
-      metrics: SessionMetrics;
-      lastPromptTokenCount: number;
-    }) => {
-      setStats((prevState) => ({
-        ...prevState,
-        metrics,
-        lastPromptTokenCount,
-      }));
-    };
-
-    uiTelemetryService.on('update', handleUpdate);
-    // Set initial state
-    handleUpdate({
-      metrics: uiTelemetryService.getMetrics(),
-      lastPromptTokenCount: uiTelemetryService.getLastPromptTokenCount(),
-    });
-
-    return () => {
-      uiTelemetryService.off('update', handleUpdate);
-    };
-  }, []);
+    // TODO: Integrate with Core's session metrics when available
+    // For now, we maintain basic session stats locally
+    if (!core) return;
+    
+    // This would integrate with Core's session management system
+    // const sessionInfo = await core.getSession('main-session');
+    // Update metrics based on Core's session data
+  }, [core]);
 
   const startNewPrompt = useCallback(() => {
     setStats((prevState) => ({

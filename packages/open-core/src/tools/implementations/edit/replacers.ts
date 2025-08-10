@@ -290,7 +290,7 @@ export class IndentationFlexibleReplacer implements Replacer {
       }
       
       const searchIndent = this.getIndentation(searchLine);
-      const expectedIndent = contentBaseIndent + (searchIndent.length - searchBaseIndent.length);
+      const expectedIndent = contentBaseIndent.length + (searchIndent.length - searchBaseIndent.length);
       const expectedLine = ' '.repeat(Math.max(0, expectedIndent)) + searchLine.trim();
       
       if (contentLine !== expectedLine) return null;

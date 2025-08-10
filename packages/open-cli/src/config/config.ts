@@ -22,6 +22,7 @@ import {
   IdeClient,
 } from '@google/gemini-cli-core';
 import { Settings } from './settings.js';
+import { createCoreConfig } from './coreConfig.js';
 
 import { Extension, annotateActiveExtensions } from './extension.js';
 import { getCliVersion } from '../utils/version.js';
@@ -460,3 +461,6 @@ function mergeExcludeTools(
   }
   return [...allExcludeTools];
 }
+
+// Export Core configuration function
+export { createCoreConfig };

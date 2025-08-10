@@ -38,14 +38,14 @@ export class ToolRegistry {
     const { TaskTool } = await import('./implementations/TaskTool.js');
     
     // Register all tools
-    this.register(EditTool);
-    this.register(ReadTool);
-    this.register(WriteTool);
-    this.register(BashTool);
-    this.register(GrepTool);
-    this.register(GlobTool);
-    this.register(ListTool);
-    this.register(TaskTool);
+    this.register(new EditTool());
+    this.register(new ReadTool());
+    this.register(new WriteTool());
+    this.register(new BashTool());
+    this.register(new GrepTool());
+    this.register(new GlobTool());
+    this.register(new ListTool());
+    this.register(new TaskTool());
 
     this.initialized = true;
   }

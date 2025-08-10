@@ -8,8 +8,8 @@
  */
 
 import { z } from 'zod';
-import { readFile, writeFile, stat, Stats } from 'fs/promises';
-import { existsSync } from 'fs';
+import { readFile, writeFile, stat } from 'fs/promises';
+import { existsSync, Stats } from 'fs';
 import { join, isAbsolute, dirname, relative } from 'path';
 import { BaseTool, ToolSecurityError, ToolPermissionError } from '../BaseTool.js';
 import type { ToolExecutionContext, ToolResult } from '../../types/index.js';
@@ -275,4 +275,4 @@ const EditToolSchema = z.object({
 });
 
 // Export the tool instance
-export const EditTool = new EditTool();
+// export const EditTool = new EditTool();
