@@ -19,11 +19,6 @@
 
 ---
 
-## 🔥 **PSA <<**
-
-> **The blueprints for the next generation of agentic developer tools haven't been written yet. We're in the early, exciting phase of defining the core patterns and architecture.**
->
-> **The mission is to create a modular, open ecosystem where the best components can be shared and integrated. I believe only the community can develop and test the most effective agentic utilities and push open-source AI space forward.**
 
 ## ✨ **Open CLI Approach**
 
