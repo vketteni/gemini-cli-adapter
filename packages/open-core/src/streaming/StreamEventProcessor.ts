@@ -266,7 +266,7 @@ export class StreamEventProcessor {
       messageID: assistantMessage.id,
       sessionID: assistantMessage.sessionID,
       type: 'step-finish',
-      tokens: event.usage,
+      tokens: event.usage || { input: 0, output: 0, cache: { read: 0, write: 0 } },
       cost: this.calculateCost(event.usage)
     };
 

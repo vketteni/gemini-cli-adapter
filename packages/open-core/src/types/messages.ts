@@ -193,5 +193,4 @@ export interface StoredMessage {
   parts: MessagePart[];
 }
 
-// Import TokenUsage from sessions to avoid circular dependency
-import type { TokenUsage } from './sessions.js';
+// Remove duplicate import - TokenUsage is already defined above
