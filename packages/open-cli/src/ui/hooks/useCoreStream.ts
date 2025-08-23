@@ -6,19 +6,19 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Core, type ChatInput, type StreamEvent } from '@open-cli/core';
-import {
-  StreamingState,
-  HistoryItem,
-  MessageType,
-  SlashCommandProcessorResult,
-} from '../types.js';
+import { 
+  MessageContent, 
+  StreamingState, 
+  SlashCommandResult, 
+  UIMessage 
+} from '../message.js';
 import { UseHistoryManagerReturn } from './useHistoryManager.js';
 
 export interface UseCoreStreamReturn {
   streamingState: StreamingState;
   submitQuery: (input: string) => Promise<void>;
   initError: string | null;
-  pendingHistoryItems: HistoryItem[];
+  pendingMessages: MessageContent[];
   thought?: string;
 }
 
@@ -28,55 +28,57 @@ export interface UseCoreStreamReturn {
  */
 export const useCoreStream = (
   core: Core,
-  history: HistoryItem[],
-  addItem: UseHistoryManagerReturn['addItem'],
+  history: MessageContent[],
+  addMessage: UseHistoryManagerReturn['addItem'],
   selectedProvider: string,
   selectedModel: string,
   onDebugMessage: (message: string) => void,
-  handleSlashCommand: (cmd: string) => Promise<SlashCommandProcessorResult | false>
+  handleSlashCommand: (cmd: string) => Promise<SlashCommandResult | false>
 ): UseCoreStreamReturn => {
-  const [streamingState, setStreamingState] = useState<StreamingState>(StreamingState.Idle);
+  const [streamingState, setStreamingState] = useState<StreamingState>('idle');
   const [initError, setInitError] = useState<string | null>(null);
-  const [pendingHistoryItems, setPendingHistoryItems] = useState<HistoryItem[]>([]);
+  const [pendingMessages, setPendingMessages] = useState<MessageContent[]>([]);
   const [thought, setThought] = useState<string>();
   
   const sessionId = useRef<string>('main-session');
-  const currentMessageRef = useRef<HistoryItem | null>(null);
+  const currentMessageRef = useRef<MessageContent | null>(null);
   const toolCallsRef = useRef<Map<string, any>>(new Map());
 
   const submitQuery = useCallback(async (input: string) => {
     try {
-      setStreamingState(StreamingState.WaitingForResponse);
+      setStreamingState('responding');
       setInitError(null);
-      setPendingHistoryItems([]);
+      setPendingMessages([]);
       
       // Handle slash commands first
       if (input.startsWith('/')) {
         const result = await handleSlashCommand(input);
         if (result !== false) {
-          setStreamingState(StreamingState.Idle);
+          setStreamingState('idle');
           return;
         }
       }
 
       // Add user message to history
-      const userMessage: HistoryItem = {
-        id: Date.now(),
-        type: MessageType.USER,
-        text: input,
+      const userMessage = UIMessage.TextContent.parse({
+        id: Date.now().toString(),
         timestamp: Date.now(),
-      };
-      addItem(userMessage, Date.now());
+        type: 'text',
+        text: input,
+        role: 'user',
+      });
+      addMessage(userMessage, Date.now());
 
       // Create assistant message placeholder
-      const assistantMessage: HistoryItem = {
-        id: Date.now() + 1,
-        type: MessageType.ASSISTANT,
-        text: '',
+      const assistantMessage = UIMessage.TextContent.parse({
+        id: (Date.now() + 1).toString(),
         timestamp: Date.now(),
-      };
+        type: 'text',
+        text: '',
+        role: 'assistant',
+      });
       currentMessageRef.current = assistantMessage;
-      setPendingHistoryItems([assistantMessage]);
+      setPendingMessages([assistantMessage]);
 
       // Build Core chat input
       const chatInput: ChatInput = {
@@ -87,7 +89,7 @@ export const useCoreStream = (
       };
 
       // Start streaming
-      setStreamingState(StreamingState.Responding);
+      setStreamingState('responding');
       const stream = await core.chatStream(chatInput);
       
       // Process stream events
@@ -97,8 +99,8 @@ export const useCoreStream = (
       
       // Finalize message
       if (currentMessageRef.current) {
-        addItem(currentMessageRef.current, Date.now());
-        setPendingHistoryItems([]);
+        addMessage(currentMessageRef.current, Date.now());
+        setPendingMessages([]);
         currentMessageRef.current = null;
       }
 
@@ -106,23 +108,24 @@ export const useCoreStream = (
       const errorMessage = error instanceof Error ? error.message : String(error);
       setInitError(errorMessage);
       
-      const errorHistoryItem: HistoryItem = {
-        id: Date.now(),
-        type: MessageType.ERROR,
-        text: `Error: ${errorMessage}`,
+      const errorMsg = UIMessage.ErrorContent.parse({
+        id: Date.now().toString(),
         timestamp: Date.now(),
-      };
-      addItem(errorHistoryItem, Date.now());
+        type: 'error',
+        message: `Error: ${errorMessage}`,
+        details: error instanceof Error ? error.stack : undefined,
+      });
+      addMessage(errorMsg, Date.now());
       
     } finally {
-      setStreamingState(StreamingState.Idle);
+      setStreamingState('idle');
     }
-  }, [core, selectedProvider, selectedModel, handleSlashCommand, addItem]);
+  }, [core, selectedProvider, selectedModel, handleSlashCommand, addMessage]);
 
   const handleStreamEvent = useCallback(async (event: StreamEvent) => {
     switch (event.type) {
       case 'start':
-        setStreamingState(StreamingState.Responding);
+        setStreamingState('responding');
         break;
 
       case 'text-start':
@@ -131,9 +134,9 @@ export const useCoreStream = (
 
       case 'text-delta':
         // Update current message with new text
-        if (currentMessageRef.current) {
+        if (currentMessageRef.current && currentMessageRef.current.type === 'text' && event.text) {
           currentMessageRef.current.text += event.text;
-          setPendingHistoryItems([{ ...currentMessageRef.current }]);
+          setPendingMessages([{ ...currentMessageRef.current }]);
         }
         break;
 
@@ -144,56 +147,61 @@ export const useCoreStream = (
       case 'tool-call':
         // Handle tool call start
         const toolCall = {
-          id: event.id,
-          name: event.toolName,
-          args: event.args,
+          id: event.toolCallId,
+          name: event.toolName || 'unknown',
+          args: event.input,
           status: 'running' as const,
           startTime: Date.now(),
         };
-        toolCallsRef.current.set(event.id, toolCall);
+        toolCallsRef.current.set(event.toolCallId, toolCall);
         
-        // Add tool call to pending items
-        const toolCallItem: HistoryItem = {
-          id: Date.now(),
-          type: MessageType.TOOL_CALL,
-          text: `🔧 Calling ${event.toolName}...`,
+        // Add tool call to pending messages
+        const toolCallMessage = UIMessage.ToolCallContent.parse({
+          id: Date.now().toString(),
           timestamp: Date.now(),
-        };
-        setPendingHistoryItems(prev => [...prev, toolCallItem]);
+          type: 'tool-call',
+          toolName: event.toolName || 'unknown',
+          toolId: event.toolCallId,
+          status: 'running',
+        });
+        setPendingMessages(prev => [...prev, toolCallMessage]);
         break;
 
       case 'tool-result':
         // Handle tool call completion
-        const completedTool = toolCallsRef.current.get(event.id);
+        const completedTool = toolCallsRef.current.get(event.toolCallId);
         if (completedTool) {
           completedTool.status = 'completed';
-          completedTool.result = event.result;
+          completedTool.result = event.output;
           completedTool.endTime = Date.now();
           
-          const toolResultItem: HistoryItem = {
-            id: Date.now(),
-            type: MessageType.TOOL_RESULT,
-            text: `✅ ${completedTool.name} completed`,
+          const toolResultMessage = UIMessage.ToolResultContent.parse({
+            id: Date.now().toString(),
             timestamp: Date.now(),
-          };
-          setPendingHistoryItems(prev => [...prev, toolResultItem]);
+            type: 'tool-result',
+            toolName: completedTool.name,
+            toolId: event.toolCallId,
+            result: event.output || '',
+            success: true,
+          });
+          setPendingMessages(prev => [...prev, toolResultMessage]);
         }
         break;
 
       case 'error':
-        const errorItem: HistoryItem = {
-          id: Date.now(),
-          type: MessageType.ERROR,
-          text: `Error: ${event.error}`,
+        const errorMessage = UIMessage.ErrorContent.parse({
+          id: Date.now().toString(),
           timestamp: Date.now(),
-        };
-        setPendingHistoryItems(prev => [...prev, errorItem]);
+          type: 'error',
+          message: `Stream error: ${event.error}`,
+        });
+        setPendingMessages(prev => [...prev, errorMessage]);
         setInitError(String(event.error));
         break;
 
       case 'finish':
         // Stream completed
-        setStreamingState(StreamingState.Idle);
+        setStreamingState('idle');
         break;
 
       default:
@@ -225,7 +233,7 @@ export const useCoreStream = (
     streamingState,
     submitQuery,
     initError,
-    pendingHistoryItems,
+    pendingMessages,
     thought,
   };
 };
