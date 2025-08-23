@@ -1,162 +1,87 @@
 /**
  * @license
- * Copyright 2025 Google LLC
+ * Copyright 2025 Open CLI Contributors
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {
-  ToolCallRequestInfo,
-  shutdownTelemetry,
-  isTelemetrySdkInitialized,
-  AuthType,
-} from '@google/gemini-cli-core';
-import {
-  Content,
-  Part,
-  FunctionCall,
-  GenerateContentResponse,
-} from '@google/genai';
-import { CLIProvider } from '@open-cli/interface';
+import { Core, type ChatInput } from '@open-cli/core';
 
-import { parseAndFormatApiError } from './ui/utils/errorParsing.js';
-
-function getResponseText(response: GenerateContentResponse): string | null {
-  if (response.candidates && response.candidates.length > 0) {
-    const candidate = response.candidates[0];
-    if (
-      candidate.content &&
-      candidate.content.parts &&
-      candidate.content.parts.length > 0
-    ) {
-      // We are running in headless mode so we don't need to return thoughts to STDOUT.
-      const thoughtPart = candidate.content.parts[0];
-      if (thoughtPart?.thought) {
-        return null;
-      }
-      return candidate.content.parts
-        .filter((part) => part.text)
-        .map((part) => part.text)
-        .join('');
-    }
-  }
-  return null;
-}
-
+/**
+ * Runs the CLI in non-interactive mode using the Core streaming interface
+ * This replaces the complex CLIProvider-based implementation with a simple
+ * Core-based approach that handles all orchestration internally.
+ */
 export async function runNonInteractive(
-  adapter: CLIProvider,
+  core: Core,
   input: string,
   prompt_id: string,
 ): Promise<void> {
-  // Handle EPIPE errors when the output is piped to a command that closes early.
+  // Handle EPIPE errors when output is piped to commands that close early
   process.stdout.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EPIPE') {
-      // Exit gracefully if the pipe is closed.
       process.exit(0);
     }
   });
 
-  const chatService = adapter.chat;
-  const toolingService = adapter.tools;
-  const settingsService = adapter.settings;
-
-  const abortController = new AbortController();
-  let currentMessages: Content[] = [{ role: 'user', parts: [{ text: input }] }];
-  let turnCount = 0;
   try {
-    while (true) {
-      turnCount++;
-      const maxSessionTurns = await settingsService.getMaxSessionTurns();
-      if (maxSessionTurns > 0 && turnCount > maxSessionTurns) {
-        console.error(
-          '\n Reached max session turns for this session. Increase the number of turns by specifying maxSessionTurns in settings.json.',
-        );
-        return;
-      }
-      const functionCalls: FunctionCall[] = [];
+    // Validate Core is ready
+    if (!(await core.isReady())) {
+      const status = await core.getInitializationStatus();
+      console.error('Core not ready:');
+      status.errors.forEach(error => console.error(`  - ${error}`));
+      process.exit(1);
+    }
 
-      const functionDeclarations = await toolingService.getFunctionDeclarations();
-      const responseStream = await chatService.sendMessageStream(
-        {
-          message: currentMessages[0]?.parts || [], // Ensure parts are always provided
-          config: {
-            abortSignal: abortController.signal,
-            tools: [{ functionDeclarations }],
-          },
-        },
-        prompt_id,
-      );
+    // Build chat input for Core
+    const defaultProvider = await core.getDefaultProvider();
+    const chatInput: ChatInput = {
+      sessionID: prompt_id,
+      parts: [{ type: 'text', text: input }],
+      providerID: defaultProvider,
+      modelID: 'default', // Core will use provider's default model
+    };
 
-      for await (const resp of responseStream) {
-        if (abortController.signal.aborted) {
-          console.error('Operation cancelled.');
+    // Start streaming chat
+    const stream = await core.chatStream(chatInput);
+    let hasOutput = false;
+
+    for await (const event of stream) {
+      switch (event.type) {
+        case 'text-delta':
+          process.stdout.write(event.text);
+          hasOutput = true;
+          break;
+
+        case 'tool-call':
+          // Tools are executed internally by Core
+          // We could optionally show tool execution progress here
+          break;
+
+        case 'tool-result':
+          // Tool results are processed internally by Core
+          break;
+
+        case 'error':
+          console.error(`\nError: ${event.error}`);
+          process.exit(1);
+          break;
+
+        case 'finish':
+          // Ensure final newline if we had output
+          if (hasOutput) {
+            process.stdout.write('\n');
+          }
           return;
-        }
-        const textPart = getResponseText(resp);
-        if (textPart) {
-          process.stdout.write(textPart);
-        }
-        if (resp.functionCalls) {
-          functionCalls.push(...resp.functionCalls);
-        }
-      }
 
-      if (functionCalls.length > 0) {
-        const toolResponseParts: Part[] = [];
-
-        for (const fc of functionCalls) {
-          const callId = fc.id ?? `${fc.name}-${Date.now()}`;
-          const requestInfo: ToolCallRequestInfo = {
-            callId,
-            name: fc.name as string,
-            args: (fc.args ?? {}) as Record<string, unknown>,
-            isClientInitiated: false,
-            prompt_id,
-          };
-
-          const toolResponse = await toolingService.executeToolCall(
-            requestInfo,
-          );
-
-          if (toolResponse.error) {
-            const isToolNotFound = toolResponse.error.message.includes(
-              'not found in registry',
-            );
-            console.error(
-              `Error executing tool ${fc.name}: ${toolResponse.resultDisplay || toolResponse.error.message}`,
-            );
-            if (!isToolNotFound) {
-              process.exit(1);
-            }
-          }
-
-          if (toolResponse.responseParts) {
-            const parts = Array.isArray(toolResponse.responseParts)
-              ? toolResponse.responseParts
-              : [toolResponse.responseParts];
-            for (const part of parts) {
-              if (typeof part === 'string') {
-                toolResponseParts.push({ text: part });
-              } else if (part) {
-                toolResponseParts.push(part);
-              }
-            }
-          }
-        }
-        currentMessages = [{ role: 'user', parts: toolResponseParts }];
-      } else {
-        process.stdout.write('\n'); // Ensure a final newline
-        return;
+        default:
+          // Handle any other event types gracefully
+          break;
       }
     }
+
   } catch (error) {
-    const authType = await settingsService.getAuthType();
-    console.error(
-      parseAndFormatApiError(error, authType),
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(`Error: ${errorMessage}`);
     process.exit(1);
-  } finally {
-    if (isTelemetrySdkInitialized()) {
-      await shutdownTelemetry();
-    }
   }
 }
