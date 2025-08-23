@@ -10,7 +10,8 @@ import type {
   MessagePart,
   TextPart,
   ToolPart,
-  StepPart,
+  StepStartPart,
+  StepFinishPart,
   ChatResponse,
   StoredMessage,
   ProviderTool,
@@ -94,7 +95,7 @@ export class StreamEventProcessor {
             break;
 
           case 'start-step':
-            parts.push(await this.createStepPart('step-start', assistantMessage));
+            parts.push(await this.createStepStartPart(assistantMessage));
             break;
 
           case 'finish-step':
@@ -211,11 +212,12 @@ export class StreamEventProcessor {
         status: 'completed',
         input: toolPart.state.input,
         output: event.output,
+        title: event.title || toolPart.tool || 'Tool execution',
+        metadata: event.metadata || {},
         time: {
           start: toolPart.state.time.start,
           end: Date.now()
-        },
-        metadata: event.metadata
+        }
       };
 
       // Tool call is complete, will be added to parts at the end
@@ -243,15 +245,14 @@ export class StreamEventProcessor {
     }
   }
 
-  private async createStepPart(
-    type: 'step-start' | 'step-finish',
+  private async createStepStartPart(
     assistantMessage: MessageInfo
-  ): Promise<StepPart> {
+  ): Promise<StepStartPart> {
     return {
       id: generateId('part'),
       messageID: assistantMessage.id,
       sessionID: assistantMessage.sessionID,
-      type
+      type: 'step-start'
     };
   }
 
@@ -260,7 +261,7 @@ export class StreamEventProcessor {
     assistantMessage: MessageInfo,
     parts: MessagePart[]
   ): Promise<void> {
-    const stepPart: StepPart = {
+    const stepPart: StepFinishPart = {
       id: generateId('part'),
       messageID: assistantMessage.id,
       sessionID: assistantMessage.sessionID,
@@ -289,14 +290,14 @@ export class StreamEventProcessor {
     }
 
     // Mark completion time
-    assistantMessage.time.updated = Date.now();
+    assistantMessage.time.completed = Date.now();
   }
 
   private async handleStreamError(error: any, assistantMessage: MessageInfo): Promise<void> {
     console.error(`Stream error for message ${assistantMessage.id}:`, error);
     
     // Update message with error state
-    assistantMessage.time.updated = Date.now();
+    assistantMessage.time.completed = Date.now();
     
     // Could add error part to message parts if needed
   }

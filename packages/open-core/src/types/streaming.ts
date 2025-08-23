@@ -32,6 +32,7 @@ export interface StreamToolEvent {
   output?: any;
   metadata?: any;
   error?: Error;
+  title?: string;
 }
 
 export interface StreamStepEvent {

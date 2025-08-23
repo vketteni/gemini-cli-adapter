@@ -17,14 +17,6 @@ export interface SessionInfo {
   revert?: RevertInfo;
 }
 
-export interface TokenUsage {
-  input: number;
-  output: number;
-  cache: {
-    read: number;
-    write: number;
-  };
-}
 
 export interface RevertInfo {
   sessionID: string;
@@ -86,6 +78,15 @@ export interface FileInputPart {
   filename: string;
   source?: string;
 }
+
+// Import and re-export message types from messages.ts
+import type { 
+  MessageInfo, 
+  MessagePart, 
+  TokenUsage 
+} from './messages.js';
+
+export type { MessageInfo, MessagePart, TokenUsage };
 
 export interface ChatResponse {
   info: MessageInfo;

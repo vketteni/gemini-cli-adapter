@@ -4,87 +4,174 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Message Types (OpenCode-inspired)
+// Token Usage Types
+export interface TokenUsage {
+  input: number;
+  output: number;
+  reasoning?: number;
+  cache: {
+    read: number;
+    write: number;
+  };
+}
+
+// Message Information Types - Based on OpenCode MessageV2.Info
 export interface MessageInfo {
   id: string;
-  role: 'user' | 'assistant';
   sessionID: string;
+  role: 'user' | 'assistant';
   time: {
     created: number;
-    updated?: number;
+    completed?: number;
   };
-  tokens?: TokenUsage;
+  // Assistant-specific fields
+  system?: string[];
+  mode?: string;
+  path?: {
+    cwd: string;
+    root: string;
+  };
   cost?: number;
+  tokens?: TokenUsage;
+  modelID?: string;
+  providerID?: string;
+  summary?: boolean;
+  error?: MessageError;
 }
 
-export type MessagePart = TextPart | FilePart | ToolPart | StepPart;
+// Message Error Types - Based on OpenCode's error patterns
+export interface MessageError {
+  name: string;
+  message: string;
+  cause?: any;
+}
 
-export interface BasePart {
+// Message Part Types - Based on OpenCode MessageV2.Part union
+export type MessagePart = 
+  | TextPart 
+  | ToolPart 
+  | FilePart 
+  | StepStartPart 
+  | StepFinishPart 
+  | PatchPart;
+
+export interface MessagePartBase {
   id: string;
-  messageID: string;
   sessionID: string;
-  synthetic?: boolean; // Auto-generated content
+  messageID: string;
 }
 
-export interface TextPart extends BasePart {
+export interface TextPart extends MessagePartBase {
   type: 'text';
   text: string;
+  synthetic?: boolean;
+  time?: {
+    start: number;
+    end?: number;
+  };
 }
 
-export interface FilePart extends BasePart {
-  type: 'file';
-  url: string;
-  mime: string;
-  filename: string;
-  source?: string;
-}
-
-export interface ToolPart extends BasePart {
+export interface ToolPart extends MessagePartBase {
   type: 'tool';
-  tool: string;
   callID: string;
-  state: ToolCallState;
+  tool: string;
+  state: ToolState;
 }
 
-export interface StepPart extends BasePart {
-  type: 'step-start' | 'step-finish';
-  tokens?: TokenUsage;
-  cost?: number;
+export interface FilePart extends MessagePartBase {
+  type: 'file';
+  mime: string;
+  filename?: string;
+  url: string;
+  source?: FileSource;
 }
 
-export type ToolCallState = 
-  | ToolCallPending
-  | ToolCallRunning  
-  | ToolCallCompleted
-  | ToolCallError;
+export interface StepStartPart extends MessagePartBase {
+  type: 'step-start';
+}
 
-export interface ToolCallPending {
+export interface StepFinishPart extends MessagePartBase {
+  type: 'step-finish';
+  cost: number;
+  tokens: TokenUsage;
+}
+
+export interface PatchPart extends MessagePartBase {
+  type: 'patch';
+  hash: string;
+  files: string[];
+}
+
+// Tool State Types - Based on OpenCode's ToolState union
+export type ToolState = 
+  | ToolStatePending 
+  | ToolStateRunning 
+  | ToolStateCompleted 
+  | ToolStateError;
+
+export interface ToolStatePending {
   status: 'pending';
-  time: { created: number };
 }
 
-export interface ToolCallRunning {
+export interface ToolStateRunning {
   status: 'running';
   input: any;
-  time: { start: number };
   title?: string;
-  metadata?: any;
+  metadata?: Record<string, any>;
+  time: {
+    start: number;
+  };
 }
 
-export interface ToolCallCompleted {
+export interface ToolStateCompleted {
   status: 'completed';
-  input: any;
-  output: any;
-  time: { start: number; end: number };
-  title?: string;
-  metadata?: any;
+  input: Record<string, any>;
+  output: string;
+  title: string;
+  metadata: Record<string, any>;
+  time: {
+    start: number;
+    end: number;
+  };
 }
 
-export interface ToolCallError {
+export interface ToolStateError {
   status: 'error';
-  input: any;
+  input: Record<string, any>;
   error: string;
-  time: { start: number; end: number };
+  time: {
+    start: number;
+    end: number;
+  };
+}
+
+// File Source Types - Based on OpenCode's FilePartSource union
+export type FileSource = FileSourceFile | FileSourceSymbol;
+
+export interface FileSourceFile {
+  type: 'file';
+  path: string;
+  text: {
+    value: string;
+    start: number;
+    end: number;
+  };
+}
+
+export interface FileSourceSymbol {
+  type: 'symbol';
+  path: string;
+  name: string;
+  kind: number;
+  range: {
+    start: { line: number; character: number };
+    end: { line: number; character: number };
+  };
+  text: {
+    value: string;
+    start: number;
+    end: number;
+  };
 }
 
 // Model Message Format
