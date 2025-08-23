@@ -5,90 +5,89 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
-import { HistoryItem } from '../types.js';
+import { MessageContent, UIMessage } from '../message.js';
 
-// Type for the updater function passed to updateHistoryItem
-type HistoryItemUpdater = (
-  prevItem: HistoryItem,
-) => Partial<Omit<HistoryItem, 'id'>>;
+// Type for the updater function passed to updateMessage
+type MessageUpdater = (
+  prevMessage: MessageContent,
+) => Partial<MessageContent>;
 
 export interface UseHistoryManagerReturn {
-  history: HistoryItem[];
-  addItem: (itemData: Omit<HistoryItem, 'id'>, baseTimestamp: number) => number; // Returns the generated ID
+  history: MessageContent[];
+  addItem: (message: MessageContent, baseTimestamp: number) => string; // Returns the generated ID
   updateItem: (
-    id: number,
-    updates: Partial<Omit<HistoryItem, 'id'>> | HistoryItemUpdater,
+    id: string,
+    updates: Partial<MessageContent> | MessageUpdater,
   ) => void;
   clearItems: () => void;
-  loadHistory: (newHistory: HistoryItem[]) => void;
+  loadHistory: (newHistory: MessageContent[]) => void;
 }
 
 /**
- * Custom hook to manage the chat history state.
- *
- * Encapsulates the history array, message ID generation, adding items,
- * updating items, and clearing the history.
+ * Custom hook to manage the chat message history state.
+ * Updated to use OpenCode-style MessageContent types with string IDs.
  */
 export function useHistory(): UseHistoryManagerReturn {
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [history, setHistory] = useState<MessageContent[]>([]);
   const messageIdCounterRef = useRef(0);
 
-  // Generates a unique message ID based on a timestamp and a counter.
-  const getNextMessageId = useCallback((baseTimestamp: number): number => {
+  // Generates a unique message ID - OpenCode style string IDs
+  const getNextMessageId = useCallback((baseTimestamp: number): string => {
     messageIdCounterRef.current += 1;
-    return baseTimestamp + messageIdCounterRef.current;
+    return `${baseTimestamp}-${messageIdCounterRef.current}`;
   }, []);
 
-  const loadHistory = useCallback((newHistory: HistoryItem[]) => {
+  const loadHistory = useCallback((newHistory: MessageContent[]) => {
     setHistory(newHistory);
   }, []);
 
-  // Adds a new item to the history state with a unique ID.
+  // Adds a new message to the history state - now expects full MessageContent
   const addItem = useCallback(
-    (itemData: Omit<HistoryItem, 'id'>, baseTimestamp: number): number => {
-      const id = getNextMessageId(baseTimestamp);
-      const newItem: HistoryItem = { ...itemData, id } as HistoryItem;
+    (message: MessageContent, baseTimestamp: number): string => {
+      // Update the message ID if not already set
+      const messageWithId = { ...message, id: message.id || getNextMessageId(baseTimestamp) };
 
       setHistory((prevHistory) => {
         if (prevHistory.length > 0) {
-          const lastItem = prevHistory[prevHistory.length - 1];
-          // Prevent adding duplicate consecutive user messages
+          const lastMessage = prevHistory[prevHistory.length - 1];
+          // Prevent adding duplicate consecutive user text messages
           if (
-            lastItem.type === 'user' &&
-            newItem.type === 'user' &&
-            lastItem.text === newItem.text
+            lastMessage.type === 'text' &&
+            messageWithId.type === 'text' &&
+            lastMessage.role === 'user' &&
+            messageWithId.role === 'user' &&
+            lastMessage.text === messageWithId.text
           ) {
             return prevHistory; // Don't add the duplicate
           }
         }
-        return [...prevHistory, newItem];
+        return [...prevHistory, messageWithId];
       });
-      return id; // Return the generated ID (even if not added, to keep signature)
+      return messageWithId.id;
     },
     [getNextMessageId],
   );
 
   /**
-   * Updates an existing history item identified by its ID.
-   * @deprecated Prefer not to update history item directly as we are currently
-   * rendering all history items in <Static /> for performance reasons. Only use
+   * Updates an existing message identified by its ID.
+   * @deprecated Prefer not to update messages directly as we are currently
+   * rendering all messages in <Static /> for performance reasons. Only use
    * if ABSOLUTELY NECESSARY
    */
-  //
   const updateItem = useCallback(
     (
-      id: number,
-      updates: Partial<Omit<HistoryItem, 'id'>> | HistoryItemUpdater,
+      id: string,
+      updates: Partial<MessageContent> | MessageUpdater,
     ) => {
       setHistory((prevHistory) =>
-        prevHistory.map((item) => {
-          if (item.id === id) {
+        prevHistory.map((message) => {
+          if (message.id === id) {
             // Apply updates based on whether it's an object or a function
             const newUpdates =
-              typeof updates === 'function' ? updates(item) : updates;
-            return { ...item, ...newUpdates } as HistoryItem;
+              typeof updates === 'function' ? updates(message) : updates;
+            return { ...message, ...newUpdates } as MessageContent;
           }
-          return item;
+          return message;
         }),
       );
     },
