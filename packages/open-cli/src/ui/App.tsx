@@ -16,14 +16,14 @@ import {
   useInput,
   type Key as InkKeyType,
 } from 'ink';
-import { StreamingState, type HistoryItem, MessageType } from './types.js';
+import { StreamingState, MessageContent, UIMessage } from './message.js';
 import { useTerminalSize } from './hooks/useTerminalSize.js';
 import { useCoreStream } from './hooks/useCoreStream.js';
 import { useLoadingIndicator } from './hooks/useLoadingIndicator.js';
 import { useThemeCommand } from './hooks/useThemeCommand.js';
 import { useCoreAuthCommand } from './hooks/useCoreAuthCommand.js';
 import { useEditorSettings } from './hooks/useEditorSettings.js';
-import { useCoreSlashCommandProcessor } from './hooks/coreSlashCommandProcessor.js';
+import { useSlashCommands } from './hooks/useSlashCommands.js';
 import { useAutoAcceptIndicator } from './hooks/useAutoAcceptIndicator.js';
 import { useConsoleMessages } from './hooks/useConsoleMessages.js';
 import { Header } from './components/Header.js';
@@ -45,7 +45,7 @@ import { Tips } from './components/Tips.js';
 import { ConsolePatcher } from './utils/ConsolePatcher.js';
 import { registerCleanup } from '../utils/cleanup.js';
 import { DetailedMessagesDisplay } from './components/DetailedMessagesDisplay.js';
-import { HistoryItemDisplay } from './components/HistoryItemDisplay.js';
+import { MessageDisplay } from './components/MessageDisplay.js';
 import { ContextSummaryDisplay } from './components/ContextSummaryDisplay.js';
 import { IDEContextDetailDisplay } from './components/IDEContextDetailDisplay.js';
 import { useHistory } from './hooks/useHistoryManager.js';
@@ -162,7 +162,7 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
     useState<boolean>(false);
   const [ctrlCPressedOnce, setCtrlCPressedOnce] = useState(false);
   const [quittingMessages, setQuittingMessages] = useState<
-    HistoryItem[] | null
+    MessageContent[] | null
   >(null);
   const ctrlCTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [ctrlDPressedOnce, setCtrlDPressedOnce] = useState(false);
@@ -449,35 +449,24 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
 
   const {
     handleSlashCommand,
-    slashCommands,
-    pendingHistoryItems: pendingSlashCommandHistoryItems,
-    commandContext,
-    shellConfirmationRequest,
-  } = useCoreSlashCommandProcessor(
+    availableCommands: slashCommands,
+    pendingMessages: pendingSlashCommandHistoryItems,
+    isProcessing: slashCommandProcessing,
+  } = useSlashCommands(
     core,
     settings,
-    selectedProvider,
-    selectedModel,
     addItem,
     clearItems,
-    refreshStatic,
-    setShowHelp,
-    setDebugMessage,
-    openThemeDialog,
-    openAuthDialog,
-    openEditorDialog,
-    toggleCorgiMode,
-    setQuittingMessages,
-    openPrivacyNotice,
-    toggleVimEnabled,
-    setIsProcessing,
+    () => setShowHelp(true),
+    () => {}, // TODO: implement stats display
+    () => {}, // TODO: implement about display
   );
 
   const {
     streamingState,
     submitQuery,
     initError,
-    pendingHistoryItems: pendingGeminiHistoryItems,
+    pendingMessages: pendingGeminiHistoryItems,
     thought,
   } = useCoreStream(
     core,
@@ -510,8 +499,8 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
   });
 
   const { handleInput: vimHandleInput } = useVim(buffer, handleFinalSubmit);
-  const pendingHistoryItems = [...pendingSlashCommandHistoryItems];
-  pendingHistoryItems.push(...pendingGeminiHistoryItems);
+  const pendingMessages = [...pendingSlashCommandHistoryItems];
+  pendingMessages.push(...pendingGeminiHistoryItems);
 
   const { elapsedTime, currentLoadingPhrase } =
     useLoadingIndicator(streamingState);
@@ -591,12 +580,12 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
 
       const currentSessionUserMessages = history
         .filter(
-          (item): item is HistoryItem & { type: 'user'; text: string } =>
-            item.type === 'user' &&
-            typeof item.text === 'string' &&
-            item.text.trim() !== '',
+          (message): message is MessageContent & { type: 'text'; role: 'user' } =>
+            message.type === 'text' &&
+            message.role === 'user' &&
+            message.text.trim() !== '',
         )
-        .map((item) => item.text)
+        .map((message) => message.text)
         .reverse(); // Newest first, to match pastMessagesRaw sorting
 
       // Combine, with current session messages being more recent
@@ -632,7 +621,7 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
   }, [clearItems, clearConsoleMessagesState, refreshStatic]);
 
   const mainControlsRef = useRef<DOMElement>(null);
-  const pendingHistoryItemRef = useRef<DOMElement>(null);
+  const pendingMessagesRef = useRef<DOMElement>(null);
 
   useEffect(() => {
     if (mainControlsRef.current) {
@@ -720,16 +709,14 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
   if (quittingMessages) {
     return (
       <Box flexDirection="column" marginBottom={1}>
-        {quittingMessages.map((item) => (
-          <HistoryItemDisplay
-            key={item.id}
-            availableTerminalHeight={
+        {quittingMessages.map((message) => (
+          <MessageDisplay
+            key={message.id}
+            message={message}
+            terminalWidth={terminalWidth}
+            availableHeight={
               constrainHeight ? availableTerminalHeight : undefined
             }
-            terminalWidth={terminalWidth}
-            item={item}
-            isPending={false}
-            config={config}
           />
         ))}
       </Box>
@@ -771,14 +758,12 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
               )}
               {!adapter.settings.getHideTips() && <Tips config={config} />}
             </Box>,
-            ...history.map((h) => (
-              <HistoryItemDisplay
+            ...history.map((message) => (
+              <MessageDisplay
+                key={message.id}
+                message={message}
                 terminalWidth={mainAreaWidth}
-                availableTerminalHeight={staticAreaMaxItemHeight}
-                key={h.id}
-                item={h}
-                isPending={false}
-                config={config}
+                availableHeight={staticAreaMaxItemHeight}
               />
             )),
           ]}
@@ -786,20 +771,16 @@ const App = ({ core, settings, startupWarnings = [], version }: AppProps) => {
           {(item) => item}
         </Static>
         <OverflowProvider>
-          <Box ref={pendingHistoryItemRef} flexDirection="column">
-            {pendingHistoryItems.map((item, i) => (
-              <HistoryItemDisplay
+          <Box ref={pendingMessagesRef} flexDirection="column">
+            {pendingMessages.map((message, i) => (
+              <MessageDisplay
                 key={i}
-                availableTerminalHeight={
+                message={message}
+                terminalWidth={mainAreaWidth}
+                availableHeight={
                   constrainHeight ? availableTerminalHeight : undefined
                 }
-                terminalWidth={mainAreaWidth}
-                // TODO(taehykim): It seems like references to ids aren't necessary in
-                // HistoryItemDisplay. Refactor later. Use a fake id for now.
-                item={{ ...item, id: 0 }}
                 isPending={true}
-                config={config}
-                isFocused={!isEditorDialogOpen}
               />
             ))}
             <ShowMoreLines constrainHeight={constrainHeight} />
