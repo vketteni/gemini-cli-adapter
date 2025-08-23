@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@open-cli/core": "*",
+    "@asteasolutions/zod-to-openapi": "^7.1.1",
     
     "@google/genai": "1.9.0",
     "@iarna/toml": "^2.2.5",
